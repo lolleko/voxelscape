@@ -1,0 +1,6 @@
+Checks: '-*,clang-diagnostic-*,llvm-*,misc-*,clang-analyzer-*,cppcoreguidelines-*,modernize-*,bugprone-*,readability-*,performance-*,-modernize-use-trailing-return-type'
+CheckOptions:
+  - key: readability-identifier-naming
+    value: PascalCase
+  - key: misc-non-private-member-variables-in-classes.IgnoreClassesWithAllMemberVariablesBeingPublic
+    value: '1'
