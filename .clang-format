@@ -25,15 +25,6 @@ DisableFormat:   false
 ExperimentalAutoDetectBinPacking: false
 ForEachMacros:   [ foreach, Q_FOREACH, BOOST_FOREACH ]
 IncludeBlocks: Regroup
-IncludeCategories:
-# Unreal requires ".generated.h" files to be the last includes in any header file
-- Regex:           '.*\.generated\.h'
-  Priority:        100
-# Project includes after engine includes ordered by prefix (LGP)
-- Regex:           '(^"FW)|/FW'
-  Priority:        50
-- Regex:           '*'
-  Priority:        4
 IndentCaseLabels: true
 IndentWidth: 4
 IndentWrappedFunctionNames: false
@@ -49,7 +40,7 @@ PenaltyBreakString: 1000
 PenaltyExcessCharacter: 1000000
 PenaltyReturnTypeOnItsOwnLine: 50
 PointerAlignment: Left
-SortIncludes: true
+SortIncludes: false
 SpaceAfterCStyleCast: false
 SpaceBeforeAssignmentOperators: true
 SpaceBeforeParens: ControlStatements

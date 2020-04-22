@@ -31,7 +31,7 @@ e.g: `export VCPKG_INSTALLATION_ROOT=~/Repos/vcpkg && cmake -Bbuild`
 
 **Excute the build**
 
-`cmake  --build build`
+`cmake --build build`
 
 **Optional:** Symmlink compile_commands.json if you use clang based tooling in your IDE/Editor
 

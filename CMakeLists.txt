@@ -11,7 +11,7 @@ project(voxelscape
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS 1)
 
-file(GLOB sources CONFIGURE_DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/source/*.cpp)
+file(GLOB_RECURSE sources CONFIGURE_DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/source/*.cpp)
 
 add_executable("${CMAKE_PROJECT_NAME}" ${sources})
 
