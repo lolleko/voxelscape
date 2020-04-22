@@ -13,7 +13,12 @@
             "args": [],
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}",
-            "environment": [],
+            "environment": [
+                {
+                    "name": "Display",
+                    "value": ":0"
+                }
+            ],
             "externalConsole": false,
             "MIMode": "lldb"
         }
