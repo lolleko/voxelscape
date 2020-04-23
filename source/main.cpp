@@ -83,7 +83,7 @@ int main(int, char**)
     GLuint lightPosID = glGetUniformLocation(programID, "lightPos");
     GLuint lightColorID = glGetUniformLocation(programID, "lightColor");
 
-    auto testCube = VSCube();
+    VSCube *testCube = new VSCube();
 
     // Main loop
     while (glfwWindowShouldClose(window) == 0)
@@ -114,7 +114,7 @@ int main(int, char**)
             glm::vec3(0, 1, 0)   // Head is up (set to 0,-1,0 to look upside-down)
         );
 
-        glm::mat4 Model = testCube.getLocalToWorld();
+        glm::mat4 Model = testCube->getLocalToWorld();
         glm::mat4 MVP = Projection * View * Model;
 
         glUseProgram(programID);
@@ -129,7 +129,7 @@ int main(int, char**)
         // Light inside camera for now
         glUniform3fv(lightColorID, 1, &uiState->lightColor[0]);
 
-        testCube.draw();
+        testCube->draw();
 
         UI.draw();
         glfwSwapBuffers(window);
