@@ -2,4 +2,10 @@
 
 #include "glad/glad.h"
 
-GLuint VSLoadShaders(const char* vertex_file_path, const char* fragment_file_path);
+#include <map>
+#include <string>
+#include <filesystem>
+
+std::map<std::string, GLuint> VSLoadShaders(const char* shaderDirectory);
+
+GLuint VSCompileShader(std::filesystem::path shaderPath, GLenum shaderType);
