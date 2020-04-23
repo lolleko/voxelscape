@@ -10,6 +10,7 @@
 #include "vs_ui.h"
 #include "vs_ui_state.h"
 #include "vs_cube.h"
+#include "vs_camera.h"
 
 static void glfw_error_callback(int error, const char* description)
 {
@@ -84,6 +85,7 @@ int main(int, char**)
     GLuint lightColorID = glGetUniformLocation(programID, "lightColor");
 
     VSCube *testCube = new VSCube();
+    VSCamera *cam = new VSCamera();
 
     // Main loop
     while (glfwWindowShouldClose(window) == 0)
@@ -108,11 +110,12 @@ int main(int, char**)
         glm::mat4 Projection =
             glm::perspective(glm::radians(45.0f), (float)width / (float)height, 0.1f, 100.0f);
 
-        glm::mat4 View = glm::lookAt(
-            uiState->cameraPos,  // Camera is at (4,3,3), in World Space
-            glm::vec3(0, 0, 0),  // and looks at the origin
-            glm::vec3(0, 1, 0)   // Head is up (set to 0,-1,0 to look upside-down)
-        );
+        glm::mat4 View = cam->updateCameraFromInputs(window);
+        // glm::mat4 View = glm::lookAt(
+        //     uiState->cameraPos,  // Camera is at (4,3,3), in World Space
+        //     glm::vec3(0, 0, 0),  // and looks at the origin
+        //     glm::vec3(0, 1, 0)   // Head is up (set to 0,-1,0 to look upside-down)
+        // );
 
         glm::mat4 Model = testCube->getLocalToWorld();
         glm::mat4 MVP = Projection * View * Model;

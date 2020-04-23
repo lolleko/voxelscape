@@ -1,10 +1,5 @@
 #include "vs_shader_loader.h"
 
-#include <iostream>
-#include <fstream>
-#include <sstream>
-#include <vector>
-
 std::map<std::string, GLuint> VSLoadShaders(const char* shaderDirectory)
 {
     auto shaderNameToProgramID = std::map<std::string, GLuint>();
