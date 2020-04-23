@@ -3,6 +3,8 @@
 // Include glfw3.h after our OpenGL definitions
 #include <GLFW/glfw3.h>
 #include <iostream>
+#include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
 
 #include "vs_shader_loader.h"
 #include "vs_ui.h"
@@ -40,8 +42,11 @@ int main(int, char**)
 #endif
 
     // Create window with graphics context
+    const auto width = 1280;
+    const auto height = 720;
+
     GLFWwindow* window =
-        glfwCreateWindow(1280, 720, "Dear ImGui GLFW+OpenGL3 example", nullptr, nullptr);
+        glfwCreateWindow(width, height, "Dear ImGui GLFW+OpenGL3 example", nullptr, nullptr);
     if (window == nullptr)
     {
         return 1;
@@ -94,6 +99,32 @@ int main(int, char**)
         "shaders/vertex/SimpleVertexShader.glsl", "shaders/fragment/SimpleFragmentShader.glsl");
     // END Tutorial 2
 
+    // START http://www.opengl-tutorial.org/beginners-tutorials/tutorial-3-matrices/
+    // Projection matrix : 45° Field of View, 4:3 ratio, display range : 0.1 unit <-> 100 units
+    glm::mat4 Projection =
+        glm::perspective(glm::radians(45.0f), (float)width / (float)height, 0.1f, 100.0f);
+
+    // Or, for an ortho camera :
+    // glm::mat4 Projection = glm::ortho(-10.0f, 10.0f, -10.0f, 10.0f, 0.0f, 100.0f);  // In world
+    // coordinates
+
+    // Camera matrix
+    glm::mat4 View = glm::lookAt(
+        glm::vec3(4, 3, 3),  // Camera is at (4,3,3), in World Space
+        glm::vec3(0, 0, 0),  // and looks at the origin
+        glm::vec3(0, 1, 0)   // Head is up (set to 0,-1,0 to look upside-down)
+    );
+
+    // Model matrix : an identity matrix (model will be at the origin)
+    glm::mat4 Model = glm::mat4(1.0f);
+    // Our ModelViewProjection : multiplication of our 3 matrices
+    glm::mat4 MVP =
+        Projection * View * Model;  // Remember, matrix multiplication is the other way around
+
+    // Get a handle for our "MVP" uniform
+    GLuint MatrixID = glGetUniformLocation(programID, "MVP");
+    // END Tutorial 3
+
     // Main loop
     while (glfwWindowShouldClose(window) == 0)
     {
@@ -111,6 +142,13 @@ int main(int, char**)
 
         // START http://www.opengl-tutorial.org/beginners-tutorials/tutorial-2-the-first-triangle/
         glUseProgram(programID);
+
+        // START Tutorial 3
+        // Send our transformation to the currently bound shader, in the "MVP" uniform
+        // This is done in the main loop since each model will have a different MVP matrix (At least
+        // for the M part)
+        glUniformMatrix4fv(MatrixID, 1, GL_FALSE, &MVP[0][0]);
+        // END Tutorial 3
 
         // 1st attribute buffer : vertices
         glEnableVertexAttribArray(0);
