@@ -39,7 +39,5 @@ target_link_libraries("${CMAKE_PROJECT_NAME}" PRIVATE imgui::imgui)
 find_package(EnTT CONFIG REQUIRED)
 target_link_libraries("${CMAKE_PROJECT_NAME}" PRIVATE EnTT::EnTT)
 
-target_link_libraries("${CMAKE_PROJECT_NAME}" PRIVATE stdc++fs)
-
 # Copy shaders to build directory
 add_custom_command(TARGET "${CMAKE_PROJECT_NAME}" PRE_BUILD COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_SOURCE_DIR}/shaders/ ${CMAKE_BINARY_DIR}/shaders)

@@ -15,7 +15,7 @@ jobs:
 
     steps:
       - uses: actions/checkout@v2
-      - run: sudo apt install libxinerama-dev libxcursor-dev xorg-dev libglu1-mesa-dev
+      - run: sudo apt install libxinerama-dev libxcursor-dev xorg-dev libglu1-mesa-dev && sudo update-alternatives --set c++ /usr/bin/clang++-9
         if: matrix.os == 'ubuntu-latest'
       - run: echo "::set-env name=VCPKG_DEFAULT_TRIPLET::x64-windows"
         if: matrix.os == 'windows-latest'
