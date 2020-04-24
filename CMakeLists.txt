@@ -1,9 +1,5 @@
 cmake_minimum_required(VERSION 3.5 FATAL_ERROR)
 
-if(UNIX AND NOT APPLE)
-  set(LINUX TRUE)
-endif()
-
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 if(DEFINED ENV{VCPKG_INSTALLATION_ROOT} AND NOT DEFINED CMAKE_TOOLCHAIN_FILE)
@@ -42,10 +38,6 @@ target_link_libraries("${CMAKE_PROJECT_NAME}" PRIVATE imgui::imgui)
 
 find_package(EnTT CONFIG REQUIRED)
 target_link_libraries("${CMAKE_PROJECT_NAME}" PRIVATE EnTT::EnTT)
-
-if(LINUX)
-  target_link_libraries("${CMAKE_PROJECT_NAME}" PRIVATE stdc++fs)
-endif()
 
 # Copy shaders to build directory
 add_custom_command(TARGET "${CMAKE_PROJECT_NAME}" PRE_BUILD COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_SOURCE_DIR}/shaders/ ${CMAKE_BINARY_DIR}/shaders)
