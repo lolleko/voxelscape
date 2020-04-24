@@ -48,12 +48,9 @@ void VSUI::render()
         ImGui::DragFloat3("camera pos", (float*)&uiState->cameraPos);
         ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
 
-        ImGui::TextColored(ImVec4(1, 1, 0, 1), "Shader Compile Log");
+        ImGui::TextColored(ImVec4(1, 1, 0, 1), "Log");
         ImGui::BeginChild("Scrolling");
-        for (const auto& shaderLogEntry : uiState->shaderLog)
-        {
-            ImGui::Text("%s", shaderLogEntry.c_str());
-        }
+        ImGui::Text("%s", uiState->logStream.str().c_str());
         ImGui::EndChild();
     }
 
@@ -67,6 +64,11 @@ void VSUI::draw()
 }
 
 const VSUIState* VSUI::getState()
+{
+    return uiState;
+}
+
+VSUIState* VSUI::getMutableState()
 {
     return uiState;
 }

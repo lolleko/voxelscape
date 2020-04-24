@@ -18,6 +18,8 @@ public:
 
     const VSUIState* getState();
 
+    VSUIState* getMutableState();
+
 private:
     VSUIState* uiState;
 };

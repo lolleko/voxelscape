@@ -2,6 +2,7 @@
 
 // Include glfw3.h after our OpenGL definitions
 #include <GLFW/glfw3.h>
+#include <spdlog/common.h>
 #include <iostream>
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
@@ -11,6 +12,8 @@
 #include "vs_ui_state.h"
 #include "vs_cube.h"
 #include "vs_camera.h"
+
+#include "vs_log.h"
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void mouse_callback(GLFWwindow* window, double xpos, double ypos);
@@ -66,10 +69,15 @@ int main(int, char**)
     const auto width = 1280;
     const auto height = 720;
 
-    GLFWwindow* window =
-        glfwCreateWindow(width, height, "Dear ImGui GLFW+OpenGL3 example", nullptr, nullptr);
+    VSUI UI;
+    // initialize logger
+    VSLog::init(UI.getMutableState()->logStream);
+    VSLog::Log(VSLog::Category::Core, VSLog::Level::info, "Succesfully initialized logger");
+
+    GLFWwindow* window = glfwCreateWindow(width, height, "Voxelscape", nullptr, nullptr);
     if (window == nullptr)
     {
+        VSLog::Log(VSLog::Category::Core, VSLog::Level::critical, "Failed to create GLFW window");
         return 1;
     }
     glfwMakeContextCurrent(window);
@@ -78,27 +86,32 @@ int main(int, char**)
     glfwSetScrollCallback(window, scroll_callback);
     glfwSwapInterval(1);  // Enable vsync
 
-    bool err = gladLoadGL() == 0;
+    VSLog::Log(
+        VSLog::Category::Core,
+        VSLog::Level::info,
+        "Succesfully setup GLFW window and opengl context");
 
+    bool err = gladLoadGL() == 0;
     if (err)
     {
-        std::cerr << "Failed to initialize OpenGL loader!\n";
+        VSLog::Log(
+            VSLog::Category::Core, VSLog::Level::critical, "Failed to initialize OpenGL loader");
         return 1;
     }
+    VSLog::Log(VSLog::Category::Core, VSLog::Level::info, "Succesfully initialized OpenGL loader");
 
-    VSUI UI;
     // Setup Dear ImGui context
     UI.setup(glsl_version, window);
 
     const auto* uiState = UI.getState();
 
     glEnable(GL_DEPTH_TEST);
-
     glDepthFunc(GL_LESS);
 
     const auto cubeShader = VSShader("Cube");
-
     VSCube* testCube = new VSCube();
+
+    VSLog::Log(VSLog::Category::Core, VSLog::Level::info, "Starting main loop");
 
     // Main loop
     while (glfwWindowShouldClose(window) == 0)

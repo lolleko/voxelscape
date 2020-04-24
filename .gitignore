@@ -2,3 +2,4 @@
 .DS_Store
 .clangd
 imgui.ini
+*.log

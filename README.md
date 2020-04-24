@@ -13,7 +13,7 @@ cd vcpkg
 
 **Install packages**
 
-`./vcpkg install glad glfw3 glm entt imgui`
+`./vcpkg install glad glfw3 glm imgui spdlog`
 
 ## Build:
 
