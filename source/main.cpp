@@ -6,7 +6,7 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
-#include "vs_shader_loader.h"
+#include "vs_shader.h"
 #include "vs_ui.h"
 #include "vs_ui_state.h"
 #include "vs_cube.h"
@@ -15,7 +15,7 @@
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void mouse_callback(GLFWwindow* window, double xpos, double ypos);
 void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
-void processInput(GLFWwindow *window);
+void processInput(GLFWwindow* window);
 
 static void glfw_error_callback(int error, const char* description)
 {
@@ -33,7 +33,7 @@ float lastY = SCR_HEIGHT / 2.0f;
 bool firstMouse = true;
 
 // timing
-float deltaTime = 0.0f;	// time between current frame and last frame
+float deltaTime = 0.0f;  // time between current frame and last frame
 float lastFrame = 0.0f;
 
 int main(int, char**)
@@ -96,9 +96,9 @@ int main(int, char**)
 
     glDepthFunc(GL_LESS);
 
-    const auto shaderMap = VSLoadShaders("shaders");
-    const auto programID = shaderMap.at("Cube");
+    const auto cubeShader = VSShader("Cube");
 
+<<<<<<< HEAD
     GLuint MVPID = glGetUniformLocation(programID, "MVP");
 
     GLuint modelID = glGetUniformLocation(programID, "model");
@@ -107,6 +107,9 @@ int main(int, char**)
     GLuint lightColorID = glGetUniformLocation(programID, "lightColor");
 
     VSCube *testCube = new VSCube();
+=======
+    VSCube* testCube = new VSCube();
+>>>>>>> c5a5cb9c57504f291dca6c75f409f0b57029e35b
 
     // Main loop
     while (glfwWindowShouldClose(window) == 0)
@@ -139,8 +142,9 @@ int main(int, char**)
         // TODO move ot extra function only recalc if needed
         // shader stuff should be abstracted and controlled by cube?
         // glm::mat4 Projection =
-            // glm::perspective(glm::radians(45.0f), (float)width / (float)height, 0.1f, 100.0f);
-        glm::mat4 Projection = glm::perspective(glm::radians(camera.zoom), (float)width / (float)height, 0.1f, 100.0f);
+        // glm::perspective(glm::radians(45.0f), (float)width / (float)height, 0.1f, 100.0f);
+        glm::mat4 Projection =
+            glm::perspective(glm::radians(camera.zoom), (float)width / (float)height, 0.1f, 100.0f);
 
         // glm::mat4 View = cam->updateCameraFromInputs(window);
         glm::mat4 View = camera.getViewMatrix();
@@ -153,19 +157,11 @@ int main(int, char**)
         glm::mat4 Model = testCube->getLocalToWorld();
         glm::mat4 MVP = Projection * View * Model;
 
-        glUseProgram(programID);
-
-        glUniformMatrix4fv(MVPID, 1, GL_FALSE, &MVP[0][0]);
-
-        glUniformMatrix4fv(modelID, 1, GL_FALSE, &Model[0][0]);
-
-        // Light inside camera for now
-        glUniform3fv(lightPosID, 1, &uiState->lightPos[0]);
-
-        // Light inside camera for now
-        glUniform3fv(lightColorID, 1, &uiState->lightColor[0]);
-
-        testCube->draw();
+        cubeShader.setVec3("lightPos", uiState->lightPos);
+        cubeShader.setVec3("lightColor", uiState->lightColor);
+        cubeShader.setMat4("model", Model);
+        cubeShader.setMat4("MVP", MVP);
+        testCube->draw(&cubeShader);
 
         UI.draw();
         glfwSwapBuffers(window);
@@ -180,9 +176,10 @@ int main(int, char**)
     return 0;
 }
 
-// process all input: query GLFW whether relevant keys are pressed/released this frame and react accordingly
+// process all input: query GLFW whether relevant keys are pressed/released this frame and react
+// accordingly
 // ---------------------------------------------------------------------------------------------------------
-void processInput(GLFWwindow *window)
+void processInput(GLFWwindow* window)
 {
     if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
         glfwSetWindowShouldClose(window, true);
@@ -201,7 +198,7 @@ void processInput(GLFWwindow *window)
 // ---------------------------------------------------------------------------------------------
 void framebuffer_size_callback(GLFWwindow* window, int width, int height)
 {
-    // make sure the viewport matches the new window dimensions; note that width and 
+    // make sure the viewport matches the new window dimensions; note that width and
     // height will be significantly larger than specified on retina displays.
     glViewport(0, 0, width, height);
 }
@@ -218,7 +215,7 @@ void mouse_callback(GLFWwindow* window, double xpos, double ypos)
     }
 
     float xoffset = xpos - lastX;
-    float yoffset = lastY - ypos; // reversed since y-coordinates go from bottom to top
+    float yoffset = lastY - ypos;  // reversed since y-coordinates go from bottom to top
 
     lastX = xpos;
     lastY = ypos;
