@@ -107,7 +107,6 @@ int main(int, char**)
     GLuint lightColorID = glGetUniformLocation(programID, "lightColor");
 
     VSCube *testCube = new VSCube();
-    // VSCamera *cam = new VSCamera();
 
     // Main loop
     while (glfwWindowShouldClose(window) == 0)
@@ -141,10 +140,10 @@ int main(int, char**)
         // shader stuff should be abstracted and controlled by cube?
         // glm::mat4 Projection =
             // glm::perspective(glm::radians(45.0f), (float)width / (float)height, 0.1f, 100.0f);
-        glm::mat4 Projection = glm::perspective(glm::radians(camera.Zoom), (float)width / (float)height, 0.1f, 100.0f);
+        glm::mat4 Projection = glm::perspective(glm::radians(camera.zoom), (float)width / (float)height, 0.1f, 100.0f);
 
         // glm::mat4 View = cam->updateCameraFromInputs(window);
-        glm::mat4 View = camera.GetViewMatrix();
+        glm::mat4 View = camera.getViewMatrix();
         // glm::mat4 View = glm::lookAt(
         //     uiState->cameraPos,  // Camera is at (4,3,3), in World Space
         //     glm::vec3(0, 0, 0),  // and looks at the origin
@@ -189,13 +188,13 @@ void processInput(GLFWwindow *window)
         glfwSetWindowShouldClose(window, true);
 
     if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
-        camera.ProcessKeyboard(FORWARD, deltaTime);
+        camera.processKeyboard(FORWARD, deltaTime);
     if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
-        camera.ProcessKeyboard(BACKWARD, deltaTime);
+        camera.processKeyboard(BACKWARD, deltaTime);
     if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
-        camera.ProcessKeyboard(LEFT, deltaTime);
+        camera.processKeyboard(LEFT, deltaTime);
     if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
-        camera.ProcessKeyboard(RIGHT, deltaTime);
+        camera.processKeyboard(RIGHT, deltaTime);
 }
 
 // glfw: whenever the window size changed (by OS or user resize) this callback function executes
@@ -224,12 +223,12 @@ void mouse_callback(GLFWwindow* window, double xpos, double ypos)
     lastX = xpos;
     lastY = ypos;
 
-    camera.ProcessMouseMovement(xoffset, yoffset);
+    camera.processMouseMovement(xoffset, yoffset);
 }
 
 // glfw: whenever the mouse scroll wheel scrolls, this callback is called
 // ----------------------------------------------------------------------
 void scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
 {
-    camera.ProcessMouseScroll(yoffset);
+    camera.processMouseScroll(yoffset);
 }
