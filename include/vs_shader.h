@@ -8,6 +8,7 @@
 #include <sstream>
 #include <iostream>
 #include <vector>
+#include <filesystem>
 
 class VSShader
 {

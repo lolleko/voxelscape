@@ -98,18 +98,7 @@ int main(int, char**)
 
     const auto cubeShader = VSShader("Cube");
 
-<<<<<<< HEAD
-    GLuint MVPID = glGetUniformLocation(programID, "MVP");
-
-    GLuint modelID = glGetUniformLocation(programID, "model");
-
-    GLuint lightPosID = glGetUniformLocation(programID, "lightPos");
-    GLuint lightColorID = glGetUniformLocation(programID, "lightColor");
-
-    VSCube *testCube = new VSCube();
-=======
     VSCube* testCube = new VSCube();
->>>>>>> c5a5cb9c57504f291dca6c75f409f0b57029e35b
 
     // Main loop
     while (glfwWindowShouldClose(window) == 0)
