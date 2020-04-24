@@ -46,6 +46,7 @@ void VSUI::render()
         ImGui::DragFloat3("light pos", (float*)&uiState->lightPos);
         ImGui::ColorEdit3("light color", (float*)&uiState->lightColor);
         ImGui::DragFloat3("camera pos", (float*)&uiState->cameraPos);
+        ImGui::Text("Application average %.3f ms/frame (%.1f FPS)", 1000.0f / ImGui::GetIO().Framerate, ImGui::GetIO().Framerate);
     }
 
     // Rendering
