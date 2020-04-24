@@ -46,6 +46,14 @@ void VSUI::render()
         ImGui::DragFloat3("light pos", (float*)&uiState->lightPos);
         ImGui::ColorEdit3("light color", (float*)&uiState->lightColor);
         ImGui::DragFloat3("camera pos", (float*)&uiState->cameraPos);
+
+        ImGui::TextColored(ImVec4(1, 1, 0, 1), "Shader Compile Log");
+        ImGui::BeginChild("Scrolling");
+        for (const auto& shaderLogEntry : uiState->shaderLog)
+        {
+            ImGui::Text("%s", shaderLogEntry.c_str());
+        }
+        ImGui::EndChild();
     }
 
     // Rendering

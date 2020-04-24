@@ -1,6 +1,7 @@
 #pragma once
 
 #include "glad/glad.h"
+#include "vs_shader.h"
 
 #include <glm/glm.hpp>
 
@@ -58,8 +59,9 @@ public:
         glDeleteVertexArrays(1, &vertexArrayObject);
     }
 
-    void draw() const
+    void draw(const VSShader* shader) const
     {
+        shader->use();
         glBindVertexArray(vertexArrayObject);
         glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_BYTE, nullptr);
         glBindVertexArray(0);
