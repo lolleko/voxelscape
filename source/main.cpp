@@ -131,6 +131,15 @@ int main(int, char**)
 
         glfwPollEvents();
 
+        if (uiState->isWireframeModeEnabled)
+        {
+            glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+        }
+        else
+        {
+            glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+        }
+
         // Start the Dear ImGui frame
         UI.render();
         auto display_w = 0;
