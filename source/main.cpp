@@ -159,13 +159,13 @@ int main(int, char**)
         //     glm::vec3(0, 1, 0)   // Head is up (set to 0,-1,0 to look upside-down)
         // );
 
-        glm::mat4 Model = testCube->getLocalToWorld();
+        glm::mat4 Model = glm::mat4(1.f);
         glm::mat4 MVP = Projection * View * Model;
 
         meshShader.setVec3("lightPos", uiState->lightPos);
         meshShader.setVec3("lightColor", uiState->lightColor);
         meshShader.setVec3("viewPos", camera.position);
-        cubeShader.setMat4("model", Model);
+        meshShader.setMat4("model", Model);
         meshShader.setMat4("MVP", MVP);
         testModel.draw(&meshShader);
 
