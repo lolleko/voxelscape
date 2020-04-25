@@ -51,7 +51,7 @@ message("ASSIMP_ZLIB_LIBRARY   = " "${ASSIMP_ZLIB_LIBRARY}")
 message("ASSIMP_IRRXML_LIBRARY = " "${ASSIMP_IRRXML_LIBRARY}")
 
 target_link_libraries("${CMAKE_PROJECT_NAME}" PRIVATE 
-  assimp
+  assimp::assimp
   ${ASSIMP_ZLIB_LIBRARY}
   ${ASSIMP_IRRXML_LIBRARY}
 )
