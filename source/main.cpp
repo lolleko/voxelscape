@@ -15,6 +15,8 @@
 
 #include "vs_log.h"
 
+#include "vs_model.h"
+
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void mouse_callback(GLFWwindow* window, double xpos, double ypos);
 void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
@@ -108,8 +110,9 @@ int main(int, char**)
     glEnable(GL_DEPTH_TEST);
     glDepthFunc(GL_LESS);
 
-    const auto cubeShader = VSShader("Cube");
-    VSCube* testCube = new VSCube();
+    const auto testModel = VSModel("monkey.obj");
+
+    auto meshShader = VSShader("Mesh");
 
     VSLog::Log(VSLog::Category::Core, VSLog::Level::info, "Starting main loop");
 
@@ -159,11 +162,12 @@ int main(int, char**)
         glm::mat4 Model = testCube->getLocalToWorld();
         glm::mat4 MVP = Projection * View * Model;
 
-        cubeShader.setVec3("lightPos", uiState->lightPos);
-        cubeShader.setVec3("lightColor", uiState->lightColor);
+        meshShader.setVec3("lightPos", uiState->lightPos);
+        meshShader.setVec3("lightColor", uiState->lightColor);
+        meshShader.setVec3("viewPos", camera.position);
         cubeShader.setMat4("model", Model);
-        cubeShader.setMat4("MVP", MVP);
-        testCube->draw(&cubeShader);
+        meshShader.setMat4("MVP", MVP);
+        testModel.draw(&meshShader);
 
         UI.draw();
         glfwSwapBuffers(window);

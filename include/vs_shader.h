@@ -47,13 +47,18 @@ public:
         }
         glLinkProgram(ID);
 
-        checkCompileErrors(ID, GL_PROGRAM);
+        checkProgramLinkErrors(ID);
 
         glDetachShader(ID, vertexShaderID);
         glDetachShader(ID, fragmentShaderID);
 
         glDeleteShader(vertexShaderID);
         glDeleteShader(fragmentShaderID);
+    }
+
+    GLuint getID() const
+    {
+        return ID;
     }
 
     void use() const
@@ -93,31 +98,46 @@ private:
     inline static const auto vertexDir = shaderDirectory / "vertex";
     inline static const auto fragmentDir = shaderDirectory / "fragment";
 
-    static bool checkCompileErrors(unsigned int shader, GLenum type)
+    static bool checkShaderCompileErrors(unsigned int shaderID)
     {
         int success = 1;
         int infoLogLength = 0;
-        glGetShaderiv(shader, GL_INFO_LOG_LENGTH, &infoLogLength);
+
+        glGetShaderiv(shaderID, GL_COMPILE_STATUS, &success);
+        glGetShaderiv(shaderID, GL_INFO_LOG_LENGTH, &infoLogLength);
+
         std::vector<char> infoLog(infoLogLength + 1);
 
-        if (type != GL_PROGRAM)
-        {
-            glGetShaderiv(shader, GL_COMPILE_STATUS, &success);
-        }
-        else
-        {
-            glGetProgramiv(shader, GL_LINK_STATUS, &success);
-        }
         if (success == 0)
         {
-            std::string typeString = type == GL_SHADER ? "Compilation of Shader" : "Linking of Program";
-
-            glGetShaderInfoLog(shader, 1024, nullptr, &infoLog[0]);
+            glGetShaderInfoLog(shaderID, 1024, nullptr, &infoLog[0]);
             VSLog::Log(
                 VSLog::Category::Shader,
                 VSLog::Level::critical,
-                "{} failed:\n{}",
-                typeString,
+                "Shader compilation failed:\n{}",
+                &infoLog[0]);
+        }
+
+        return success == 0;
+    }
+
+    static bool checkProgramLinkErrors(unsigned int programID)
+    {
+        int success = 1;
+        int infoLogLength = 0;
+
+        glGetProgramiv(programID, GL_LINK_STATUS, &success);
+        glGetProgramiv(programID, GL_INFO_LOG_LENGTH, &infoLogLength);
+
+        std::vector<char> infoLog(infoLogLength + 1);
+
+        if (success == 0)
+        {
+            glGetProgramInfoLog(programID, 1024, nullptr, &infoLog[0]);
+            VSLog::Log(
+                VSLog::Category::Shader,
+                VSLog::Level::critical,
+                "Progam linking failed:\n{}",
                 &infoLog[0]);
         }
 
@@ -143,13 +163,14 @@ private:
         glShaderSource(shaderID, 1, &shaderSourcePointer, nullptr);
         glCompileShader(shaderID);
 
-        const auto hadCompileError = checkCompileErrors(shaderID, GL_SHADER);
-        if (!hadCompileError) {
-                    VSLog::Log(
-            VSLog::Category::Shader,
-            VSLog::Level::info,
-            "Succesfully compiled shader: {}",
-            shaderPath.c_str());
+        const auto hadCompileError = checkShaderCompileErrors(shaderID);
+        if (!hadCompileError)
+        {
+            VSLog::Log(
+                VSLog::Category::Shader,
+                VSLog::Level::info,
+                "Succesfully compiled shader: {}",
+                shaderPath.c_str());
         }
 
         return shaderID;

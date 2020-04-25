@@ -39,5 +39,25 @@ target_link_libraries("${CMAKE_PROJECT_NAME}" PRIVATE imgui::imgui)
 find_package(spdlog CONFIG REQUIRED)
 target_link_libraries("${CMAKE_PROJECT_NAME}" PRIVATE spdlog::spdlog spdlog::spdlog_header_only)
 
+# https://github.com/microsoft/vcpkg/issues/9918
+# find_package(assimp CONFIG REQUIRED)
+# target_link_libraries("${CMAKE_PROJECT_NAME}" PRIVATE assimp::assimp)
+
+find_package(assimp CONFIG REQUIRED)
+find_library(ASSIMP_ZLIB_LIBRARY z)
+find_library(ASSIMP_IRRXML_LIBRARY IrrXML)
+
+message("ASSIMP_ZLIB_LIBRARY   = " "${ASSIMP_ZLIB_LIBRARY}")
+message("ASSIMP_IRRXML_LIBRARY = " "${ASSIMP_IRRXML_LIBRARY}")
+
+target_link_libraries("${CMAKE_PROJECT_NAME}" PRIVATE 
+  assimp::assimp
+  ${ASSIMP_ZLIB_LIBRARY}
+  ${ASSIMP_IRRXML_LIBRARY}
+)
+
+find_package(stb CONFIG REQUIRED)
+include_directories(${Stb_INCLUDE_DIR})
+
 # Copy shaders to build directory
 add_custom_command(TARGET "${CMAKE_PROJECT_NAME}" PRE_BUILD COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_SOURCE_DIR}/shaders/ ${CMAKE_BINARY_DIR}/shaders)
