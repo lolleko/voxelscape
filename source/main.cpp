@@ -12,10 +12,9 @@
 #include "vs_ui_state.h"
 #include "vs_cube.h"
 #include "vs_camera.h"
-
 #include "vs_log.h"
-
 #include "vs_model.h"
+#include "vs_skybox.h"
 #include "vs_textureloader.h"
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
@@ -112,70 +111,10 @@ int main(int, char**)
     glDepthFunc(GL_LESS);
 
     const auto testModel = VSModel("monkey.obj");
-
-    // Load cubemap texture
-    float skyboxVertices[] = {
-        // positions          
-        -1.0f,  1.0f, -1.0f,
-        -1.0f, -1.0f, -1.0f,
-         1.0f, -1.0f, -1.0f,
-         1.0f, -1.0f, -1.0f,
-         1.0f,  1.0f, -1.0f,
-        -1.0f,  1.0f, -1.0f,
-
-        -1.0f, -1.0f,  1.0f,
-        -1.0f, -1.0f, -1.0f,
-        -1.0f,  1.0f, -1.0f,
-        -1.0f,  1.0f, -1.0f,
-        -1.0f,  1.0f,  1.0f,
-        -1.0f, -1.0f,  1.0f,
-
-         1.0f, -1.0f, -1.0f,
-         1.0f, -1.0f,  1.0f,
-         1.0f,  1.0f,  1.0f,
-         1.0f,  1.0f,  1.0f,
-         1.0f,  1.0f, -1.0f,
-         1.0f, -1.0f, -1.0f,
-
-        -1.0f, -1.0f,  1.0f,
-        -1.0f,  1.0f,  1.0f,
-         1.0f,  1.0f,  1.0f,
-         1.0f,  1.0f,  1.0f,
-         1.0f, -1.0f,  1.0f,
-        -1.0f, -1.0f,  1.0f,
-
-        -1.0f,  1.0f, -1.0f,
-         1.0f,  1.0f, -1.0f,
-         1.0f,  1.0f,  1.0f,
-         1.0f,  1.0f,  1.0f,
-        -1.0f,  1.0f,  1.0f,
-        -1.0f,  1.0f, -1.0f,
-
-        -1.0f, -1.0f, -1.0f,
-        -1.0f, -1.0f,  1.0f,
-         1.0f, -1.0f, -1.0f,
-         1.0f, -1.0f, -1.0f,
-        -1.0f, -1.0f,  1.0f,
-         1.0f, -1.0f,  1.0f
-    };
-
-    // skybox VAO
-    unsigned int skyboxVAO, skyboxVBO;
-    glGenVertexArrays(1, &skyboxVAO);
-    glGenBuffers(1, &skyboxVBO);
-    glBindVertexArray(skyboxVAO);
-    glBindBuffer(GL_ARRAY_BUFFER, skyboxVBO);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(skyboxVertices), &skyboxVertices, GL_STATIC_DRAW);
-    glEnableVertexAttribArray(0);
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
-
-    // load textures
-    unsigned int cubemapTexture = loadSkyboxCubemap();
+    const auto skybox = VSSkybox();
 
     auto meshShader = VSShader("Mesh");
     auto skyboxShader = VSShader("Skybox");
-    skyboxShader.use();
-    skyboxShader.setInt("skybox", 0);
 
     VSLog::Log(VSLog::Category::Core, VSLog::Level::info, "Starting main loop");
 
@@ -218,18 +157,10 @@ int main(int, char**)
         // recalc camera mvp
         // TODO move ot extra function only recalc if needed
         // shader stuff should be abstracted and controlled by cube?
-        // glm::mat4 Projection =
-        // glm::perspective(glm::radians(45.0f), (float)width / (float)height, 0.1f, 100.0f);
         glm::mat4 Projection =
             glm::perspective(glm::radians(camera.zoom), (float)width / (float)height, 0.1f, 100.0f);
 
-        // glm::mat4 View = cam->updateCameraFromInputs(window);
         glm::mat4 View = camera.getViewMatrix();
-        // glm::mat4 View = glm::lookAt(
-        //     uiState->cameraPos,  // Camera is at (4,3,3), in World Space
-        //     glm::vec3(0, 0, 0),  // and looks at the origin
-        //     glm::vec3(0, 1, 0)   // Head is up (set to 0,-1,0 to look upside-down)
-        // );
 
         glm::mat4 Model = glm::mat4(1.f);
         glm::mat4 MVP = Projection * View * Model;
@@ -243,18 +174,11 @@ int main(int, char**)
         testModel.draw(&meshShader);
 
         // draw skybox as last
-        glDepthFunc(GL_LEQUAL);  // change depth function so depth test passes when values are equal to depth buffer's content
-        skyboxShader.use();
         View = glm::mat4(glm::mat3(View)); // remove translation from the view matrix
+        skyboxShader.use();
         skyboxShader.setMat4("view", View);
         skyboxShader.setMat4("projection", Projection);
-        // skybox cube
-        glBindVertexArray(skyboxVAO);
-        glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_CUBE_MAP, cubemapTexture);
-        glDrawArrays(GL_TRIANGLES, 0, 36);
-        glBindVertexArray(0);
-        glDepthFunc(GL_LESS); // set depth function back to defaults
+        skybox.draw(&skyboxShader);
 
         UI.draw();
         glfwSwapBuffers(window);
