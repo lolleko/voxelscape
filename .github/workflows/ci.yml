@@ -20,5 +20,5 @@ jobs:
       - run: echo "::set-env name=VCPKG_DEFAULT_TRIPLET::x64-windows"
         if: matrix.os == 'windows-latest'
       - run: vcpkg install glad glfw3 glm entt imgui spdlog assimp stb
-      - run: cmake -Bbuild
+      - run: cmake -Bbuild -DCMAKE_BUILD_TYPE=DEBUG
       - run: cmake  --build build
