@@ -16,7 +16,7 @@
 #include "vs_model.h"
 #include "vs_skybox.h"
 #include "vs_textureloader.h"
-#include "vs_heightmapgenerator.h"
+#include "vs_heightmap.h"
 
 void framebufferSizeCallback(GLFWwindow* window, int width, int height);
 void mouseCallback(GLFWwindow* window, double xpos, double ypos);
@@ -53,8 +53,15 @@ int main(int, char**)
     }
 
     // Test Heightmap generation
-    // VSHeightmapGenerator *hmGenerator = new VSHeightmapGenerator();
-    // hmGenerator->generateHeightMap(16, 16);
+    // VSHeightmap *hm = new VSHeightmap();
+    // for (int i = 0; i < 10; i++)
+    // {
+    //     for (int j = 0; j < 10; j++)
+    //     {
+    //         std::cout << hm->getVoxelHeight(i, j) << " ";
+    //     }
+    //     std::cout << "\n";
+    // }
 
     // Decide GL+GLSL versions
 #if __APPLE__

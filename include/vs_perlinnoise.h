@@ -4,8 +4,6 @@
 
 // Source: https://solarianprogrammer.com/2012/07/18/perlin-noise-cpp-11/ 
 class VSPerlinNoise {
-    // Permutation vector
-    std::vector<int> p;
 public:
     // Initialize with the reference values for the permutation vector
     VSPerlinNoise();
@@ -18,6 +16,9 @@ public:
     double noise2d(double x, double y);
 	double noise3d(double x, double y, double z);
 private:
+    // Permutation vector
+    std::vector<int> p;
+    
 	double fade(double t);
 	double lerp(double t, double a, double b);
 	double grad(int hash, double x, double y, double z);

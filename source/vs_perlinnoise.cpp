@@ -18,7 +18,8 @@ VSPerlinNoise::VSPerlinNoise() {
 		43,172,9,129,22,39,253, 19,98,108,110,79,113,224,232,178,185, 112,104,218,246,
 		97,228,251,34,242,193,238,210,144,12,191,179,162,241, 81,51,145,235,249,14,239,
 		107,49,192,214, 31,181,199,106,157,184, 84,204,176,115,121,50,45,127, 4,150,254,
-		138,236,205,93,222,114,67,29,24,72,243,141,128,195,78,66,215,61,156,180 };
+		138,236,205,93,222,114,67,29,24,72,243,141,128,195,78,66,215,61,156,180 
+    };
 	// Duplicate the permutation vector
 	p.insert(p.end(), p.begin(), p.end());
 }
@@ -42,7 +43,7 @@ VSPerlinNoise::VSPerlinNoise(unsigned int seed) {
 
 double VSPerlinNoise::noise2d(double x, double y)
 {
-    return noise3d(x, y, 0.f);
+    return noise3d(x, y, 0.8f);
 }
 
 double VSPerlinNoise::noise3d(double x, double y, double z) {
