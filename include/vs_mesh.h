@@ -22,8 +22,8 @@ class VSMesh : public IVSDrawable
 {
 public:
     std::unique_ptr<VSVertexContext> vertexContext;
-
     std::vector<VSTexture> textures;
+
     VSMesh(std::unique_ptr<VSVertexContext> vertexContext, std::vector<VSTexture> textures)
         : vertexContext(std::move(vertexContext))
         , textures(std::move(textures)){};

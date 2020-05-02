@@ -1,4 +1,4 @@
-#pragma once 
+#pragma once
 
 unsigned int loadCubemap(std::vector<std::string> faces)
 {
@@ -9,12 +9,19 @@ unsigned int loadCubemap(std::vector<std::string> faces)
     int width, height, nrChannels;
     for (unsigned int i = 0; i < faces.size(); i++)
     {
-        unsigned char *data = stbi_load(faces[i].c_str(), &width, &height, &nrChannels, 0);
+        unsigned char* data = stbi_load(faces[i].c_str(), &width, &height, &nrChannels, 0);
         if (data)
         {
-            glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 
-                         0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data
-            );
+            glTexImage2D(
+                GL_TEXTURE_CUBE_MAP_POSITIVE_X + i,
+                0,
+                GL_RGB,
+                width,
+                height,
+                0,
+                GL_RGB,
+                GL_UNSIGNED_BYTE,
+                data);
             stbi_image_free(data);
         }
         else
@@ -30,39 +37,34 @@ unsigned int loadCubemap(std::vector<std::string> faces)
     glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
 
     return textureID;
-}  
+}
 
 unsigned int loadDebugCubemap()
 {
-    std::vector<std::string> faces {
+    std::vector<std::string> faces{
         "textures/cubemapDebug/right.jpg",
         "textures/cubemapDebug/left.jpg",
         "textures/cubemapDebug/top.jpg",
         "textures/cubemapDebug/bottom.jpg",
         "textures/cubemapDebug/front.jpg",
-        "textures/cubemapDebug/back.jpg"
-    };
+        "textures/cubemapDebug/back.jpg"};
     return loadCubemap(faces);
 }
 
 unsigned int loadSkyboxCubemap()
 {
-    std::vector<std::string> faces {
+    std::vector<std::string> faces{
         "textures/skybox/skybox_px.jpg",
         "textures/skybox/skybox_nx.jpg",
         "textures/skybox/skybox_py.jpg",
         "textures/skybox/skybox_ny.jpg",
         "textures/skybox/skybox_pz.jpg",
-        "textures/skybox/skybox_nz.jpg"
-    };
+        "textures/skybox/skybox_nz.jpg"};
     return loadCubemap(faces);
 }
 
-unsigned int TextureFromFile(const char* path, const std::string& directory, bool gamma = false)
+unsigned int TextureFromFile(std::string filename, bool gamma = false)
 {
-    std::string filename = std::string(path);
-    filename = directory + '/' + filename;
-
     unsigned int textureID;
     glGenTextures(1, &textureID);
 
@@ -91,7 +93,7 @@ unsigned int TextureFromFile(const char* path, const std::string& directory, boo
     }
     else
     {
-        std::cout << "Texture failed to load at path: " << path << std::endl;
+        std::cout << "Texture failed to load at path: " << filename << std::endl;
         stbi_image_free(data);
     }
 
