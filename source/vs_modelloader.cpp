@@ -34,11 +34,8 @@ std::unique_ptr<VSVertexContext> loadVertexContext(std::string const& path)
         std::cout << "ERROR::ASSIMP:: " << importer.GetErrorString() << std::endl;
         return {};
     }
-    std::vector<VSMesh> meshes;
-    // process ASSIMP's root node recursively
-    processNode(scene->mRootNode, scene, meshes);
 
-    return processMeshVertices(scene->mMeshes[scene->mRootNode->mMeshes[0]]);
+    return processMeshVertices(scene->mMeshes[0]);
 }
 
 void processNode(aiNode* node, const aiScene* scene, std::vector<VSMesh>& outMeshes)

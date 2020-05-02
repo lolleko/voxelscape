@@ -11,10 +11,8 @@ class VSChunk : public IVSDrawable
 {
 public:
     // Size can only be set on construction
-    VSChunk(size_t width, size_t depth, size_t height, VSBlockID defaultID)
-        : width(width)
-        , depth(depth)
-        , height(height)
+    VSChunk(const glm::vec3& size, VSBlockID defaultID)
+        : size(size)
     {
         blocks = new VSBlockID[getBlockCount()];
 
@@ -28,7 +26,13 @@ public:
 
     size_t getBlockCount() const
     {
-        return width * depth * height;
+        // depth, width, height
+        return size.z * size.x * size.y;
+    }
+
+    glm::vec3 getSize() const
+    {
+        return size;
     }
 
     void draw(std::shared_ptr<VSShader> shader) const override
@@ -41,9 +45,7 @@ public:
     };
 
 private:
-    size_t width;
-    size_t depth;
-    size_t height;
+    glm::vec3 size;
 
     std::unique_ptr<VSVertexContext> vertexContext;
 

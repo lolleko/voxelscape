@@ -19,9 +19,18 @@ out VertexData {
 uniform mat4 MVP;
 uniform mat4 model;
 
+uniform vec3 chunkSize;
+
 void main()
 {
-    gl_Position = MVP * vec4(inPosition + gl_InstanceID * vec3(0.0, 2.0, 0.0), 1.0);
+    int W = int(chunkSize.x);
+    int D = int(chunkSize.z);
+    int H = int(chunkSize.y);
+    int Y = gl_InstanceID / (W * D);
+    int Z = (gl_InstanceID - Y * W * D) / D;
+    int X = (gl_InstanceID - Y * W * D) % D;
+
+    gl_Position = MVP * vec4(inPosition + vec3(X, Y, Z) * 2, 1.0);
 
     o.worldPosition = vec3(model * vec4(inPosition, 1.0));
     o.normal = vec3(model * vec4(inNormal, 0.0));;

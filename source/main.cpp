@@ -19,6 +19,7 @@
 #include "vs_skybox.h"
 #include "vs_textureloader.h"
 #include "vs_heightmap.h"
+#include "vs_chunk.h"
 
 void framebufferSizeCallback(GLFWwindow* window, int width, int height);
 void mouseCallback(GLFWwindow* window, double xpos, double ypos);
@@ -128,13 +129,16 @@ int main(int, char**)
     glEnable(GL_CULL_FACE);
 
     auto monkeyModel = std::make_shared<VSModel>("monkey.obj");
-    auto skybox = std::make_shared<VSSkybox>();
-
     auto monkeyShader = std::make_shared<VSShader>("Monkey");
+
+    auto skybox = std::make_shared<VSSkybox>();
     auto skyboxShader = std::make_shared<VSShader>("Skybox");
 
+    auto chunk = std::make_shared<VSChunk>(glm::vec3(50, 50, 50), 0);
+    auto chunkShader = std::make_shared<VSShader>("Chunk");
+
     std::map<std::shared_ptr<IVSDrawable>, std::shared_ptr<VSShader>> drawables = {
-        {monkeyModel, monkeyShader}, {skybox, skyboxShader}};
+        {monkeyModel, monkeyShader}, {skybox, skyboxShader}, {chunk, chunkShader}};
 
     VSLog::Log(VSLog::Category::Core, VSLog::Level::info, "Starting main loop");
 
@@ -200,6 +204,15 @@ int main(int, char**)
             .setVec3("viewPos", camera.position)
             .setMat4("model", Model)
             .setMat4("MVP", MVP);
+
+        chunkShader->uniforms()
+            .setVec3("lightPos", uiState->lightPos)
+            .setVec3("lightColor", uiState->lightColor)
+            .setVec3("viewPos", camera.position)
+            .setVec3("chunkSize", chunk->getSize())
+            .setMat4("model", glm::scale(Model, glm::vec3(0.0625f, 0.0625f, 0.0625f)))
+            .setMat4(
+                "MVP", Projection * View * glm::scale(Model, glm::vec3(0.0625f, 0.0625f, 0.0625f)));
 
         // draw drawables
         for (const auto& [drawable, shader] : drawables)
