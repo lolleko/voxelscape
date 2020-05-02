@@ -59,12 +59,12 @@ unsigned int loadDebugCubemap()
 unsigned int loadSkyboxCubemap()
 {
     std::vector<std::string> faces{
-        "textures/skybox/skybox_px.jpg",
-        "textures/skybox/skybox_nx.jpg",
-        "textures/skybox/skybox_py.jpg",
-        "textures/skybox/skybox_ny.jpg",
-        "textures/skybox/skybox_pz.jpg",
-        "textures/skybox/skybox_nz.jpg"};
+        "textures/skybox/right.jpg",
+        "textures/skybox/left.jpg",
+        "textures/skybox/top.jpg",
+        "textures/skybox/bottom.jpg",
+        "textures/skybox/front.jpg",
+        "textures/skybox/back.jpg"};
     return loadCubemap(faces);
 }
 
