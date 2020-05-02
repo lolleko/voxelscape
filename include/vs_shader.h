@@ -60,17 +60,14 @@ public:
 
     VSShader(const char* name)
     {
-        const auto vertexDir = std::filesystem::path(shaderDirectory) / "vertex";
-        const auto fragmentDir = std::filesystem::path(shaderDirectory) / "fragment";
-
-        const auto vertexShaderPath = (vertexDir / name).replace_extension(".glsl");
+        const auto vertexShaderPath = (shaderDirectory / name).replace_extension(".vs");
 
         ID = glCreateProgram();
 
         GLuint vertexShaderID = compileShader(vertexShaderPath, GL_VERTEX_SHADER);
         glAttachShader(ID, vertexShaderID);
 
-        const auto fragmentShaderPath = (fragmentDir / vertexShaderPath.filename());
+        const auto fragmentShaderPath = (shaderDirectory / name).replace_extension(".fs");
 
         auto hasFragmentShader = false;
         GLuint fragmentShaderID = -1;
@@ -118,8 +115,6 @@ private:
     GLuint ID;
 
     inline static const auto shaderDirectory = std::filesystem::path("shaders");
-    inline static const auto vertexDir = shaderDirectory / "vertex";
-    inline static const auto fragmentDir = shaderDirectory / "fragment";
 
     static bool checkShaderCompileErrors(unsigned int shaderID)
     {

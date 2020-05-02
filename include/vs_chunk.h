@@ -4,6 +4,7 @@
 #include <memory>
 #include "vs_block.h"
 #include "vs_drawable.h"
+#include "vs_modelloader.h"
 #include "vs_vertex_context.h"
 
 class VSChunk : public IVSDrawable
@@ -21,6 +22,8 @@ public:
         {
             blocks[i] = defaultID;
         }
+
+        vertexContext = loadVertexContext("cube.obj");
     }
 
     size_t getBlockCount() const
@@ -28,8 +31,13 @@ public:
         return width * depth * height;
     }
 
-    void draw(std::shared_ptr<VSShader> shader) const override{
-
+    void draw(std::shared_ptr<VSShader> shader) const override
+    {
+        shader->use();
+        glBindVertexArray(vertexContext->vertexArrayObject);
+        glDrawElementsInstanced(
+            GL_TRIANGLES, vertexContext->triangleCount, GL_UNSIGNED_INT, nullptr, getBlockCount());
+        glBindVertexArray(0);
     };
 
 private:
