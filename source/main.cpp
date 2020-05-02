@@ -127,7 +127,7 @@ int main(int, char**)
     const auto testModel = VSModel("monkey.obj");
     const auto skybox = VSSkybox();
 
-    auto meshShader = VSShader("Mesh");
+    auto meshShader = VSShader("Monkey");
     auto skyboxShader = VSShader("Skybox");
 
     VSLog::Log(VSLog::Category::Core, VSLog::Level::info, "Starting main loop");
@@ -188,7 +188,7 @@ int main(int, char**)
         testModel.draw(&meshShader);
 
         // draw skybox as last
-        View = glm::mat4(glm::mat3(View)); // remove translation from the view matrix
+        View = glm::mat4(glm::mat3(View));  // remove translation from the view matrix
         skyboxShader.use();
         skyboxShader.setMat4("view", View);
         skyboxShader.setMat4("projection", Projection);

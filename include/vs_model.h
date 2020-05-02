@@ -17,6 +17,7 @@
 #include <map>
 #include <vector>
 #include <algorithm>
+#include <filesystem>
 
 #include "vs_mesh.h"
 #include "vs_shader.h"
@@ -67,7 +68,7 @@ private:
             return;
         }
         // retrieve the directory path of the filepath
-        directory = path.substr(0, path.find_last_of('/'));
+        directory = std::filesystem::absolute(path).parent_path();
 
         // process ASSIMP's root node recursively
         processNode(scene->mRootNode, scene);

@@ -10,6 +10,9 @@ layout (location = 5) in vec3 inColor;
 out VertexData {
     vec3 worldPosition;
     vec3 normal;
+    vec2 texCoord;
+    vec3 tangent;
+    vec3 biTangent;
     vec3 color;
 } o;
 
@@ -21,6 +24,9 @@ void main()
     gl_Position = MVP * vec4(inPosition, 1.0);
 
     o.worldPosition = vec3(model * vec4(inPosition, 1.0));
-    o.normal = inNormal;
+    o.normal = vec3(model * vec4(inNormal, 0.0));;
+    o.texCoord = inTexCoord;
+    o.tangent = vec3(model * vec4(inTangent, 0.0));;
+    o.biTangent = vec3(model * vec4(inBiTangent, 0.0));;
     o.color = inColor;
 }
