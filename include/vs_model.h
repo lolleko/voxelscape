@@ -10,6 +10,7 @@
 #include <assimp/scene.h>
 #include <assimp/postprocess.h>
 
+#include <memory>
 #include <string>
 #include <fstream>
 #include <sstream>
@@ -19,11 +20,13 @@
 #include <algorithm>
 #include <filesystem>
 
+#include "vs_drawable.h"
 #include "vs_mesh.h"
 #include "vs_shader.h"
 #include "vs_textureloader.h"
+#include "vs_vertex_context.h"
 
-class VSModel
+class VSModel : public IVSDrawable
 {
 public:
     /*  Model Data */
@@ -42,9 +45,9 @@ public:
     }
 
     // draws the model, and thus all its meshes
-    void draw(VSShader* shader) const
+    void draw(std::shared_ptr<VSShader> shader) const override
     {
-        for (auto& mesh : meshes)
+        for (const auto& mesh : meshes)
         {
             mesh.draw(shader);
         }
@@ -177,14 +180,15 @@ private:
 
         // return a mesh object created from the extracted mesh data
         return VSMesh(
-            vertexPositions,
-            vertexNormals,
-            vertexTexCoords,
-            vertexTangents,
-            vertexBiTangents,
-            vertexColors,
-            textures,
-            triangleIndices);
+            std::make_unique<VSVertexContext>(
+                vertexPositions,
+                vertexNormals,
+                vertexTexCoords,
+                vertexTangents,
+                vertexBiTangents,
+                vertexColors,
+                triangleIndices),
+            textures);
     }
 
     // checks all material textures of a given type and loads the textures if they're not loaded

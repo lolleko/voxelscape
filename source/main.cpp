@@ -6,7 +6,9 @@
 #include <iostream>
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
+#include <memory>
 
+#include "vs_drawable.h"
 #include "vs_shader.h"
 #include "vs_ui.h"
 #include "vs_ui_state.h"
@@ -123,12 +125,16 @@ int main(int, char**)
 
     glEnable(GL_DEPTH_TEST);
     glDepthFunc(GL_LESS);
+    glEnable(GL_CULL_FACE);
 
-    const auto testModel = VSModel("monkey.obj");
-    const auto skybox = VSSkybox();
+    auto monkeyModel = std::make_shared<VSModel>("monkey.obj");
+    auto skybox = std::make_shared<VSSkybox>();
 
-    auto meshShader = VSShader("Monkey");
-    auto skyboxShader = VSShader("Skybox");
+    auto monkeyShader = std::make_shared<VSShader>("Monkey");
+    auto skyboxShader = std::make_shared<VSShader>("Skybox");
+
+    std::map<std::shared_ptr<IVSDrawable>, std::shared_ptr<VSShader>> drawables = {
+        {monkeyModel, monkeyShader}, {skybox, skyboxShader}};
 
     VSLog::Log(VSLog::Category::Core, VSLog::Level::info, "Starting main loop");
 
@@ -137,7 +143,7 @@ int main(int, char**)
     {
         // per-frame time logic
         // --------------------
-        float currentFrame = glfwGetTime();
+        double currentFrame = glfwGetTime();
         deltaTime = currentFrame - lastFrame;
         lastFrame = currentFrame;
 
@@ -158,42 +164,50 @@ int main(int, char**)
 
         // Start the Dear ImGui frame
         UI.render();
+
         auto display_w = 0;
         auto display_h = 0;
+
         glfwGetFramebufferSize(window, &display_w, &display_h);
         glViewport(0, 0, display_w, display_h);
+
         const auto clearColor = uiState->clearColor;
         glClearColor(clearColor.x, clearColor.y, clearColor.z, clearColor.w);
 
         // Clear the screen and depth buffer
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        // recalc camera mvp
-        // TODO move ot extra function only recalc if needed
-        // shader stuff should be abstracted and controlled by cube?
         glm::mat4 Projection =
             glm::perspective(glm::radians(camera.zoom), (float)width / (float)height, 0.1f, 100.0f);
-
         glm::mat4 View = camera.getViewMatrix();
-
         glm::mat4 Model = glm::mat4(1.f);
         glm::mat4 MVP = Projection * View * Model;
 
-        meshShader.use();
-        meshShader.setVec3("lightPos", uiState->lightPos);
-        meshShader.setVec3("lightColor", uiState->lightColor);
-        meshShader.setVec3("viewPos", camera.position);
-        meshShader.setMat4("model", Model);
-        meshShader.setMat4("MVP", MVP);
-        testModel.draw(&meshShader);
+        // Setup shader uniforms
+        // TODO refactor into seprate function (maybe a decorator)
+        // Idealy we want to draw after setting shader params
+        // to avoid multiple calls to gluseprogram
+        monkeyShader->uniforms()
+            .setVec3("lightPos", uiState->lightPos)
+            .setVec3("lightColor", uiState->lightColor)
+            .setVec3("viewPos", camera.position)
+            .setMat4("model", Model)
+            .setMat4("MVP", MVP);
 
-        // draw skybox as last
-        View = glm::mat4(glm::mat3(View));  // remove translation from the view matrix
-        skyboxShader.use();
-        skyboxShader.setMat4("view", View);
-        skyboxShader.setMat4("projection", Projection);
-        skybox.draw(&skyboxShader);
+        skyboxShader->uniforms()
+            .setMat4("view", glm::mat4(glm::mat3(View)))
+            .setMat4("projection", Projection)
+            .setVec3("viewPos", camera.position)
+            .setMat4("model", Model)
+            .setMat4("MVP", MVP);
 
+        // draw drawables
+        for (const auto& [drawable, shader] : drawables)
+        {
+            drawable->draw(shader);
+        }
+
+        // draw ui
         UI.draw();
         glfwSwapBuffers(window);
     }
