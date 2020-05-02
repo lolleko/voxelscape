@@ -1,25 +1,18 @@
 #pragma once
 
+#include <assimp/material.h>
 #include <glm/glm.hpp>
 
-#include <stb_image.h>
-#include <assimp/Importer.hpp>
-#include <assimp/scene.h>
-#include <assimp/postprocess.h>
-
-#include <memory>
-#include <string>
-#include <fstream>
-#include <sstream>
-#include <iostream>
-#include <map>
 #include <vector>
-#include <algorithm>
 #include <filesystem>
 
 #include "vs_mesh.h"
-#include "vs_textureloader.h"
 #include "vs_vertex_context.h"
+
+class aiScene;
+class aiNode;
+class aiMesh;
+class aiMaterial;
 
 std::vector<VSMesh> loadModel(std::string const& path);
 std::unique_ptr<VSVertexContext> loadVertexContext(std::string const& path);
