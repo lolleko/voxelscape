@@ -1,4 +1,5 @@
 #include "vs_heightmap.h"
+#include "vs_perlinnoise.h"
 
 VSHeightmap::VSHeightmap(unsigned int seed, unsigned int maxHeight, unsigned int octaves, float frequency, float amplitude, float lacunarity, float persistence) {
     pn = new VSPerlinNoise(seed);
@@ -11,8 +12,8 @@ VSHeightmap::VSHeightmap(unsigned int seed, unsigned int maxHeight, unsigned int
 }
 
 float VSHeightmap::getHeight(int x, int y) {
-    float output = 0.f;
-    float denom  = 0.f;
+    float output = 0.F;
+    float denom  = 0.F;
     float frequency = mFrequency;
     float amplitude = mAmplitude;
 
@@ -28,6 +29,6 @@ float VSHeightmap::getHeight(int x, int y) {
 }
 
 int VSHeightmap::getVoxelHeight(int x, int y) {
-    float height = getHeight(x, y) * mMaxHeight;
+    float height = getHeight(x, y) * (float)mMaxHeight;
     return static_cast<int>(std::round(height));
 }

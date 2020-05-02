@@ -1,8 +1,7 @@
 #include <glad/glad.h>
 #include <stb_image.h>
 
-#include <iostream>
-
+#include "vs_log.h"
 #include "vs_textureloader.h"
 
 unsigned int loadCubemap(std::vector<std::string> faces)
@@ -11,7 +10,9 @@ unsigned int loadCubemap(std::vector<std::string> faces)
     glGenTextures(1, &textureID);
     glBindTexture(GL_TEXTURE_CUBE_MAP, textureID);
 
-    int width, height, nrChannels;
+    int width;
+    int height;
+    int nrChannels;
     for (unsigned int i = 0; i < faces.size(); i++)
     {
         unsigned char* data = stbi_load(faces[i].c_str(), &width, &height, &nrChannels, 0);
@@ -31,7 +32,11 @@ unsigned int loadCubemap(std::vector<std::string> faces)
         }
         else
         {
-            std::cout << "Cubemap tex failed to load at path: " << faces[i] << std::endl;
+            VSLog::Log(
+                VSLog::Category::Core,
+                VSLog::Level::err,
+                "Cubemap tex failed to load at path: {}",
+                faces[i].c_str());
             stbi_image_free(data);
         }
     }
@@ -46,25 +51,23 @@ unsigned int loadCubemap(std::vector<std::string> faces)
 
 unsigned int loadDebugCubemap()
 {
-    std::vector<std::string> faces{
-        "textures/cubemapDebug/right.jpg",
-        "textures/cubemapDebug/left.jpg",
-        "textures/cubemapDebug/top.jpg",
-        "textures/cubemapDebug/bottom.jpg",
-        "textures/cubemapDebug/front.jpg",
-        "textures/cubemapDebug/back.jpg"};
+    std::vector<std::string> faces{"textures/cubemapDebug/right.jpg",
+                                   "textures/cubemapDebug/left.jpg",
+                                   "textures/cubemapDebug/top.jpg",
+                                   "textures/cubemapDebug/bottom.jpg",
+                                   "textures/cubemapDebug/front.jpg",
+                                   "textures/cubemapDebug/back.jpg"};
     return loadCubemap(faces);
 }
 
 unsigned int loadSkyboxCubemap()
 {
-    std::vector<std::string> faces{
-        "textures/skybox/right.jpg",
-        "textures/skybox/left.jpg",
-        "textures/skybox/top.jpg",
-        "textures/skybox/bottom.jpg",
-        "textures/skybox/front.jpg",
-        "textures/skybox/back.jpg"};
+    std::vector<std::string> faces{"textures/skybox/right.jpg",
+                                   "textures/skybox/left.jpg",
+                                   "textures/skybox/top.jpg",
+                                   "textures/skybox/bottom.jpg",
+                                   "textures/skybox/front.jpg",
+                                   "textures/skybox/back.jpg"};
     return loadCubemap(faces);
 }
 
@@ -73,7 +76,9 @@ unsigned int TextureFromFile(std::string filename, bool gamma)
     unsigned int textureID;
     glGenTextures(1, &textureID);
 
-    int width, height, nrComponents;
+    int width;
+    int height;
+    int nrComponents;
     unsigned char* data = stbi_load(filename.c_str(), &width, &height, &nrComponents, 0);
     if (data)
     {
@@ -98,7 +103,11 @@ unsigned int TextureFromFile(std::string filename, bool gamma)
     }
     else
     {
-        std::cout << "Texture failed to load at path: " << filename << std::endl;
+        VSLog::Log(
+            VSLog::Category::Core,
+            VSLog::Level::err,
+            "Texture failed to load at path: {}",
+            filename.c_str());
         stbi_image_free(data);
     }
 
