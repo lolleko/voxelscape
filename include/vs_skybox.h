@@ -1,5 +1,6 @@
 #pragma once
 
+#include <array>
 #include "vs_drawable.h"
 #include "vs_shader.h"
 

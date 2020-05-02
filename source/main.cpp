@@ -37,14 +37,14 @@ const unsigned int SCR_WIDTH = 1280;
 const unsigned int SCR_HEIGHT = 720;
 
 // camera
-Camera camera(glm::vec3(0.0f, 0.0f, 3.0f));
-float lastX = SCR_WIDTH / 2.0f;
-float lastY = SCR_HEIGHT / 2.0f;
+Camera camera(glm::vec3(0.0F, 0.0F, 3.0F));
+float lastX = SCR_WIDTH / 2.0F;
+float lastY = SCR_HEIGHT / 2.0F;
 bool firstMouse = true;
 
 // timing
-float deltaTime = 0.0f;  // time between current frame and last frame
-float lastFrame = 0.0f;
+float deltaTime = 0.0F;  // time between current frame and last frame
+float lastFrame = 0.0F;
 
 int main(int, char**)
 {
@@ -182,9 +182,9 @@ int main(int, char**)
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         glm::mat4 Projection =
-            glm::perspective(glm::radians(camera.zoom), (float)width / (float)height, 0.1f, 100.0f);
+            glm::perspective(glm::radians(camera.zoom), (float)width / (float)height, 0.1F, 100.0F);
         glm::mat4 View = camera.getViewMatrix();
-        glm::mat4 Model = glm::mat4(1.f);
+        glm::mat4 Model = glm::mat4(1.F);
         glm::mat4 MVP = Projection * View * Model;
 
         // Setup shader uniforms
@@ -240,20 +240,33 @@ int main(int, char**)
 void processInput(GLFWwindow* window)
 {
     if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
-        glfwSetWindowShouldClose(window, true);
-
+    {
+        glfwSetWindowShouldClose(window, GL_TRUE);
+    }
     if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
+    {
         camera.processKeyboard(FORWARD, deltaTime);
+    }
     if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
+    {
         camera.processKeyboard(BACKWARD, deltaTime);
+    }
     if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
+    {
         camera.processKeyboard(LEFT, deltaTime);
+    }
     if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
+    {
         camera.processKeyboard(RIGHT, deltaTime);
+    }
     if (glfwGetKey(window, GLFW_KEY_E) == GLFW_PRESS)
+    {
         camera.processKeyboard(UP, deltaTime);
+    }
     if (glfwGetKey(window, GLFW_KEY_Q) == GLFW_PRESS)
+    {
         camera.processKeyboard(DOWN, deltaTime);
+    }
 }
 
 // glfw: whenever the window size changed (by OS or user resize) this callback function executes
@@ -297,7 +310,8 @@ void mouseButtonCallback(GLFWwindow* window, int button, int action, int mods)
 {
     if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_PRESS)
     {
-        double xpos, ypos;
+        double xpos;
+        double ypos;
         glfwGetCursorPos(window, &xpos, &ypos);
         lastX = xpos;
         lastY = ypos;
