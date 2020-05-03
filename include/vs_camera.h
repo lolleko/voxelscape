@@ -19,7 +19,7 @@ enum VSCamera_Movement
 // Default camera values
 const float YAW = -90.0F;
 const float PITCH = 0.0F;
-const float SPEED = 10.F;
+const float SPEED = 100.F;
 const float SENSITIVITY = 0.1F;
 const float ZOOM = 45.0F;
 

@@ -169,10 +169,10 @@ int main(int, char**)
     auto skybox = std::make_shared<VSSkybox>();
     auto skyboxShader = std::make_shared<VSShader>("Skybox");
 
-    auto chunk = std::make_shared<VSChunk>(glm::vec3(200, 40, 200), 0);
+    auto chunk = std::make_shared<VSChunk>(glm::vec3(500, 100, 500), 0);
     auto chunkShader = std::make_shared<VSShader>("Chunk");
 
-    VSHeightmap hm = VSHeightmap(42, chunk->getSize().y, 1, 0.02F, 2.F);
+    VSHeightmap hm = VSHeightmap(42, chunk->getSize().y, 1, 0.02F, 4.F);
     for (int x = 0; x < chunk->getSize().x; x++)
     {
         for (int z = 0; z < chunk->getSize().z; z++)

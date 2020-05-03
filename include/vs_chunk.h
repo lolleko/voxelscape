@@ -59,19 +59,11 @@ public:
             // std::random_device rd;
             // std::mt19937 mt(rd());
             // std::uniform_int_distribution<int> uniformDist(0, 1);
-            if (blocks[blockIndex] != defaultID)
+            if (blocks[blockIndex] != defaultID && isBlockVisible(blockIndex))
             {
-                int W = size.x;
-                int D = size.z;
-                int H = size.y;
-
-                int x = blockIndex % W;
-                int z = blockIndex / (W * H);
-                int y = (blockIndex / W) % H;
-
                 // subtract size / 2 to center around 0, 0, 0
-                const auto offset = glm::vec3(x, y, z) - size / 2.f;
-                activeBlockOffsets[activeBlockCount] = glm::vec3(x - W / 2, y - H / 2, z - D / 2);
+                const auto offset = blockIndexToBlockCoordsFloat(blockIndex) - size / 2.f;
+                activeBlockOffsets[activeBlockCount] = offset;
                 activeBlockCount++;
             }
         }
@@ -90,18 +82,10 @@ public:
 
     void setBlock(glm::ivec3 location, VSBlockID blockID)
     {
-        int W = size.x;
-        int D = size.z;
-        int H = size.y;
-
-        int blockIndex = location.x + location.y * W + location.z * W * H;
-
-        assert(blockIndex < getTotalBlockCount());
-
-        blocks[blockIndex] = blockID;
+        blocks[blockCoordsToBlockIndex(location)] = blockID;
     }
 
-    size_t getTotalBlockCount() const
+    int getTotalBlockCount() const
     {
         // depth, width, height
         return size.z * size.x * size.y;
@@ -155,4 +139,114 @@ private:
     int activeBlockCount;
 
     VSBlockID* blocks;
+
+    glm::ivec3 blockIndexToBlockCoords(int blockIndex)
+    {
+        const int width = size.x;
+        const int depth = size.z;
+        const int height = size.y;
+
+        int x = blockIndex % width;
+        int z = blockIndex / (width * height);
+        int y = (blockIndex / width) % height;
+        return {x, y, z};
+    }
+
+    glm::vec3 blockIndexToBlockCoordsFloat(int blockIndex)
+    {
+        const int width = size.x;
+        const int depth = size.z;
+        const int height = size.y;
+
+        int x = blockIndex % width;
+        int z = blockIndex / (width * height);
+        int y = (blockIndex / width) % height;
+        return {x, y, z};
+    }
+
+    int blockCoordsToBlockIndex(const glm::ivec3& blockCoords)
+    {
+        const int width = size.x;
+        const int depth = size.z;
+        const int height = size.y;
+
+        return blockCoords.x + blockCoords.y * width + blockCoords.z * width * height;
+    }
+
+    bool isBlockVisible(int blockIndex)
+    {
+        const auto blockCoords = blockIndexToBlockCoords(blockIndex);
+        const auto size = getSize();
+
+        // if we are at the chunk border always render
+        if (blockCoords.x == 0 || blockCoords.x == size.x - 1 || blockCoords.y == 0 ||
+            blockCoords.y == size.y - 1 || blockCoords.z == 0 || blockCoords.z == size.z - 1)
+        {
+            return true;
+        }
+
+        const auto right = glm::ivec3(blockCoords.x + 1, blockCoords.y, blockCoords.z);
+        const auto left = glm::ivec3(blockCoords.x - 1, blockCoords.y, blockCoords.z);
+
+        const auto top = glm::ivec3(blockCoords.x, blockCoords.y + 1, blockCoords.z);
+        const auto down = glm::ivec3(blockCoords.x, blockCoords.y - 1, blockCoords.z);
+
+        const auto front = glm::ivec3(blockCoords.x, blockCoords.y, blockCoords.z + 1);
+        // TODO is + 1 or -1 back?
+        const auto back = glm::ivec3(blockCoords.x, blockCoords.y, blockCoords.z - 1);
+
+        return blocks[blockCoordsToBlockIndex(right)] == defaultID ||
+               blocks[blockCoordsToBlockIndex(left)] == defaultID ||
+               blocks[blockCoordsToBlockIndex(top)] == defaultID ||
+               blocks[blockCoordsToBlockIndex(down)] == defaultID ||
+               blocks[blockCoordsToBlockIndex(front)] == defaultID ||
+               blocks[blockCoordsToBlockIndex(back)] == defaultID;
+    }
 };
+
+// const auto isRightVisible =
+//     blockCoords.x > 0 && blockCoords.x < getSize().x &&
+//     blocks[blockCoordsToBlockIndex(
+//         glm::ivec3(blockCoords.x + 1, blockCoords.y, blockCoords.z))] != defaultID;
+// const auto isLeftVisible =
+//     blockCoords.x > 0 && blockCoords.x < getSize().x &&
+//     blocks[blockCoordsToBlockIndex(
+//         glm::ivec3(blockCoords.x - 1, blockCoords.y, blockCoords.z))] != defaultID;
+
+// const auto isTopVisible =
+//     blockCoords.y > 0 && blockCoords.y < getSize().y &&
+//     blocks[blockCoordsToBlockIndex(
+//         glm::ivec3(blockCoords.x, blockCoords.y + 1, blockCoords.z))] != defaultID;
+// const auto isBottomVisible =
+//     blockCoords.y > 0 && blockCoords.y < getSize().y &&
+//     blocks[blockCoordsToBlockIndex(
+//         glm::ivec3(blockCoords.x, blockCoords.y - 1, blockCoords.z))] != defaultID;
+
+// const auto isFrontVisible =
+//     blockCoords.z > 0 && blockCoords.z < getSize().z &&
+//     blocks[blockCoordsToBlockIndex(
+//         glm::ivec3(blockCoords.x + 1, blockCoords.y, blockCoords.z + 1))] != defaultID;
+// // TODO is + 1 or -1 back?
+// const auto isBackVisible =
+//     blockCoords.z > 0 && blockCoords.z < getSize().z &&
+//     blocks[blockCoordsToBlockIndex(
+//         glm::ivec3(blockCoords.x, blockCoords.y, blockCoords.z - 1))] != defaultID;
+
+// return !isRightVisible || !isLeftVisible || !isTopVisible || !isBottomVisible ||
+//        !isFrontVisible || !isBackVisible;
+
+// for (int componentIndex = 0; componentIndex < 3; componentIndex++)
+// {
+//     // if we are at the chunk border always render
+//     if (blockCoords[componentIndex] == 0 ||
+//         blockCoords[componentIndex] == getSize()[componentIndex])
+//     {
+//         return true;
+//     }
+
+//     for (int direction = 0; direction < 2; direction++)
+//     {
+//         auto neighbourCoords = glm::ivec3(blockCoords.x, blockCoords.y, blockCoords.z);
+//         neighbourCoords[componentIndex] += (direction == 0 ? -1 : +1);
+//     }
+// }
