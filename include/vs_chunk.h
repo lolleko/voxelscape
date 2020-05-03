@@ -69,7 +69,9 @@ public:
                 int z = blockIndex / (W * H);
                 int y = (blockIndex / W) % H;
 
-                activeBlockOffsets[activeBlockCount] = glm::vec3(x, y, z);
+                // subtract size / 2 to center around 0, 0, 0
+                const auto offset = glm::vec3(x, y, z) - size / 2.f;
+                activeBlockOffsets[activeBlockCount] = glm::vec3(x - W / 2, y - H / 2, z - D / 2);
                 activeBlockCount++;
             }
         }

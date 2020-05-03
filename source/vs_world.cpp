@@ -4,7 +4,7 @@
 
 VSWorld::VSWorld()
 {
-    camera = std::make_shared<VSCamera>(glm::vec3(0.0F, 0.0F, 3.0F));
+    camera = std::make_shared<VSCamera>(glm::vec3(0.0F, 30.0F, 0.0F));
 }
 
 const VSBlockData* VSWorld::getBlockData(short ID)
