@@ -6,7 +6,7 @@
 
 // Defines several possible options for camera movement. Used as abstraction to stay away from
 // window-system specific input methods
-enum Camera_Movement
+enum VSCamera_Movement
 {
     FORWARD,
     BACKWARD,
@@ -19,13 +19,13 @@ enum Camera_Movement
 // Default camera values
 const float YAW = -90.0F;
 const float PITCH = 0.0F;
-const float SPEED = 2.5F;
+const float SPEED = 10.F;
 const float SENSITIVITY = 0.1F;
 const float ZOOM = 45.0F;
 
 // An abstract camera class that processes input and calculates the corresponding Euler Angles,
 // Vectors and Matrices for use in OpenGL
-class Camera
+class VSCamera
 {
 public:
     // Camera Attributes
@@ -43,15 +43,16 @@ public:
     float movementSpeed;
     float mouseSensitivity;
     float zoom;
+
     // Constructor with vectors
-    Camera(
+    VSCamera(
         glm::vec3 position = glm::vec3(0.0F, 0.0F, 0.0F),
         glm::vec3 up = glm::vec3(0.0F, 1.0F, 0.0F),
         float yaw = YAW,
         float pitch = PITCH);
 
     // Constructor with scalar values
-    Camera(
+    VSCamera(
         float posX,
         float posY,
         float posZ,
@@ -61,12 +62,18 @@ public:
         float yaw,
         float pitch);
 
+    glm::vec3 getPosition() const;
+
     // Returns the view matrix calculated using Euler Angles and the LookAt Matrix
-    glm::mat4 getViewMatrix();
+    glm::mat4 getViewMatrix() const;
+
+    glm::mat4 getProjectionMatrix() const;
+
+    glm::mat4 getMVPMatrixFast(const glm::mat4& model) const;
 
     // Processes input received from any keyboard-like input system. Accepts input parameter in the
     // form of camera defined ENUM (to abstract it from windowing systems)
-    void processKeyboard(Camera_Movement direction, float deltaTime);
+    void processKeyboard(VSCamera_Movement direction, float deltaTime);
 
     // Processes input received from a mouse input system. Expects the offset value in both the x
     // and y direction.
@@ -77,6 +84,10 @@ public:
     void processMouseScroll(float yoffset);
 
 private:
+    glm::mat4 cachedViewMatrix;
+    glm::mat4 cachedProjectionMatrix;
+    glm::mat4 cachedVPMatrix;
+
     // Calculates the front vector from the Camera's (updated) Euler Angles
     void updateCameraVectors();
 };

@@ -1,9 +1,9 @@
 #include "vs_camera.h"
 
 #include <glm/ext/matrix_transform.hpp>
-#include <glm/fwd.hpp>
+#include <glm/gtc/matrix_transform.hpp>
 
-Camera::Camera(glm::vec3 position, glm::vec3 up, float yaw, float pitch)
+VSCamera::VSCamera(glm::vec3 position, glm::vec3 up, float yaw, float pitch)
     : front(glm::vec3(0.0F, 0.0F, -1.0F))
     , movementSpeed(SPEED)
     , mouseSensitivity(SENSITIVITY)
@@ -16,7 +16,7 @@ Camera::Camera(glm::vec3 position, glm::vec3 up, float yaw, float pitch)
     updateCameraVectors();
 }
 
-Camera::Camera(
+VSCamera::VSCamera(
     float posX,
     float posY,
     float posZ,
@@ -34,15 +34,31 @@ Camera::Camera(
     this->worldUp = glm::vec3(upX, upY, upZ);
     this->yaw = yaw;
     this->pitch = pitch;
+
     updateCameraVectors();
 }
 
-glm::mat4 Camera::getViewMatrix()
+glm::vec3 VSCamera::getPosition() const
 {
-    return glm::lookAt(position, position + front, up);
+    return position;
 }
 
-void Camera::processKeyboard(Camera_Movement direction, float deltaTime)
+glm::mat4 VSCamera::getViewMatrix() const
+{
+    return cachedViewMatrix;
+}
+
+glm::mat4 VSCamera::getProjectionMatrix() const
+{
+    return cachedProjectionMatrix;
+}
+
+glm::mat4 VSCamera::getMVPMatrixFast(const glm::mat4& model) const
+{
+    return cachedVPMatrix * model;
+}
+
+void VSCamera::processKeyboard(VSCamera_Movement direction, float deltaTime)
 {
     float velocity = movementSpeed * deltaTime;
     if (direction == FORWARD)
@@ -69,9 +85,11 @@ void Camera::processKeyboard(Camera_Movement direction, float deltaTime)
     {
         position -= up * velocity;
     }
+
+    updateCameraVectors();
 }
 
-void Camera::processMouseMovement(float xoffset, float yoffset, GLboolean constrainPitch)
+void VSCamera::processMouseMovement(float xoffset, float yoffset, GLboolean constrainPitch)
 {
     xoffset *= mouseSensitivity;
     yoffset *= mouseSensitivity;
@@ -96,7 +114,7 @@ void Camera::processMouseMovement(float xoffset, float yoffset, GLboolean constr
     updateCameraVectors();
 }
 
-void Camera::processMouseScroll(float yoffset)
+void VSCamera::processMouseScroll(float yoffset)
 {
     if (zoom >= 1.0F && zoom <= 45.0F)
     {
@@ -110,9 +128,11 @@ void Camera::processMouseScroll(float yoffset)
     {
         zoom = 45.0F;
     }
+
+    updateCameraVectors();
 }
 
-void Camera::updateCameraVectors()
+void VSCamera::updateCameraVectors()
 {
     // Calculate the new Front vector
     glm::vec3 newFront;
@@ -125,4 +145,10 @@ void Camera::updateCameraVectors()
         front, worldUp));  // Normalize the vectors, because their length gets closer to 0 the more
                            // you look up or down which results in slower movement.
     up = glm::normalize(glm::cross(right, front));
+
+    cachedViewMatrix = glm::lookAt(position, position + front, up);
+    // aspec ration fixed to 16.9 for now
+    cachedProjectionMatrix = glm::perspective(glm::radians(zoom), 16.F / 9.F, 0.1F, 100.0F);
+
+    cachedVPMatrix = cachedProjectionMatrix * cachedViewMatrix;
 }

@@ -42,11 +42,11 @@ public:
     }
 
     // draws the model, and thus all its meshes
-    void draw(std::shared_ptr<VSShader> shader) const override
+    void draw(std::shared_ptr<VSWorld> world, std::shared_ptr<VSShader> shader) const override
     {
         for (const auto& mesh : meshes)
         {
-            mesh.draw(shader);
+            mesh.draw(world, shader);
         }
     }
 };

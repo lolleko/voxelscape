@@ -28,7 +28,7 @@ public:
         : vertexContext(std::move(vertexContext))
         , textures(std::move(textures)){};
 
-    void draw(std::shared_ptr<VSShader> shader) const override
+    void draw(std::shared_ptr<VSWorld> world, std::shared_ptr<VSShader> shader) const override
     {
         shader->use();
 

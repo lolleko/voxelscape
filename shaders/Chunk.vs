@@ -30,7 +30,7 @@ void main()
     int Z = (gl_InstanceID - Y * W * D) / D;
     int X = (gl_InstanceID - Y * W * D) % D;
 
-    gl_Position = MVP * vec4(inPosition + vec3(X, Y, Z) * 2, 1.0);
+    gl_Position = MVP * vec4(inPosition + vec3(X, Y, Z), 1.0);
 
     o.worldPosition = vec3(model * vec4(inPosition, 1.0));
     o.normal = vec3(model * vec4(inNormal, 0.0));;

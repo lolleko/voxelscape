@@ -20,6 +20,7 @@
 #include "vs_textureloader.h"
 #include "vs_heightmap.h"
 #include "vs_chunk.h"
+#include "vs_world.h"
 
 void framebufferSizeCallback(GLFWwindow* window, int width, int height);
 void mouseCallback(GLFWwindow* window, double xpos, double ypos);
@@ -36,8 +37,6 @@ static void glfw_error_callback(int error, const char* description)
 const unsigned int SCR_WIDTH = 1280;
 const unsigned int SCR_HEIGHT = 720;
 
-// camera
-Camera camera(glm::vec3(0.0F, 0.0F, 3.0F));
 float lastX = SCR_WIDTH / 2.0F;
 float lastY = SCR_HEIGHT / 2.0F;
 bool firstMouse = true;
@@ -98,11 +97,58 @@ int main(int, char**)
         VSLog::Log(VSLog::Category::Core, VSLog::Level::critical, "Failed to create GLFW window");
         return 1;
     }
+
+    // TODO move worl init down once this input mess has been solved
+    auto world = std::make_shared<VSWorld>();
+    // TODO this is dangerous as fuck since world might get deleted by the shared pointer
+    // maybe shared_ptr isn't the correct choice for world since world's lifetime should be fixed
+    // and as long as the program's lifetime
+    glfwSetWindowUserPointer(window, world.get());
+
     glfwMakeContextCurrent(window);
-    glfwSetFramebufferSizeCallback(window, framebufferSizeCallback);
-    glfwSetCursorPosCallback(window, mouseCallback);
-    glfwSetMouseButtonCallback(window, mouseButtonCallback);
-    glfwSetScrollCallback(window, scrollCallback);
+    glfwSetFramebufferSizeCallback(
+        window, [](GLFWwindow* window, int width, int height) { glViewport(0, 0, width, height); });
+    // TODO these callbacks need to be part of a sperate controller class
+    glfwSetCursorPosCallback(window, [](GLFWwindow* window, double xpos, double ypos) {
+        // Only move camera if left mouse is pressed
+        int state = glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT);
+        if (state != GLFW_PRESS)
+        {
+            return;
+        }
+
+        if (firstMouse)
+        {
+            lastX = xpos;
+            lastY = ypos;
+            firstMouse = false;
+        }
+
+        float xoffset = xpos - lastX;
+        float yoffset = lastY - ypos;  // reversed since y-coordinates go from bottom to top
+
+        lastX = xpos;
+        lastY = ypos;
+
+        // TODO messy
+        auto* world = static_cast<VSWorld*>(glfwGetWindowUserPointer(window));
+        world->getCamera()->processMouseMovement(xoffset, yoffset);
+    });
+    glfwSetMouseButtonCallback(window, [](GLFWwindow* window, int button, int action, int mods) {
+        if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_PRESS)
+        {
+            double xpos;
+            double ypos;
+            glfwGetCursorPos(window, &xpos, &ypos);
+            lastX = xpos;
+            lastY = ypos;
+        }
+    });
+    glfwSetScrollCallback(window, [](GLFWwindow* window, double xoffset, double yoffset) {
+        // TODO messy
+        auto* world = static_cast<VSWorld*>(glfwGetWindowUserPointer(window));
+        world->getCamera()->processMouseScroll(yoffset);
+    });
     glfwSwapInterval(1);  // Enable vsync
 
     VSLog::Log(
@@ -128,8 +174,8 @@ int main(int, char**)
     glDepthFunc(GL_LESS);
     glEnable(GL_CULL_FACE);
 
-    auto monkeyModel = std::make_shared<VSModel>("monkey.obj");
-    auto monkeyShader = std::make_shared<VSShader>("Monkey");
+    // auto monkeyModel = std::make_shared<VSModel>("monkey.obj");
+    // auto monkeyShader = std::make_shared<VSShader>("Monkey");
 
     auto skybox = std::make_shared<VSSkybox>();
     auto skyboxShader = std::make_shared<VSShader>("Skybox");
@@ -137,8 +183,8 @@ int main(int, char**)
     auto chunk = std::make_shared<VSChunk>(glm::vec3(50, 50, 50), 0);
     auto chunkShader = std::make_shared<VSShader>("Chunk");
 
-    std::map<std::shared_ptr<IVSDrawable>, std::shared_ptr<VSShader>> drawables = {
-        {monkeyModel, monkeyShader}, {skybox, skyboxShader}, {chunk, chunkShader}};
+    world->addDrawable(chunk, chunkShader);
+    world->addDrawable(skybox, skyboxShader);
 
     VSLog::Log(VSLog::Category::Core, VSLog::Level::info, "Starting main loop");
 
@@ -151,9 +197,35 @@ int main(int, char**)
         deltaTime = currentFrame - lastFrame;
         lastFrame = currentFrame;
 
-        // input
-        // -----
-        processInput(window);
+        // TODO this needs to be somewhere else not in the main
+        if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
+        {
+            glfwSetWindowShouldClose(window, GL_TRUE);
+        }
+        if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
+        {
+            world->getCamera()->processKeyboard(FORWARD, deltaTime);
+        }
+        if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
+        {
+            world->getCamera()->processKeyboard(BACKWARD, deltaTime);
+        }
+        if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
+        {
+            world->getCamera()->processKeyboard(LEFT, deltaTime);
+        }
+        if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
+        {
+            world->getCamera()->processKeyboard(RIGHT, deltaTime);
+        }
+        if (glfwGetKey(window, GLFW_KEY_E) == GLFW_PRESS)
+        {
+            world->getCamera()->processKeyboard(UP, deltaTime);
+        }
+        if (glfwGetKey(window, GLFW_KEY_Q) == GLFW_PRESS)
+        {
+            world->getCamera()->processKeyboard(DOWN, deltaTime);
+        }
 
         glfwPollEvents();
 
@@ -181,44 +253,8 @@ int main(int, char**)
         // Clear the screen and depth buffer
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        glm::mat4 Projection =
-            glm::perspective(glm::radians(camera.zoom), (float)width / (float)height, 0.1F, 100.0F);
-        glm::mat4 View = camera.getViewMatrix();
-        glm::mat4 Model = glm::mat4(1.F);
-        glm::mat4 MVP = Projection * View * Model;
-
-        // Setup shader uniforms
-        // TODO refactor into seprate function (maybe a decorator)
-        // Idealy we want to draw after setting shader params
-        // to avoid multiple calls to gluseprogram
-        monkeyShader->uniforms()
-            .setVec3("lightPos", uiState->lightPos)
-            .setVec3("lightColor", uiState->lightColor)
-            .setVec3("viewPos", camera.position)
-            .setMat4("model", Model)
-            .setMat4("MVP", MVP);
-
-        skyboxShader->uniforms()
-            .setMat4("view", glm::mat4(glm::mat3(View)))
-            .setMat4("projection", Projection)
-            .setVec3("viewPos", camera.position)
-            .setMat4("model", Model)
-            .setMat4("MVP", MVP);
-
-        chunkShader->uniforms()
-            .setVec3("lightPos", uiState->lightPos)
-            .setVec3("lightColor", uiState->lightColor)
-            .setVec3("viewPos", camera.position)
-            .setVec3("chunkSize", chunk->getSize())
-            .setMat4("model", glm::scale(Model, glm::vec3(0.0625f, 0.0625f, 0.0625f)))
-            .setMat4(
-                "MVP", Projection * View * glm::scale(Model, glm::vec3(0.0625f, 0.0625f, 0.0625f)));
-
-        // draw drawables
-        for (const auto& [drawable, shader] : drawables)
-        {
-            drawable->draw(shader);
-        }
+        // draw world
+        world->draw(world, nullptr);
 
         // draw ui
         UI.draw();
@@ -232,95 +268,4 @@ int main(int, char**)
     glfwTerminate();
 
     return 0;
-}
-
-// process all input: query GLFW whether relevant keys are pressed/released this frame and react
-// accordingly
-// ---------------------------------------------------------------------------------------------------------
-void processInput(GLFWwindow* window)
-{
-    if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
-    {
-        glfwSetWindowShouldClose(window, GL_TRUE);
-    }
-    if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
-    {
-        camera.processKeyboard(FORWARD, deltaTime);
-    }
-    if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
-    {
-        camera.processKeyboard(BACKWARD, deltaTime);
-    }
-    if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
-    {
-        camera.processKeyboard(LEFT, deltaTime);
-    }
-    if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
-    {
-        camera.processKeyboard(RIGHT, deltaTime);
-    }
-    if (glfwGetKey(window, GLFW_KEY_E) == GLFW_PRESS)
-    {
-        camera.processKeyboard(UP, deltaTime);
-    }
-    if (glfwGetKey(window, GLFW_KEY_Q) == GLFW_PRESS)
-    {
-        camera.processKeyboard(DOWN, deltaTime);
-    }
-}
-
-// glfw: whenever the window size changed (by OS or user resize) this callback function executes
-// ---------------------------------------------------------------------------------------------
-void framebufferSizeCallback(GLFWwindow* window, int width, int height)
-{
-    // make sure the viewport matches the new window dimensions; note that width and
-    // height will be significantly larger than specified on retina displays.
-    glViewport(0, 0, width, height);
-}
-
-// glfw: whenever the mouse moves, this callback is called
-// -------------------------------------------------------
-void mouseCallback(GLFWwindow* window, double xpos, double ypos)
-{
-    // Only move camera if left mouse is pressed
-    int state = glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT);
-    if (state != GLFW_PRESS)
-    {
-        return;
-    }
-
-    if (firstMouse)
-    {
-        lastX = xpos;
-        lastY = ypos;
-        firstMouse = false;
-    }
-
-    float xoffset = xpos - lastX;
-    float yoffset = lastY - ypos;  // reversed since y-coordinates go from bottom to top
-
-    lastX = xpos;
-    lastY = ypos;
-
-    camera.processMouseMovement(xoffset, yoffset);
-}
-
-// glfw: whenever a mouse button is pressed or released, this callback is called
-void mouseButtonCallback(GLFWwindow* window, int button, int action, int mods)
-{
-    if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_PRESS)
-    {
-        double xpos;
-        double ypos;
-        glfwGetCursorPos(window, &xpos, &ypos);
-        lastX = xpos;
-        lastY = ypos;
-    }
-}
-
-// glfw: whenever the mouse scroll wheel scrolls, this callback is called
-// ----------------------------------------------------------------------
-void scrollCallback(GLFWwindow* window, double xoffset, double yoffset)
-{
-    camera.processMouseScroll(yoffset);
 }

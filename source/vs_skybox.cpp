@@ -1,6 +1,7 @@
 #include "vs_skybox.h"
 
 #include "vs_textureloader.h"
+#include "vs_world.h"
 
 VSSkybox::VSSkybox()
 {
@@ -16,11 +17,17 @@ VSSkybox::VSSkybox()
     cubemapTexture = loadSkyboxCubemap();
 }
 
-void VSSkybox::draw(std::shared_ptr<VSShader> shader) const
+void VSSkybox::draw(std::shared_ptr<VSWorld> world, std::shared_ptr<VSShader> shader) const
 {
-    glDepthFunc(GL_LEQUAL);  // change depth function so depth test passes when values are equal
-                             // to depth buffer's content
-    shader->use();
+    glDepthFunc(GL_LEQUAL);
+
+    shader->uniforms()
+        .setMat4("view", glm::mat4(glm::mat3(world->getCamera()->getViewMatrix())))
+        .setMat4("projection", world->getCamera()->getProjectionMatrix())
+        .setVec3("viewPos", world->getCamera()->getPosition())
+        .setMat4("model", getModelMatrix())
+        .setMat4("MVP", world->getCamera()->getMVPMatrixFast(getModelMatrix()));
+
     // skybox cube
     glBindVertexArray(skyboxVAO);
     glActiveTexture(GL_TEXTURE0);
@@ -29,3 +36,8 @@ void VSSkybox::draw(std::shared_ptr<VSShader> shader) const
     glBindVertexArray(0);
     glDepthFunc(GL_LESS);  // set depth function back to defaults
 }
+
+glm::mat4 VSSkybox::getModelMatrix() const
+{
+    return glm::mat4(1.f);
+};
