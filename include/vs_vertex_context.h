@@ -43,7 +43,6 @@ public:
         glBindBuffer(GL_ARRAY_BUFFER, vertexBuffer);
         glEnableVertexAttribArray(lastAttribPointer);
         glVertexAttribPointer(lastAttribPointer, 3, GL_FLOAT, GL_FALSE, 0, nullptr);
-        lastAttribPointer++;
         glBufferData(
             GL_ARRAY_BUFFER,
             vertexPositions.size() * sizeof(glm::vec3),
@@ -51,11 +50,11 @@ public:
             GL_STATIC_DRAW);
 
         // vertex normals
+        lastAttribPointer++;
         glGenBuffers(1, &normalBuffer);
         glBindBuffer(GL_ARRAY_BUFFER, normalBuffer);
         glEnableVertexAttribArray(lastAttribPointer);
         glVertexAttribPointer(lastAttribPointer, 3, GL_FLOAT, GL_FALSE, 0, nullptr);
-        lastAttribPointer++;
         glBufferData(
             GL_ARRAY_BUFFER,
             vertexNormals.size() * sizeof(glm::vec3),
@@ -63,11 +62,11 @@ public:
             GL_STATIC_DRAW);
 
         // vertex texCords
+        lastAttribPointer++;
         glGenBuffers(1, &texCoordBuffer);
         glBindBuffer(GL_ARRAY_BUFFER, texCoordBuffer);
         glEnableVertexAttribArray(lastAttribPointer);
         glVertexAttribPointer(lastAttribPointer, 2, GL_FLOAT, GL_FALSE, 0, nullptr);
-        lastAttribPointer++;
         glBufferData(
             GL_ARRAY_BUFFER,
             vertexTexCoords.size() * sizeof(glm::vec2),
@@ -75,11 +74,11 @@ public:
             GL_STATIC_DRAW);
 
         // vertex tangents
+        lastAttribPointer++;
         glGenBuffers(1, &tangentBuffer);
         glBindBuffer(GL_ARRAY_BUFFER, tangentBuffer);
         glEnableVertexAttribArray(lastAttribPointer);
         glVertexAttribPointer(lastAttribPointer, 3, GL_FLOAT, GL_FALSE, 0, nullptr);
-        lastAttribPointer++;
         glBufferData(
             GL_ARRAY_BUFFER,
             vertexTangents.size() * sizeof(glm::vec3),
@@ -87,11 +86,11 @@ public:
             GL_STATIC_DRAW);
 
         // vertex bitangents
+        lastAttribPointer++;
         glGenBuffers(1, &biTangentBuffer);
         glBindBuffer(GL_ARRAY_BUFFER, biTangentBuffer);
         glEnableVertexAttribArray(lastAttribPointer);
         glVertexAttribPointer(lastAttribPointer, 3, GL_FLOAT, GL_FALSE, 0, nullptr);
-        lastAttribPointer++;
         glBufferData(
             GL_ARRAY_BUFFER,
             vertexBiTangents.size() * sizeof(glm::vec3),
@@ -99,11 +98,11 @@ public:
             GL_STATIC_DRAW);
 
         // vertex colors
+        lastAttribPointer++;
         glGenBuffers(1, &colorBuffer);
         glBindBuffer(GL_ARRAY_BUFFER, colorBuffer);
         glEnableVertexAttribArray(lastAttribPointer);
         glVertexAttribPointer(lastAttribPointer, 3, GL_FLOAT, GL_FALSE, 0, nullptr);
-        lastAttribPointer++;
         glBufferData(
             GL_ARRAY_BUFFER,
             vertexColors.size() * sizeof(glm::vec3),

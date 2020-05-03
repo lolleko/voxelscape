@@ -54,17 +54,6 @@ int main(int, char**)
         return 1;
     }
 
-    // Test Heightmap generation
-    // VSHeightmap *hm = new VSHeightmap();
-    // for (int i = 0; i < 10; i++)
-    // {
-    //     for (int j = 0; j < 10; j++)
-    //     {
-    //         std::cout << hm->getVoxelHeight(i, j) << " ";
-    //     }
-    //     std::cout << "\n";
-    // }
-
     // Decide GL+GLSL versions
 #if __APPLE__
     // GL 3.2 + GLSL 150
@@ -180,8 +169,21 @@ int main(int, char**)
     auto skybox = std::make_shared<VSSkybox>();
     auto skyboxShader = std::make_shared<VSShader>("Skybox");
 
-    auto chunk = std::make_shared<VSChunk>(glm::vec3(50, 50, 50), 0);
+    auto chunk = std::make_shared<VSChunk>(glm::vec3(200, 40, 200), 0);
     auto chunkShader = std::make_shared<VSShader>("Chunk");
+
+    VSHeightmap hm = VSHeightmap(42, chunk->getSize().y, 1, 0.02F, 2.F);
+    for (int x = 0; x < chunk->getSize().x; x++)
+    {
+        for (int z = 0; z < chunk->getSize().z; z++)
+        {
+            for (int y = 0; y < hm.getVoxelHeight(x, z); y++)
+            {
+                chunk->setBlock({x, y, z}, 1);
+            }
+        }
+    }
+    chunk->updateActiveBlocks();
 
     world->addDrawable(chunk, chunkShader);
     world->addDrawable(skybox, skyboxShader);

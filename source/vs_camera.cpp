@@ -148,7 +148,7 @@ void VSCamera::updateCameraVectors()
 
     cachedViewMatrix = glm::lookAt(position, position + front, up);
     // aspec ration fixed to 16.9 for now
-    cachedProjectionMatrix = glm::perspective(glm::radians(zoom), 16.F / 9.F, 0.1F, 100.0F);
+    cachedProjectionMatrix = glm::perspective(glm::radians(zoom), 16.F / 9.F, 0.1F, 2000.0F);
 
     cachedVPMatrix = cachedProjectionMatrix * cachedViewMatrix;
 }
