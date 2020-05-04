@@ -2,6 +2,7 @@
 
 #include "vs_textureloader.h"
 #include "vs_world.h"
+#include "vs_camera.h"
 
 VSSkybox::VSSkybox()
 {

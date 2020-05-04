@@ -4,10 +4,11 @@
 #include <memory>
 
 #include "vs_block.h"
-#include "vs_camera.h"
 #include "vs_drawable.h"
 #include "vs_shader.h"
 
+class VSCamera;
+class VSCameraController;
 class VSChunk;
 
 class VSWorld : public IVSDrawable
@@ -23,6 +24,8 @@ public:
 
     std::shared_ptr<VSCamera> getCamera() const;
 
+    std::shared_ptr<VSCameraController> getCameraController() const;
+
     glm::vec3 getDirectLightPos() const;
 
     glm::vec3 getDirectLightColor() const;
@@ -34,6 +37,7 @@ private:
     std::vector<VSChunk*> activeChunks;
 
     std::shared_ptr<VSCamera> camera;
+    std::shared_ptr<VSCameraController> cameraController;
 
     std::map<std::shared_ptr<IVSDrawable>, std::shared_ptr<VSShader>> drawables;
 };

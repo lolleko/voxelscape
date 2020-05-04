@@ -14,6 +14,7 @@
 #include "vs_ui_state.h"
 #include "vs_cube.h"
 #include "vs_camera.h"
+#include "vs_cameracontroller.h"
 #include "vs_log.h"
 #include "vs_model.h"
 #include "vs_skybox.h"
@@ -21,12 +22,6 @@
 #include "vs_heightmap.h"
 #include "vs_chunk.h"
 #include "vs_world.h"
-
-void framebufferSizeCallback(GLFWwindow* window, int width, int height);
-void mouseCallback(GLFWwindow* window, double xpos, double ypos);
-void mouseButtonCallback(GLFWwindow* window, int button, int action, int mods);
-void scrollCallback(GLFWwindow* window, double xoffset, double yoffset);
-void processInput(GLFWwindow* window);
 
 static void glfw_error_callback(int error, const char* description)
 {
@@ -36,10 +31,6 @@ static void glfw_error_callback(int error, const char* description)
 // settings
 const unsigned int SCR_WIDTH = 1280;
 const unsigned int SCR_HEIGHT = 720;
-
-float lastX = SCR_WIDTH / 2.0F;
-float lastY = SCR_HEIGHT / 2.0F;
-bool firstMouse = true;
 
 // timing
 float deltaTime = 0.0F;  // time between current frame and last frame
@@ -99,44 +90,19 @@ int main(int, char**)
         window, [](GLFWwindow* window, int width, int height) { glViewport(0, 0, width, height); });
     // TODO these callbacks need to be part of a sperate controller class
     glfwSetCursorPosCallback(window, [](GLFWwindow* window, double xpos, double ypos) {
-        // Only move camera if left mouse is pressed
-        int state = glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT);
-        if (state != GLFW_PRESS)
-        {
-            return;
-        }
-
-        if (firstMouse)
-        {
-            lastX = xpos;
-            lastY = ypos;
-            firstMouse = false;
-        }
-
-        float xoffset = xpos - lastX;
-        float yoffset = lastY - ypos;  // reversed since y-coordinates go from bottom to top
-
-        lastX = xpos;
-        lastY = ypos;
-
         // TODO messy
         auto* world = static_cast<VSWorld*>(glfwGetWindowUserPointer(window));
-        world->getCamera()->processMouseMovement(xoffset, yoffset);
+        world->getCameraController()->processMouseMovement(window, xpos, ypos);
     });
     glfwSetMouseButtonCallback(window, [](GLFWwindow* window, int button, int action, int mods) {
-        if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_PRESS)
-        {
-            double xpos;
-            double ypos;
-            glfwGetCursorPos(window, &xpos, &ypos);
-            lastX = xpos;
-            lastY = ypos;
-        }
+        // TODO messy
+        auto* world = static_cast<VSWorld*>(glfwGetWindowUserPointer(window));
+        world->getCameraController()->processMouseButton(window, button, action, mods);
     });
     glfwSetScrollCallback(window, [](GLFWwindow* window, double xoffset, double yoffset) {
         // TODO messy
         auto* world = static_cast<VSWorld*>(glfwGetWindowUserPointer(window));
-        world->getCamera()->processMouseScroll(yoffset);
+        world->getCameraController()->processMouseScroll(window, xoffset, yoffset);
     });
     glfwSwapInterval(1);  // Enable vsync
 
@@ -197,35 +163,7 @@ int main(int, char**)
         deltaTime = currentFrame - lastFrame;
         lastFrame = currentFrame;
 
-        // TODO this needs to be somewhere else not in the main
-        if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
-        {
-            glfwSetWindowShouldClose(window, GL_TRUE);
-        }
-        if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
-        {
-            world->getCamera()->processKeyboard(FORWARD, deltaTime);
-        }
-        if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
-        {
-            world->getCamera()->processKeyboard(BACKWARD, deltaTime);
-        }
-        if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
-        {
-            world->getCamera()->processKeyboard(LEFT, deltaTime);
-        }
-        if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
-        {
-            world->getCamera()->processKeyboard(RIGHT, deltaTime);
-        }
-        if (glfwGetKey(window, GLFW_KEY_E) == GLFW_PRESS)
-        {
-            world->getCamera()->processKeyboard(UP, deltaTime);
-        }
-        if (glfwGetKey(window, GLFW_KEY_Q) == GLFW_PRESS)
-        {
-            world->getCamera()->processKeyboard(DOWN, deltaTime);
-        }
+        world->getCameraController()->processKeyboardInput(window, deltaTime);
 
         glfwPollEvents();
 
