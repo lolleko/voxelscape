@@ -1,13 +1,12 @@
-#include <glad/glad.h>  // Initialize with gladLoadGL()
-
-// Include glfw3.h after our OpenGL definitions
-#include <GLFW/glfw3.h>
+#include <glm/fwd.hpp>
 #include <iostream>
 
 #include "vs_cameracontroller.h"
 #include "vs_camera.h"
 
 VSCameraController::VSCameraController(const std::shared_ptr<VSCamera>& camera)
+    : movementSpeed(SPEED)
+    , mouseSensitivity(SENSITIVITY)
 {
     cam = camera;
 }
@@ -24,7 +23,11 @@ void VSCameraController::processMouseButton(GLFWwindow* window, int button, int 
     }
 }
 
-void VSCameraController::processMouseMovement(GLFWwindow* window, double xpos, double ypos)
+void VSCameraController::processMouseMovement(
+    GLFWwindow* window,
+    double xpos,
+    double ypos,
+    GLboolean constrainPitch)
 {
     // Only move camera if left mouse is pressed
     int state = glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT);
@@ -46,43 +49,87 @@ void VSCameraController::processMouseMovement(GLFWwindow* window, double xpos, d
 
     lastX = xpos;
     lastY = ypos;
-    cam->processMouseMovement(xoffset, yoffset);
+
+    xoffset *= mouseSensitivity;
+    yoffset *= mouseSensitivity;
+
+    float yaw = cam->getYaw();
+    float pitch = cam->getPitch();
+    yaw += xoffset;
+    pitch += yoffset;
+
+    // Make sure that when pitch is out of bounds, screen doesn't get flipped
+    if (constrainPitch == GL_TRUE)
+    {
+        if (pitch > 89.0F)
+        {
+            pitch = 89.0F;
+        }
+        if (pitch < -89.0F)
+        {
+            pitch = -89.0F;
+        }
+    }
+    cam->setPitchYaw(pitch, yaw);
 }
 
 void VSCameraController::processMouseScroll(GLFWwindow* window, double xoffset, double yoffset)
     const
 {
-    cam->processMouseScroll(yoffset);
+    float zoom = cam->getZoom();
+    if (zoom >= 1.0F && zoom <= 45.0F)
+    {
+        zoom -= yoffset;
+    }
+    if (zoom <= 1.0F)
+    {
+        zoom = 1.0F;
+    }
+    if (zoom >= 45.0F)
+    {
+        zoom = 45.0F;
+    }
+    cam->setZoom(zoom);
 }
 
 void VSCameraController::processKeyboardInput(GLFWwindow* window, float deltaTime) const
 {
+    float velocity = movementSpeed * deltaTime;
+    glm::vec3 position = cam->getPosition();
+    
     if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
     {
         glfwSetWindowShouldClose(window, GL_TRUE);
     }
     if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
     {
-        cam->processKeyboard(FORWARD, deltaTime);
+        glm::vec3 front = cam->getFront();
+        position += front * velocity;
     }
     if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
     {
-        cam->processKeyboard(BACKWARD, deltaTime);
+        glm::vec3 front = cam->getFront();
+        position -= front * velocity;
     }
     if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
     {
-        cam->processKeyboard(LEFT, deltaTime);
+        glm::vec3 right = cam->getRight();
+        position -= right * velocity;
     }
     if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
     {
-        cam->processKeyboard(RIGHT, deltaTime);
+        glm::vec3 right = cam->getRight();
+        position += right * velocity;
     }
     if (glfwGetKey(window, GLFW_KEY_E) == GLFW_PRESS)
     {
-        cam->processKeyboard(UP, deltaTime);
+        glm::vec3 up = cam->getUp();
+        position += up * velocity;
     }
     if (glfwGetKey(window, GLFW_KEY_Q) == GLFW_PRESS)
     {
-        cam->processKeyboard(DOWN, deltaTime);
+        glm::vec3 up = cam->getUp();
+        position -= up * velocity;
     }
+    cam->setPosition(position);
 }

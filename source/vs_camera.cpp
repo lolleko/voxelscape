@@ -1,12 +1,11 @@
 #include "vs_camera.h"
 
 #include <glm/ext/matrix_transform.hpp>
+#include <glm/fwd.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
 VSCamera::VSCamera(glm::vec3 position, glm::vec3 up, float yaw, float pitch)
     : front(glm::vec3(0.0F, 0.0F, -1.0F))
-    , movementSpeed(SPEED)
-    , mouseSensitivity(SENSITIVITY)
     , zoom(ZOOM)
 {
     this->position = position;
@@ -26,8 +25,6 @@ VSCamera::VSCamera(
     float yaw,
     float pitch)
     : front(glm::vec3(0.0F, 0.0F, -1.0F))
-    , movementSpeed(SPEED)
-    , mouseSensitivity(SENSITIVITY)
     , zoom(ZOOM)
 {
     this->position = glm::vec3(posX, posY, posZ);
@@ -58,77 +55,52 @@ glm::mat4 VSCamera::getMVPMatrixFast(const glm::mat4& model) const
     return cachedVPMatrix * model;
 }
 
-void VSCamera::processKeyboard(VSCamera_Movement direction, float deltaTime)
+float VSCamera::getZoom() const 
 {
-    float velocity = movementSpeed * deltaTime;
-    if (direction == FORWARD)
-    {
-        position += front * velocity;
-    }
-    if (direction == BACKWARD)
-    {
-        position -= front * velocity;
-    }
-    if (direction == LEFT)
-    {
-        position -= right * velocity;
-    }
-    if (direction == RIGHT)
-    {
-        position += right * velocity;
-    }
-    if (direction == UP)
-    {
-        position += up * velocity;
-    }
-    if (direction == DOWN)
-    {
-        position -= up * velocity;
-    }
+    return zoom;
+}
 
+float VSCamera::getPitch() const
+{
+    return pitch;
+}
+
+float VSCamera::getYaw() const
+{
+    return yaw;
+}
+
+glm::vec3 VSCamera::getFront() const
+{
+    return front;
+}
+
+glm::vec3 VSCamera::getRight() const
+{
+    return right;
+}
+
+glm::vec3 VSCamera::getUp() const
+{
+    return up;
+}
+
+void VSCamera::setZoom(float newZoom) 
+{
+    zoom = newZoom;
     updateCameraVectors();
 }
 
-void VSCamera::processMouseMovement(float xoffset, float yoffset, GLboolean constrainPitch)
+void VSCamera::setPitchYaw(float newPitch, float newYaw)
 {
-    xoffset *= mouseSensitivity;
-    yoffset *= mouseSensitivity;
-
-    yaw += xoffset;
-    pitch += yoffset;
-
-    // Make sure that when pitch is out of bounds, screen doesn't get flipped
-    if (constrainPitch == GL_TRUE)
-    {
-        if (pitch > 89.0F)
-        {
-            pitch = 89.0F;
-        }
-        if (pitch < -89.0F)
-        {
-            pitch = -89.0F;
-        }
-    }
-
-    // Update Front, Right and Up Vectors using the updated Euler angles
+    pitch = newPitch;
+    yaw = newYaw;
     updateCameraVectors();
 }
 
-void VSCamera::processMouseScroll(float yoffset)
+void VSCamera::setPosition(glm::vec3 newPosition)
 {
-    if (zoom >= 1.0F && zoom <= 45.0F)
-    {
-        zoom -= yoffset;
-    }
-    if (zoom <= 1.0F)
-    {
-        zoom = 1.0F;
-    }
-    if (zoom >= 45.0F)
-    {
-        zoom = 45.0F;
-    }
-
+    position = newPosition;
     updateCameraVectors();
 }
 
