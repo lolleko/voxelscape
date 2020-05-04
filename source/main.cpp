@@ -157,8 +157,6 @@ int main(int, char**)
     // Setup Dear ImGui context
     UI.setup(glsl_version, window);
 
-    const auto* uiState = UI.getState();
-
     glEnable(GL_DEPTH_TEST);
     glDepthFunc(GL_LESS);
     glEnable(GL_CULL_FACE);
@@ -231,7 +229,7 @@ int main(int, char**)
 
         glfwPollEvents();
 
-        if (uiState->isWireframeModeEnabled)
+        if (UI.getState()->isWireframeModeEnabled)
         {
             glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
         }
@@ -249,11 +247,18 @@ int main(int, char**)
         glfwGetFramebufferSize(window, &display_w, &display_h);
         glViewport(0, 0, display_w, display_h);
 
-        const auto clearColor = uiState->clearColor;
+        const auto clearColor = UI.getState()->clearColor;
         glClearColor(clearColor.x, clearColor.y, clearColor.z, clearColor.w);
 
         // Clear the screen and depth buffer
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+        // Update world state with ui state
+        chunk->setShouldDrawBorderBlocks(UI.getState()->bShouldDrawChunkBorderblocks);
+
+        // Update uistate with worldState
+        UI.getMutableState()->totalBlockCount = chunk->getTotalBlockCount();
+        UI.getMutableState()->activeBlockCount = chunk->getActiveBlockCount();
 
         // draw world
         world->draw(world, nullptr);

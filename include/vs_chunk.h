@@ -27,9 +27,6 @@ public:
             blocks[blockIndex] = defaultID;
         }
 
-        // active blocks size always has to be equal to to totalBlockCount
-        activeBlockOffsets.resize(getTotalBlockCount());
-
         vertexContext = loadVertexContext("cube.obj");
 
         glBindVertexArray(vertexContext->vertexArrayObject);
@@ -53,7 +50,7 @@ public:
 
     void updateActiveBlocks()
     {
-        activeBlockCount = 0;
+        activeBlockOffsets.clear();
         for (size_t blockIndex = 0; blockIndex < getTotalBlockCount(); blockIndex++)
         {
             // std::random_device rd;
@@ -63,19 +60,18 @@ public:
             {
                 // subtract size / 2 to center around 0, 0, 0
                 const auto offset = blockIndexToBlockCoordsFloat(blockIndex) - size / 2.f;
-                activeBlockOffsets[activeBlockCount] = offset;
-                activeBlockCount++;
+                activeBlockOffsets.push_back(offset);
             }
         }
 
         glBindVertexArray(vertexContext->vertexArrayObject);
 
         glBindBuffer(GL_ARRAY_BUFFER, activeBlocksInstanceBuffer);
-        glBufferSubData(
+        glBufferData(
             GL_ARRAY_BUFFER,
-            0,
             activeBlockOffsets.size() * sizeof(glm::vec3),
-            &activeBlockOffsets[0]);
+            &activeBlockOffsets[0],
+            GL_STATIC_DRAW);
 
         glBindVertexArray(0);
     };
@@ -89,6 +85,12 @@ public:
     {
         // depth, width, height
         return size.z * size.x * size.y;
+    }
+
+    int getActiveBlockCount() const
+    {
+        // depth, width, height
+        return activeBlockOffsets.size();
     }
 
     glm::vec3 getSize() const
@@ -107,7 +109,7 @@ public:
             .setMat4("MVP", world->getCamera()->getMVPMatrixFast(getModelMatrix()));
 
         // dont draw if no blocks active
-        if (activeBlockCount != 0)
+        if (!activeBlockOffsets.empty())
         {
             glBindVertexArray(vertexContext->vertexArrayObject);
             glDrawElementsInstanced(
@@ -115,7 +117,7 @@ public:
                 vertexContext->triangleCount,
                 GL_UNSIGNED_INT,
                 nullptr,
-                activeBlockCount);
+                activeBlockOffsets.size());
             glBindVertexArray(0);
         }
     };
@@ -123,6 +125,15 @@ public:
     glm::mat4 getModelMatrix() const override
     {
         return glm::mat4(1.f);
+    }
+
+    void setShouldDrawBorderBlocks(bool state)
+    {
+        if (state != bShouldDrawBorderBlocks)
+        {
+            bShouldDrawBorderBlocks = state;
+            updateActiveBlocks();
+        }
     }
 
 private:
@@ -136,9 +147,9 @@ private:
 
     std::vector<glm::vec3> activeBlockOffsets;
 
-    int activeBlockCount;
-
     VSBlockID* blocks;
+
+    bool bShouldDrawBorderBlocks = false;
 
     glm::ivec3 blockIndexToBlockCoords(int blockIndex)
     {
@@ -182,7 +193,7 @@ private:
         if (blockCoords.x == 0 || blockCoords.x == size.x - 1 || blockCoords.y == 0 ||
             blockCoords.y == size.y - 1 || blockCoords.z == 0 || blockCoords.z == size.z - 1)
         {
-            return true;
+            return bShouldDrawBorderBlocks;
         }
 
         const auto right = glm::ivec3(blockCoords.x + 1, blockCoords.y, blockCoords.z);

@@ -43,9 +43,9 @@ void VSUI::render()
     // named window.
     {
         ImGui::ColorEdit3("clear color", (float*)&uiState->clearColor);
-        ImGui::DragFloat3("light pos", (float*)&uiState->lightPos);
-        ImGui::ColorEdit3("light color", (float*)&uiState->lightColor);
         ImGui::Checkbox("wireframe", (bool*)&uiState->isWireframeModeEnabled);
+        ImGui::Checkbox("draw chunk border blocks", (bool*)&uiState->bShouldDrawChunkBorderblocks);
+        ImGui::Text("Drawing blocks %d/%d", uiState->activeBlockCount, uiState->totalBlockCount);
         ImGui::Text(
             "Application average %.3f ms/frame (%.1f FPS)",
             1000.0f / ImGui::GetIO().Framerate,
