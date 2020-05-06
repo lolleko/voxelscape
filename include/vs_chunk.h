@@ -27,7 +27,7 @@ public:
             blocks[blockIndex] = defaultID;
         }
 
-        vertexContext = loadVertexContext("cube.obj");
+        vertexContext = loadVertexContext("models/cube.obj");
 
         glBindVertexArray(vertexContext->vertexArrayObject);
 
