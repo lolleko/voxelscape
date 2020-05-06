@@ -15,7 +15,7 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS 1)
 
 file(GLOB_RECURSE sources CONFIGURE_DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/source/*.cpp)
 
-add_executable("${CMAKE_PROJECT_NAME}" ${sources})
+add_executable("${CMAKE_PROJECT_NAME}" ${sources} source/vs_chunk.cpp source/vs_mesh.cpp source/vs_model.cpp)
 
 target_include_directories("${CMAKE_PROJECT_NAME}" PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/include/")
 
@@ -64,8 +64,9 @@ endif()
 find_package(Stb REQUIRED)
 target_include_directories("${CMAKE_PROJECT_NAME}" PRIVATE ${Stb_INCLUDE_DIR})
 
-# Copy shaders to build directory
+# Resources
 add_custom_command(TARGET "${CMAKE_PROJECT_NAME}" PRE_BUILD COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_SOURCE_DIR}/shaders/ ${CMAKE_BINARY_DIR}/shaders)
 
-# Copy textures to build directory
 add_custom_command(TARGET "${CMAKE_PROJECT_NAME}" PRE_BUILD COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_SOURCE_DIR}/textures/ ${CMAKE_BINARY_DIR}/textures)
+
+add_custom_command(TARGET "${CMAKE_PROJECT_NAME}" PRE_BUILD COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_SOURCE_DIR}/models/ ${CMAKE_BINARY_DIR}/models)

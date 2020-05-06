@@ -3,9 +3,9 @@
 #include <map>
 #include <memory>
 
-#include "vs_block.h"
 #include "vs_drawable.h"
 #include "vs_shader.h"
+#include "vs_block.h"
 
 class VSCamera;
 class VSCameraController;

@@ -15,6 +15,7 @@
 class VSShader
 {
 public:
+    // TODO move to cpp and/or seperate class
     class VSShaderUniformProxy
     {
     public:
@@ -58,139 +59,22 @@ public:
         GLuint ID;
     };
 
-    VSShader(const char* name)
-    {
-        const auto vertexShaderPath = (shaderDirectory / name).replace_extension(".vs");
+    VSShader(const char* name);
 
-        ID = glCreateProgram();
+    GLuint getID() const;
 
-        GLuint vertexShaderID = compileShader(vertexShaderPath, GL_VERTEX_SHADER);
-        glAttachShader(ID, vertexShaderID);
+    void use() const;
 
-        const auto fragmentShaderPath = (shaderDirectory / name).replace_extension(".fs");
-
-        auto hasFragmentShader = false;
-        GLuint fragmentShaderID = -1;
-        if (!std::filesystem::exists(fragmentShaderPath))
-        {
-            VSLog::Log(
-                VSLog::Category::Shader,
-                VSLog::Level::warn,
-                "Vertex shader: %s is present, but corresponding fragment shader: % is missing",
-                vertexShaderPath.string(),
-                fragmentShaderPath.string());
-        }
-        else
-        {
-            fragmentShaderID = compileShader(fragmentShaderPath, GL_FRAGMENT_SHADER);
-            glAttachShader(ID, fragmentShaderID);
-        }
-        glLinkProgram(ID);
-
-        checkProgramLinkErrors(ID);
-
-        glDetachShader(ID, vertexShaderID);
-        glDetachShader(ID, fragmentShaderID);
-
-        glDeleteShader(vertexShaderID);
-        glDeleteShader(fragmentShaderID);
-    }
-
-    GLuint getID() const
-    {
-        return ID;
-    }
-
-    void use() const
-    {
-        glUseProgram(ID);
-    }
-
-    VSShaderUniformProxy uniforms()
-    {
-        return VSShaderUniformProxy(ID);
-    };
+    VSShaderUniformProxy uniforms() const;;
 
 private:
     GLuint ID;
 
     inline static const auto shaderDirectory = std::filesystem::path("shaders");
 
-    static bool checkShaderCompileErrors(unsigned int shaderID)
-    {
-        int success = 1;
-        int infoLogLength = 0;
+    static bool checkShaderCompileErrors(unsigned int shaderID);
 
-        glGetShaderiv(shaderID, GL_COMPILE_STATUS, &success);
-        glGetShaderiv(shaderID, GL_INFO_LOG_LENGTH, &infoLogLength);
+    static bool checkProgramLinkErrors(unsigned int programID);
 
-        std::vector<char> infoLog(infoLogLength + 1);
-
-        if (success == 0)
-        {
-            glGetShaderInfoLog(shaderID, infoLogLength, nullptr, &infoLog[0]);
-            VSLog::Log(
-                VSLog::Category::Shader,
-                VSLog::Level::critical,
-                "Shader compilation failed:\n%s",
-                std::string(infoLog.data()));
-        }
-
-        return success == 0;
-    }
-
-    static bool checkProgramLinkErrors(unsigned int programID)
-    {
-        int success = 1;
-        int infoLogLength = 0;
-
-        glGetProgramiv(programID, GL_LINK_STATUS, &success);
-        glGetProgramiv(programID, GL_INFO_LOG_LENGTH, &infoLogLength);
-
-        std::vector<char> infoLog(infoLogLength + 1);
-
-        if (success == 0)
-        {
-            glGetProgramInfoLog(programID, infoLogLength, nullptr, &infoLog[0]);
-            VSLog::Log(
-                VSLog::Category::Shader,
-                VSLog::Level::critical,
-                "Progam linking failed:\n%s",
-                std::string(infoLog.data()));
-        }
-
-        return success == 0;
-    }
-
-    static GLuint compileShader(const std::filesystem::path& shaderPath, GLenum shaderType)
-    {
-        std::ifstream shaderStream(shaderPath);
-        std::string shaderString(
-            (std::istreambuf_iterator<char>(shaderStream)), std::istreambuf_iterator<char>());
-
-        VSLog::Log(
-            VSLog::Category::Shader,
-            VSLog::Level::info,
-            "Compiling shader: %s",
-            shaderPath.string());
-
-        GLuint shaderID = glCreateShader(shaderType);
-
-        // Compile Vertex Shader
-        char const* shaderSourcePointer = shaderString.c_str();
-        glShaderSource(shaderID, 1, &shaderSourcePointer, nullptr);
-        glCompileShader(shaderID);
-
-        const auto hadCompileError = checkShaderCompileErrors(shaderID);
-        if (!hadCompileError)
-        {
-            VSLog::Log(
-                VSLog::Category::Shader,
-                VSLog::Level::info,
-                "Succesfully compiled shader: %s",
-                shaderPath.string());
-        }
-
-        return shaderID;
-    }
+    static GLuint compileShader(const std::filesystem::path& shaderPath, GLenum shaderType);
 };
