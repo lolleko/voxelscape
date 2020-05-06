@@ -1,4 +1,4 @@
-#include "vs_mesh.h"
+#include "renderer/vs_mesh.h"
 
 VSMesh::VSMesh(std::unique_ptr<VSVertexContext> vertexContext, std::vector<VSTexture> textures)
     : vertexContext(std::move(vertexContext))

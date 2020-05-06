@@ -1,8 +1,8 @@
 #include <glm/fwd.hpp>
 #include <iostream>
 
-#include "vs_cameracontroller.h"
-#include "vs_camera.h"
+#include "core/vs_cameracontroller.h"
+#include "core/vs_camera.h"
 
 VSCameraController::VSCameraController(const std::shared_ptr<VSCamera>& camera)
     : movementSpeed(SPEED)

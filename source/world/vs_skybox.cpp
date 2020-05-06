@@ -1,8 +1,8 @@
-#include "vs_skybox.h"
+#include "world/vs_skybox.h"
 
-#include "vs_textureloader.h"
-#include "vs_world.h"
-#include "vs_camera.h"
+#include "renderer/vs_textureloader.h"
+#include "world/vs_world.h"
+#include "core/vs_camera.h"
 
 VSSkybox::VSSkybox()
 {

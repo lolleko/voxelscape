@@ -1,4 +1,4 @@
-#include "vs_shader.h"
+#include "renderer/vs_shader.h"
 
 VSShader::VSShader(const char* name)
 {

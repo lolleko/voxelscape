@@ -1,8 +1,8 @@
 #include <glad/glad.h>
 #include <stb_image.h>
 
-#include "vs_log.h"
-#include "vs_textureloader.h"
+#include "core/vs_log.h"
+#include "renderer/vs_textureloader.h"
 
 unsigned int loadCubemap(std::vector<std::string> faces)
 {

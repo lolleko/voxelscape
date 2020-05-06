@@ -10,7 +10,7 @@
 #include <vector>
 #include <filesystem>
 
-#include "vs_log.h"
+#include "core/vs_log.h"
 
 class VSShader
 {

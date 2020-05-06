@@ -1,8 +1,8 @@
-#include "vs_chunk.h"
+#include "world/vs_chunk.h"
 
-#include "vs_modelloader.h"
-#include "vs_world.h"
-#include "vs_camera.h"
+#include "renderer/vs_modelloader.h"
+#include "world/vs_world.h"
+#include "core/vs_camera.h"
 
 VSChunk::VSChunk(const glm::vec3& size, VSBlockID defaultID)
     : size(size)

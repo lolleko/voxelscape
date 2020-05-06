@@ -2,9 +2,9 @@
 
 #include <array>
 #include <glm/fwd.hpp>
-#include "vs_drawable.h"
-#include "vs_shader.h"
-#include "vs_transformable.h"
+#include "renderer/vs_drawable.h"
+#include "renderer/vs_shader.h"
+#include "world/vs_transformable.h"
 
 class VSSkybox : public IVSDrawable, IVSTransformable
 {

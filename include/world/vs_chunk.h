@@ -3,9 +3,9 @@
 #include <glad/glad.h>
 
 #include <vector>
-#include "vs_drawable.h"
-#include "vs_transformable.h"
-#include "vs_block.h"
+#include "renderer/vs_drawable.h"
+#include "world/vs_transformable.h"
+#include "world/vs_block.h"
 
 struct VSVertexContext;
 

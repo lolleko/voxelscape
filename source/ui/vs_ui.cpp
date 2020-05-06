@@ -1,9 +1,11 @@
-#include <imgui.h>
-#include "imgui_impl/imgui_impl_glfw.h"
-#include "imgui_impl/imgui_impl_opengl3.h"
+#include "ui/vs_ui.h"
 
-#include "vs_ui.h"
-#include "vs_ui_state.h"
+#include <imgui.h>
+
+#include "ui/imgui_impl/imgui_impl_glfw.h"
+#include "ui/imgui_impl/imgui_impl_opengl3.h"
+
+#include "ui/vs_ui_state.h"
 
 VSUI::VSUI()
     : uiState(new VSUIState){};

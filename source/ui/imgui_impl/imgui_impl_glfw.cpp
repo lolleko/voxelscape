@@ -40,7 +40,7 @@
 //  of -1,-1). 2016-10-15: Misc: Added a void* user_data parameter to Clipboard function handlers.
 
 #include "imgui.h"
-#include "imgui_impl/imgui_impl_glfw.h"
+#include "ui/imgui_impl/imgui_impl_glfw.h"
 
 // GLFW
 #include <GLFW/glfw3.h>

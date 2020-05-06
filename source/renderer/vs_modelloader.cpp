@@ -2,8 +2,8 @@
 #include <assimp/postprocess.h>
 #include <assimp/Importer.hpp>
 
-#include "vs_modelloader.h"
-#include "vs_textureloader.h"
+#include "renderer/vs_modelloader.h"
+#include "renderer/vs_textureloader.h"
 
 std::vector<VSMesh> loadModel(std::string const& path)
 {

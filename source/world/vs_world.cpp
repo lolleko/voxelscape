@@ -1,9 +1,9 @@
-#include "vs_world.h"
+#include "world/vs_world.h"
 #include <glm/fwd.hpp>
 #include <memory>
 
-#include "vs_camera.h"
-#include "vs_cameracontroller.h"
+#include "core/vs_camera.h"
+#include "core/vs_cameracontroller.h"
 
 VSWorld::VSWorld()
 {

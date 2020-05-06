@@ -2,6 +2,10 @@ cmake_minimum_required(VERSION 3.5 FATAL_ERROR)
 
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
+set(CMAKE_CXX_VISIBILITY_PRESET hidden)
+
+set(CMAKE_EXPORT_COMPILE_COMMANDS 1)
+
 if(DEFINED ENV{VCPKG_INSTALLATION_ROOT} AND NOT DEFINED CMAKE_TOOLCHAIN_FILE)
   set(CMAKE_TOOLCHAIN_FILE "$ENV{VCPKG_INSTALLATION_ROOT}/scripts/buildsystems/vcpkg.cmake"
       CACHE STRING "")
@@ -11,11 +15,9 @@ project(voxelscape
   LANGUAGES CXX
 )
 
-set(CMAKE_EXPORT_COMPILE_COMMANDS 1)
-
 file(GLOB_RECURSE sources CONFIGURE_DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/source/*.cpp)
 
-add_executable("${CMAKE_PROJECT_NAME}" ${sources} source/vs_chunk.cpp source/vs_mesh.cpp source/vs_model.cpp)
+add_executable("${CMAKE_PROJECT_NAME}" ${sources} source/world/vs_chunk.cpp source/renderer/vs_mesh.cpp source/renderer/vs_model.cpp)
 
 target_include_directories("${CMAKE_PROJECT_NAME}" PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/include/")
 

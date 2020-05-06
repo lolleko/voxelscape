@@ -1,4 +1,4 @@
-#include "vs_camera.h"
+#include "core/vs_camera.h"
 
 #include <glm/ext/matrix_transform.hpp>
 #include <glm/fwd.hpp>

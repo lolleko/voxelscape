@@ -7,9 +7,9 @@
 #include <utility>
 #include <vector>
 #include <string>
-#include "vs_shader.h"
-#include "vs_vertex_context.h"
-#include "vs_drawable.h"
+#include "renderer/vs_shader.h"
+#include "renderer/vs_vertex_context.h"
+#include "renderer/vs_drawable.h"
 
 struct VSTexture
 {

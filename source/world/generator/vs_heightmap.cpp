@@ -1,5 +1,5 @@
-#include "vs_heightmap.h"
-#include "vs_perlinnoise.h"
+#include "world/generator/vs_heightmap.h"
+#include "world/generator/vs_perlinnoise.h"
 
 VSHeightmap::VSHeightmap(unsigned int seed, unsigned int maxHeight, unsigned int octaves, float frequency, float amplitude, float lacunarity, float persistence) {
     pn = new VSPerlinNoise(seed);

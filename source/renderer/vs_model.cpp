@@ -1,4 +1,4 @@
-#include "vs_model.h"
+#include "renderer/vs_model.h"
 
 VSModel::VSModel(std::string const& path, bool gamma)
     : gammaCorrection(gamma)

@@ -20,11 +20,11 @@
 #include <algorithm>
 #include <filesystem>
 
-#include "vs_drawable.h"
-#include "vs_mesh.h"
-#include "vs_shader.h"
-#include "vs_vertex_context.h"
-#include "vs_modelloader.h"
+#include "renderer/vs_drawable.h"
+#include "renderer/vs_mesh.h"
+#include "renderer/vs_shader.h"
+#include "renderer/vs_vertex_context.h"
+#include "renderer/vs_modelloader.h"
 
 class VSModel : public IVSDrawable
 {

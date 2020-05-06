@@ -8,20 +8,20 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <memory>
 
-#include "vs_drawable.h"
-#include "vs_shader.h"
-#include "vs_ui.h"
-#include "vs_ui_state.h"
-#include "vs_cube.h"
-#include "vs_camera.h"
-#include "vs_cameracontroller.h"
-#include "vs_log.h"
-#include "vs_model.h"
-#include "vs_skybox.h"
-#include "vs_textureloader.h"
-#include "vs_heightmap.h"
-#include "vs_chunk.h"
-#include "vs_world.h"
+#include "renderer/vs_drawable.h"
+#include "renderer/vs_shader.h"
+#include "ui/vs_ui.h"
+#include "ui/vs_ui_state.h"
+#include "world/vs_cube.h"
+#include "core/vs_camera.h"
+#include "core/vs_cameracontroller.h"
+#include "core/vs_log.h"
+#include "renderer/vs_model.h"
+#include "world/vs_skybox.h"
+#include "renderer/vs_textureloader.h"
+#include "world/generator/vs_heightmap.h"
+#include "world/vs_chunk.h"
+#include "world/vs_world.h"
 
 static void glfw_error_callback(int error, const char* description)
 {
