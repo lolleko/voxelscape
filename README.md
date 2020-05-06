@@ -1,3 +1,9 @@
+# Voxelscape
+
+![CI](https://github.com/lolleko/voxelscape/workflows/CI/badge.svg)
+
+Experiments with voxels and terrain generation.
+
 ## Requirements:
 
 **Install vcpkg**
