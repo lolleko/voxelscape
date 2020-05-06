@@ -8,7 +8,7 @@
 
 // Forward declarations
 class VSCamera;
-class GLFWwindow;
+struct GLFWwindow;
 
 const float SPEED = 100.F;
 const float SENSITIVITY = 0.1F;
@@ -24,8 +24,11 @@ public:
 
     // Processes input received from a mouse input system. Expects the offset value in both the x
     // and y direction.
-    void
-    processMouseMovement(GLFWwindow* window, double xpos, double ypos, GLboolean constrainPitch = GL_TRUE);
+    void processMouseMovement(
+        GLFWwindow* window,
+        double xpos,
+        double ypos,
+        GLboolean constrainPitch = GL_TRUE);
 
     // Processes input received from a mouse scroll-wheel event. Only requires input on the vertical
     // wheel-axis

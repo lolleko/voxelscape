@@ -128,12 +128,12 @@ private:
 
         if (success == 0)
         {
-            glGetShaderInfoLog(shaderID, 1024, nullptr, &infoLog[0]);
+            glGetShaderInfoLog(shaderID, infoLogLength, nullptr, &infoLog[0]);
             VSLog::Log(
                 VSLog::Category::Shader,
                 VSLog::Level::critical,
                 "Shader compilation failed:\n%s",
-                &infoLog[0]);
+                std::string(infoLog.data()));
         }
 
         return success == 0;
@@ -151,7 +151,7 @@ private:
 
         if (success == 0)
         {
-            glGetProgramInfoLog(programID, infoLogLength + 1, nullptr, &infoLog[0]);
+            glGetProgramInfoLog(programID, infoLogLength, nullptr, &infoLog[0]);
             VSLog::Log(
                 VSLog::Category::Shader,
                 VSLog::Level::critical,
