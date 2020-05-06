@@ -44,17 +44,22 @@ target_link_libraries("${CMAKE_PROJECT_NAME}" PRIVATE spdlog::spdlog spdlog::spd
 # target_link_libraries("${CMAKE_PROJECT_NAME}" PRIVATE assimp::assimp)
 
 find_package(assimp CONFIG REQUIRED)
-find_library(ASSIMP_ZLIB_LIBRARY z)
-find_library(ASSIMP_IRRXML_LIBRARY IrrXML)
 
-message("ASSIMP_ZLIB_LIBRARY   = " "${ASSIMP_ZLIB_LIBRARY}")
-message("ASSIMP_IRRXML_LIBRARY = " "${ASSIMP_IRRXML_LIBRARY}")
+if(UNIX) 
+  find_library(ASSIMP_ZLIB_LIBRARY z)
+  find_library(ASSIMP_IRRXML_LIBRARY IrrXML)
+  target_link_libraries("${CMAKE_PROJECT_NAME}" PRIVATE 
+    assimp::assimp
+    ${ASSIMP_ZLIB_LIBRARY}
+    ${ASSIMP_IRRXML_LIBRARY}
+  )
+else()
+  target_link_libraries("${CMAKE_PROJECT_NAME}" PRIVATE 
+    assimp::assimp
+  )
+endif()
 
-target_link_libraries("${CMAKE_PROJECT_NAME}" PRIVATE 
-  assimp::assimp
-  ${ASSIMP_ZLIB_LIBRARY}
-  ${ASSIMP_IRRXML_LIBRARY}
-)
+
 
 find_package(Stb REQUIRED)
 target_include_directories("${CMAKE_PROJECT_NAME}" PRIVATE ${Stb_INCLUDE_DIR})
