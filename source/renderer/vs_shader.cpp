@@ -18,7 +18,7 @@ VSShader::VSShader(const char* name)
         VSLog::Log(
             VSLog::Category::Shader,
             VSLog::Level::warn,
-            "Vertex shader: %s is present, but corresponding fragment shader: % is missing",
+            "Vertex shader: {} is present, but corresponding fragment shader: % is missing",
             vertexShaderPath.string(),
             fragmentShaderPath.string());
     }
@@ -69,7 +69,7 @@ bool VSShader::checkShaderCompileErrors(unsigned int shaderID)
         VSLog::Log(
             VSLog::Category::Shader,
             VSLog::Level::critical,
-            "Shader compilation failed:\n%s",
+            "Shader compilation failed:\n{}",
             std::string(infoLog.data()));
     }
 
@@ -92,7 +92,7 @@ bool VSShader::checkProgramLinkErrors(unsigned int programID)
         VSLog::Log(
             VSLog::Category::Shader,
             VSLog::Level::critical,
-            "Progam linking failed:\n%s",
+            "Progam linking failed:\n{}",
             std::string(infoLog.data()));
     }
 
@@ -106,7 +106,7 @@ GLuint VSShader::compileShader(const std::filesystem::path& shaderPath, GLenum s
         (std::istreambuf_iterator<char>(shaderStream)), std::istreambuf_iterator<char>());
 
     VSLog::Log(
-        VSLog::Category::Shader, VSLog::Level::info, "Compiling shader: %s", shaderPath.string());
+        VSLog::Category::Shader, VSLog::Level::info, "Compiling shader: {}", shaderPath.string());
 
     GLuint shaderID = glCreateShader(shaderType);
 
@@ -121,7 +121,7 @@ GLuint VSShader::compileShader(const std::filesystem::path& shaderPath, GLenum s
         VSLog::Log(
             VSLog::Category::Shader,
             VSLog::Level::info,
-            "Succesfully compiled shader: %s",
+            "Succesfully compiled shader: {}",
             shaderPath.string());
     }
 
