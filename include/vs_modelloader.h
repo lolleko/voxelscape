@@ -9,10 +9,10 @@
 #include "vs_mesh.h"
 #include "vs_vertex_context.h"
 
-class aiScene;
-class aiNode;
-class aiMesh;
-class aiMaterial;
+struct aiScene;
+struct aiNode;
+struct aiMesh;
+struct aiMaterial;
 
 std::vector<VSMesh> loadModel(std::string const& path);
 std::unique_ptr<VSVertexContext> loadVertexContext(std::string const& path);

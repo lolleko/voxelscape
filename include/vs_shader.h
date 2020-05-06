@@ -76,9 +76,9 @@ public:
             VSLog::Log(
                 VSLog::Category::Shader,
                 VSLog::Level::warn,
-                "Vertex shader: {} is present, but corresponding fragment shader: {} is missing",
-                vertexShaderPath.c_str(),
-                fragmentShaderPath.c_str());
+                "Vertex shader: %s is present, but corresponding fragment shader: % is missing",
+                vertexShaderPath.string(),
+                fragmentShaderPath.string());
         }
         else
         {
@@ -132,7 +132,7 @@ private:
             VSLog::Log(
                 VSLog::Category::Shader,
                 VSLog::Level::critical,
-                "Shader compilation failed:\n{}",
+                "Shader compilation failed:\n%s",
                 &infoLog[0]);
         }
 
@@ -151,12 +151,12 @@ private:
 
         if (success == 0)
         {
-            glGetProgramInfoLog(programID, 1024, nullptr, &infoLog[0]);
+            glGetProgramInfoLog(programID, infoLogLength + 1, nullptr, &infoLog[0]);
             VSLog::Log(
                 VSLog::Category::Shader,
                 VSLog::Level::critical,
-                "Progam linking failed:\n{}",
-                &infoLog[0]);
+                "Progam linking failed:\n%s",
+                std::string(infoLog.data()));
         }
 
         return success == 0;
@@ -171,8 +171,8 @@ private:
         VSLog::Log(
             VSLog::Category::Shader,
             VSLog::Level::info,
-            "Compiling shader: {}",
-            shaderPath.c_str());
+            "Compiling shader: %s",
+            shaderPath.string());
 
         GLuint shaderID = glCreateShader(shaderType);
 
@@ -187,8 +187,8 @@ private:
             VSLog::Log(
                 VSLog::Category::Shader,
                 VSLog::Level::info,
-                "Succesfully compiled shader: {}",
-                shaderPath.c_str());
+                "Succesfully compiled shader: %s",
+                shaderPath.string());
         }
 
         return shaderID;

@@ -15,10 +15,31 @@ jobs:
 
     steps:
       - uses: actions/checkout@v2
+      # VCPKG_INSTALLATION_ROOT not set on windows
+      - name: Set environment variables
+        if: matrix.os == 'windows-latest'
+        run: echo "::set-env name=VCPKG_INSTALLATION_ROOT::C:\vcpkg"
+      # VCPKG_INSTALLATION_ROOT not set to actions context on unix
+      - name: Set environment variables
+        if: matrix.os != 'windows-latest'
+        run: echo "::set-env name=VCPKG_INSTALLATION_ROOT::$VCPKG_INSTALLATION_ROOT"
+      - name: Cache vcpkg installed
+        id: vcpkg-installed-cache
+        uses: actions/cache@v1
+        with:
+          path: ${{ env.VCPKG_INSTALLATION_ROOT }}/installed
+          key: ${{ hashFiles('**/vcpkg_response_file.txt') }}-${{ runner.os }}-installed
+      - name: Cache vcpkg packages
+        id: vcpkg-packages-cache
+        uses: actions/cache@v1
+        with:
+          path: ${{ env.VCPKG_INSTALLATION_ROOT }}/packages
+          key: ${{ hashFiles('**/vcpkg_response_file.txt') }}-${{ runner.os }}-packages
       - run: sudo apt install libxinerama-dev libxcursor-dev xorg-dev libglu1-mesa-dev && sudo update-alternatives --install /usr/bin/c++ c++ /usr/bin/clang++-9 100 && sudo update-alternatives --set c++ /usr/bin/clang++-9
         if: matrix.os == 'ubuntu-latest'
       - run: echo "::set-env name=VCPKG_DEFAULT_TRIPLET::x64-windows"
         if: matrix.os == 'windows-latest'
-      - run: vcpkg install glad glfw3 glm entt imgui spdlog assimp stb
+      - run: vcpkg install "@vcpkg_response_file.txt"
+        if: steps.vcpkg-installed-cache.outputs.cache-hit != 'true' || steps.vcpkg-packages-cache.outputs.cache-hit != 'true'
       - run: cmake -Bbuild -DCMAKE_BUILD_TYPE=DEBUG
       - run: cmake  --build build

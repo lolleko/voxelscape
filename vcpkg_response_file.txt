@@ -1,0 +1,7 @@
+glad
+glfw3
+glm
+imgui
+spdlog
+assimp
+stb

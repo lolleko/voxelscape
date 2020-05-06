@@ -1,7 +1,7 @@
 #pragma once
 
 struct VSUIState;
-class GLFWwindow;
+struct GLFWwindow;
 
 class VSUI
 {
