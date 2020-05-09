@@ -21,11 +21,11 @@ struct VSTexture
 class VSMesh : public IVSDrawable
 {
 public:
-    VSMesh(std::unique_ptr<VSVertexContext> vertexContext, std::vector<VSTexture> textures);
+    VSMesh(VSVertexContext* vertexContext, std::vector<VSTexture> textures);
 
     void draw(std::shared_ptr<VSWorld> world, std::shared_ptr<VSShader> shader) const override;
 
 private:
-    std::unique_ptr<VSVertexContext> vertexContext;
+    VSVertexContext* vertexContext;
     std::vector<VSTexture> textures;
 };

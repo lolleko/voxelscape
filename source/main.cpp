@@ -133,23 +133,8 @@ int main(int, char**)
     auto skybox = std::make_shared<VSSkybox>();
     auto skyboxShader = std::make_shared<VSShader>("Skybox");
 
-    auto chunk = std::make_shared<VSChunk>(glm::vec3(500, 100, 500), 0);
-    auto chunkShader = std::make_shared<VSShader>("Chunk");
+    world->initializeChunks();
 
-    VSHeightmap hm = VSHeightmap(42, chunk->getSize().y, 1, 0.02F, 4.F);
-    for (int x = 0; x < chunk->getSize().x; x++)
-    {
-        for (int z = 0; z < chunk->getSize().z; z++)
-        {
-            for (int y = 0; y < hm.getVoxelHeight(x, z); y++)
-            {
-                chunk->setBlock({x, y, z}, 1);
-            }
-        }
-    }
-    chunk->updateActiveBlocks();
-
-    world->addDrawable(chunk, chunkShader);
     world->addDrawable(skybox, skyboxShader);
 
     VSLog::Log(VSLog::Category::Core, VSLog::Level::info, "Starting main loop");
@@ -192,11 +177,11 @@ int main(int, char**)
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         // Update world state with ui state
-        chunk->setShouldDrawBorderBlocks(UI.getState()->bShouldDrawChunkBorderblocks);
+        ///chunk->setShouldDrawBorderBlocks(UI.getState()->bShouldDrawChunkBorderblocks);
 
         // Update uistate with worldState
-        UI.getMutableState()->totalBlockCount = chunk->getTotalBlockCount();
-        UI.getMutableState()->activeBlockCount = chunk->getActiveBlockCount();
+        UI.getMutableState()->totalBlockCount = world->getTotalBlockCount();
+        UI.getMutableState()->activeBlockCount = world->getActiveBlockCount();
 
         // draw world
         world->draw(world, nullptr);

@@ -24,7 +24,7 @@ std::vector<VSMesh> loadModel(std::string const& path)
     return meshes;
 }
 
-std::unique_ptr<VSVertexContext> loadVertexContext(std::string const& path)
+VSVertexContext* loadVertexContext(std::string const& path)
 {
     Assimp::Importer importer;
     const aiScene* scene = importer.ReadFile(
@@ -57,7 +57,7 @@ void processNode(aiNode* node, const aiScene* scene, std::vector<VSMesh>& outMes
     }
 }
 
-std::unique_ptr<VSVertexContext> processMeshVertices(aiMesh*& mesh)
+VSVertexContext* processMeshVertices(aiMesh*& mesh)
 {
     // the following only works if assimp and glm vector have the same size
     assert(sizeof(glm::vec3) == sizeof(aiVector3D));
@@ -109,7 +109,7 @@ std::unique_ptr<VSVertexContext> processMeshVertices(aiMesh*& mesh)
         }
     }
 
-    return std::make_unique<VSVertexContext>(
+    return new VSVertexContext(
         vertexPositions,
         vertexNormals,
         vertexTexCoords,
@@ -152,7 +152,7 @@ VSMesh processMesh(aiMesh* mesh, const aiScene* scene)
     textures.insert(textures.end(), heightMaps.begin(), heightMaps.end());
 
     // return a mesh object created from the extracted mesh data
-    return VSMesh(std::move(vertexContext), textures);
+    return VSMesh(vertexContext, textures);
 }
 
 static inline std::vector<VSTexture> g_textures_loaded;

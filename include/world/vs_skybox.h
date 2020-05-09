@@ -15,6 +15,8 @@ public:
 
     glm::mat4 getModelMatrix() const override;
 
+    void setModelMatrix(const glm::mat4& mat) override;
+
 private:
     const std::array<float, 108> skyboxVertices = {
         // positions

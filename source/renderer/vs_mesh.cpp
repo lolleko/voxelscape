@@ -1,7 +1,7 @@
 #include "renderer/vs_mesh.h"
 
-VSMesh::VSMesh(std::unique_ptr<VSVertexContext> vertexContext, std::vector<VSTexture> textures)
-    : vertexContext(std::move(vertexContext))
+VSMesh::VSMesh(VSVertexContext* vertexContext, std::vector<VSTexture> textures)
+    : vertexContext(vertexContext)
     , textures(std::move(textures)){};
 
 void VSMesh::draw(std::shared_ptr<VSWorld> world, std::shared_ptr<VSShader> shader) const

@@ -13,7 +13,7 @@ class VSChunk : public IVSDrawable, IVSTransformable
 {
 public:
     // Size can only be set on construction
-    VSChunk(const glm::vec3& size, VSBlockID defaultID);
+    VSChunk(const glm::ivec3& size, VSBlockID defaultID);
 
     void updateActiveBlocks();;
 
@@ -29,14 +29,16 @@ public:
 
     glm::mat4 getModelMatrix() const override;
 
+    void setModelMatrix(const glm::mat4& mat) override;
+
     void setShouldDrawBorderBlocks(bool state);
 
 private:
-    glm::vec3 size;
+    glm::ivec3 size;
 
     VSBlockID defaultID;
 
-    std::unique_ptr<VSVertexContext> vertexContext;
+    VSVertexContext* vertexContext;
 
     GLuint activeBlocksInstanceBuffer;
 
@@ -44,7 +46,9 @@ private:
 
     VSBlockID* blocks;
 
-    bool bShouldDrawBorderBlocks = false;
+    bool bShouldDrawBorderBlocks = true;
+
+    glm::mat4 modelMatrix = glm::mat4(1.f);
 
     glm::ivec3 blockIndexToBlockCoords(int blockIndex) const;
 

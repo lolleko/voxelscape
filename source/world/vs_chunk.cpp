@@ -4,7 +4,7 @@
 #include "world/vs_world.h"
 #include "core/vs_camera.h"
 
-VSChunk::VSChunk(const glm::vec3& size, VSBlockID defaultID)
+VSChunk::VSChunk(const glm::ivec3& size, VSBlockID defaultID)
     : size(size)
     , defaultID(defaultID)
 {
@@ -47,7 +47,7 @@ void VSChunk::updateActiveBlocks()
         if (blocks[blockIndex] != defaultID && isBlockVisible(blockIndex))
         {
             // subtract size / 2 to center around 0, 0, 0
-            const auto offset = blockIndexToBlockCoordsFloat(blockIndex) - size / 2.f;
+            const auto offset = blockIndexToBlockCoordsFloat(blockIndex) - glm::vec3(size) / 2.f;
             activeBlockOffsets.push_back(offset);
         }
     }
@@ -112,7 +112,12 @@ void VSChunk::draw(std::shared_ptr<VSWorld> world, std::shared_ptr<VSShader> sha
 
 glm::mat4 VSChunk::getModelMatrix() const
 {
-    return glm::mat4(1.f);
+    return modelMatrix;
+}
+
+void VSChunk::setModelMatrix(const glm::mat4& mat)
+{
+    modelMatrix = mat;
 }
 
 void VSChunk::setShouldDrawBorderBlocks(bool state)
