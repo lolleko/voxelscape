@@ -14,7 +14,7 @@ public:
         float lacunarity = 2.0F,
         float persistence = 0.5F,
         int framesPerAnimationStep = 1,
-        int velocity = 2
+        int velocity = 4
     );
 
     // Return whether or not the heights changed and should be updated
@@ -26,7 +26,7 @@ private:
     int mOffset;
     int mFrameCount;
     int mFramesPerAnimationStep; // defaults to 1
-    int mVelocity; // How much movement between animation steps, defaults to 2
+    int mVelocity; // How much movement between animation steps, defaults to 4
 
     // TODO: Animate amplutude maybe
     int amplitudeOffset = 0;

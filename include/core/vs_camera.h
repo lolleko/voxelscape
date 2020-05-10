@@ -60,6 +60,8 @@ public:
 
     void setPosition(glm::vec3 newPosition);
 
+    void setAspectRatio(float newAspectRatio);
+
 private:
     glm::mat4 cachedViewMatrix;
     glm::mat4 cachedProjectionMatrix;
@@ -76,6 +78,8 @@ private:
     float pitch;
     // Camera options
     float zoom;
+    // Current aspect ratio
+    float aspectRatio = 16.F / 9.F;
 
     // Calculates the front vector from the Camera's (updated) Euler Angles
     void updateCameraVectors();

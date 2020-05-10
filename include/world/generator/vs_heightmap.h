@@ -26,6 +26,8 @@ public:
     // Return integer height scaled with maxHeight
     virtual int getVoxelHeight(int x, int y);
 
+    void setMaxHeight(int maxHeight);
+
     float getHeight(int x, int y);
 
 private:

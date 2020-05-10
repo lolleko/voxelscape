@@ -38,6 +38,11 @@ float VSHeightmap::getHeight(int x, int y)
     return (output / denom);
 }
 
+void VSHeightmap::setMaxHeight(int maxHeight)
+{
+    mMaxHeight = maxHeight;
+}
+
 int VSHeightmap::getVoxelHeight(int x, int y)
 {
     float height = getHeight(x, y) * (float)mMaxHeight;

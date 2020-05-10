@@ -79,14 +79,17 @@ int main(int, char**)
         return 1;
     }
 
-    // TODO move worl init down once this input mess has been solved
+    // TODO move world init down once this input mess has been solved
     auto* world = new VSWorld();
 
     glfwSetWindowUserPointer(window, world);
 
     glfwMakeContextCurrent(window);
-    glfwSetFramebufferSizeCallback(
-        window, [](GLFWwindow* window, int width, int height) { glViewport(0, 0, width, height); });
+    glfwSetFramebufferSizeCallback(window, [](GLFWwindow* window, int width, int height) {
+        glViewport(0, 0, width, height);
+        auto* world = static_cast<VSWorld*>(glfwGetWindowUserPointer(window));
+        world->getCameraController()->processFramebufferResize(window, width, height);
+    });
     // TODO these callbacks need to be part of a sperate controller class
     glfwSetCursorPosCallback(window, [](GLFWwindow* window, double xpos, double ypos) {
         // TODO messy
@@ -132,7 +135,9 @@ int main(int, char**)
     auto skybox = new VSSkybox();
     auto skyboxShader = std::make_shared<VSShader>("Skybox");
     const auto worldSize = world->getWorldSize();
-    VSAnimatedHeightmap animatedHm = VSAnimatedHeightmap(42, worldSize.y, 2, 0.02F, 4.F, 2.0F, 0.5F);
+    // Messy, segfaults if world gets resized
+    VSAnimatedHeightmap animatedHm =
+        VSAnimatedHeightmap(42, worldSize.y, 2, 0.02F, 4.F, 2.0F, 0.5F);
 
     world->initializeChunks();
 
@@ -180,10 +185,14 @@ int main(int, char**)
         // Update world state with ui state
         if (UI.getState()->bShouldUpdateChunks)
         {
+            world->clearBlocks();
             world->setChunkSize(UI.getState()->chunkSize);
             world->setChunkCount(UI.getState()->chunkCount);
             world->setShouldDrawBorderBlocks(UI.getState()->bShouldDrawChunkBorderBlocks);
             world->updateActiveChunks();
+            // Very messy, just for demo
+            const auto worldSize = world->getWorldSize();
+            animatedHm.setMaxHeight(worldSize.y);
         }
 
         if (UI.getState()->bShouldGenerateHeightMap)
@@ -207,6 +216,7 @@ int main(int, char**)
         if (UI.getState()->bShouldAnimateHeightMap && animatedHm.animateStep())
         {
             world->clearBlocks();
+            const auto worldSize = world->getWorldSize();
             for (int x = 0; x < worldSize.x; x++)
             {
                 for (int z = 0; z < worldSize.z; z++)

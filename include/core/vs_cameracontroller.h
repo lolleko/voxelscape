@@ -36,6 +36,8 @@ public:
 
     void processKeyboardInput(GLFWwindow* window, float deltaTime) const;
 
+    void processFramebufferResize(GLFWwindow* window, int width, int height);
+
 private:
     VSCamera* cam;
 

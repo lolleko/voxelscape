@@ -96,7 +96,7 @@ void VSCameraController::processKeyboardInput(GLFWwindow* window, float deltaTim
 {
     float velocity = movementSpeed * deltaTime;
     glm::vec3 position = cam->getPosition();
-    
+
     if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
     {
         glfwSetWindowShouldClose(window, GL_TRUE);
@@ -132,4 +132,10 @@ void VSCameraController::processKeyboardInput(GLFWwindow* window, float deltaTim
         position -= up * velocity;
     }
     cam->setPosition(position);
+}
+
+void VSCameraController::processFramebufferResize(GLFWwindow* window, int width, int height)
+{
+    float aspectRatio = (float) width / height;
+    cam->setAspectRatio(aspectRatio);
 }

@@ -104,6 +104,12 @@ void VSCamera::setPosition(glm::vec3 newPosition)
     updateCameraVectors();
 }
 
+void VSCamera::setAspectRatio(float newAspectRatio)
+{
+    aspectRatio = newAspectRatio;
+    updateCameraVectors();
+}
+
 void VSCamera::updateCameraVectors()
 {
     // Calculate the new Front vector
@@ -120,7 +126,7 @@ void VSCamera::updateCameraVectors()
 
     cachedViewMatrix = glm::lookAt(position, position + front, up);
     // aspec ration fixed to 16.9 for now
-    cachedProjectionMatrix = glm::perspective(glm::radians(zoom), 16.F / 9.F, 0.1F, 2000.0F);
+    cachedProjectionMatrix = glm::perspective(glm::radians(zoom), aspectRatio, 0.1F, 2000.0F);
 
     cachedVPMatrix = cachedProjectionMatrix * cachedViewMatrix;
 }
