@@ -136,18 +136,8 @@ const glm::ivec3& VSWorld::getChunkSize() const
 
 void VSWorld::setChunkSize(const glm::ivec3& inChunkSize)
 {
-//    const auto length = inChunkSize.length();
-//    const auto maxSize = 16 * 16 * 256;
-//    auto scaledSize = inChunkSize;
-//    if (length > maxSize)
-//    {
-//        const float scale = maxSize / length;
-//        scaledSize  = {inChunkSize.x * scale, inChunkSize.y * scale, inChunkSize.z * scale};
-//    }
-    if (chunkSize != inChunkSize) {
-        chunkSize = inChunkSize;
-        initializeChunks();
-    }
+    chunkSize = inChunkSize;
+    initializeChunks();
 }
 
 const glm::ivec2& VSWorld::getChunkCount() const
@@ -157,10 +147,8 @@ const glm::ivec2& VSWorld::getChunkCount() const
 
 void VSWorld::setChunkCount(const glm::ivec2& inChunkCount)
 {
-    if (chunkCount != inChunkCount) {
-        chunkCount = inChunkCount;
-        initializeChunks();
-    }
+    chunkCount = inChunkCount;
+    initializeChunks();
 }
 
 void VSWorld::setShouldDrawBorderBlocks(bool state)
