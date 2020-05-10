@@ -4,6 +4,7 @@
 #include "world/vs_world.h"
 #include "core/vs_camera.h"
 
+// Based on https://learnopengl.com/Advanced-OpenGL/Cubemaps
 VSSkybox::VSSkybox()
 {
     // skybox VAO

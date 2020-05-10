@@ -6,6 +6,7 @@
 #include "renderer/vs_shader.h"
 #include "world/vs_transformable.h"
 
+// Based on https://learnopengl.com/Advanced-OpenGL/Cubemaps
 class VSSkybox : public IVSDrawable, IVSTransformable
 {
 public:
