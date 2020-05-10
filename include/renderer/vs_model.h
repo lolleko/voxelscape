@@ -26,6 +26,8 @@
 #include "renderer/vs_vertex_context.h"
 #include "renderer/vs_modelloader.h"
 
+// Roughly based on https://learnopengl.com/Model-Loading/Model
+
 class VSModel : public IVSDrawable
 {
 public:
