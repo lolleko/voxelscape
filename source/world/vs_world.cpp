@@ -11,41 +11,33 @@
 
 VSWorld::VSWorld()
 {
-    camera = std::make_shared<VSCamera>(glm::vec3(0.0F, 30.0F, 0.0F));
-    cameraController = std::make_shared<VSCameraController>(camera);
-    chunkSize = {100.f, 40.f, 100.f};
+    camera = new VSCamera(glm::vec3(0.0F, 30.0F, 0.0F));
+    cameraController = new VSCameraController(camera);
+    chunkSize = {32.f, 64.f, 32.f};
     chunkCount = {2, 2};
 }
 
 void VSWorld::initializeChunks()
 {
+    for (auto& chunk : activeChunks) {
+        removeDrawable(chunk);
+    }
+    activeChunks.empty();
     activeChunks.resize(chunkCount.x * chunkCount.y);
-    // TOOD refactor into separate function
-    chunkShader = std::__1::make_shared<VSShader>("Chunk");
+    if (!chunkShader) {
+        chunkShader = std::make_shared<VSShader>("Chunk");
+    }
     for (int y = 0; y < chunkCount.x; y++)
     {
         for (int x = 0; x < chunkCount.x; x++)
         {
-            auto newChunk = std::__1::make_shared<VSChunk>(chunkSize, 0);
+            auto newChunk = new VSChunk(chunkSize, 0);
             newChunk->setModelMatrix(glm::translate(
                 newChunk->getModelMatrix(), glm::vec3(chunkSize.x * x, 0.f, chunkSize.z * y)));
             activeChunks[y * chunkCount.x + x] = newChunk;
             addDrawable(newChunk, chunkShader);
         }
     }
-
-    VSHeightmap hm = VSHeightmap(42, chunkSize.y, 1, 0.02F, 4.F);
-    for (int x = 0; x < getWorldSize().x; x++)
-    {
-        for (int z = 0; z < getWorldSize().z; z++)
-        {
-            for (int y = 0; y < hm.getVoxelHeight(x, z); y++)
-            {
-                setBlock({x, y, z}, 1);
-            }
-        }
-    }
-    updateActiveChunks();
 }
 
 const VSBlockData* VSWorld::getBlockData(short ID)
@@ -54,12 +46,23 @@ const VSBlockData* VSWorld::getBlockData(short ID)
     return nullptr;
 }
 
-void VSWorld::addDrawable(std::shared_ptr<IVSDrawable> drawable, std::shared_ptr<VSShader> shader)
+void VSWorld::addDrawable(IVSDrawable* drawable, std::shared_ptr<VSShader> shader)
 {
     drawables.insert({drawable, shader});
 }
 
-void VSWorld::draw(std::shared_ptr<VSWorld> world, std::shared_ptr<VSShader> shader) const
+void VSWorld::removeDrawable(IVSDrawable* drawable)
+{
+    removeDrawableDontDelete(drawable);
+    delete drawable;
+}
+
+void VSWorld::removeDrawableDontDelete(IVSDrawable* drawable)
+{
+    drawables.erase(drawable);
+}
+
+void VSWorld::draw(VSWorld* world, std::shared_ptr<VSShader> shader) const
 {
     for (const auto& [drawable, drawableShader] : drawables)
     {
@@ -67,12 +70,12 @@ void VSWorld::draw(std::shared_ptr<VSWorld> world, std::shared_ptr<VSShader> sha
     }
 }
 
-std::shared_ptr<VSCamera> VSWorld::getCamera() const
+VSCamera* VSWorld::getCamera() const
 {
     return camera;
 }
 
-std::shared_ptr<VSCameraController> VSWorld::getCameraController() const
+VSCameraController* VSWorld::getCameraController() const
 {
     return cameraController;
 }
@@ -89,6 +92,7 @@ glm::vec3 VSWorld::getDirectLightColor() const
 
 void VSWorld::setBlock(glm::ivec3 location, VSBlockID blockID)
 {
+    // TODO extract to share method
     const glm::ivec2 chunkLocation = {location.x / chunkSize.x, location.z / chunkSize.z};
     const glm::ivec3 blockPosition = {
         location.x - chunkLocation.x * chunkSize.x,
@@ -113,13 +117,55 @@ glm::ivec3 VSWorld::getWorldSize()
 
 int VSWorld::getActiveBlockCount() const
 {
-    return std::accumulate(activeChunks.begin(), activeChunks.end(), 0, [](int acc, std::shared_ptr<VSChunk> curr){
+    return std::accumulate(activeChunks.begin(), activeChunks.end(), 0, [](int acc, VSChunk* curr){
         return acc + curr->getActiveBlockCount();
     });
 }
+
 int VSWorld::getTotalBlockCount() const
 {
-    return std::accumulate(activeChunks.begin(), activeChunks.end(), 0, [](int acc, std::shared_ptr<VSChunk> curr){
+    return std::accumulate(activeChunks.begin(), activeChunks.end(), 0, [](int acc, VSChunk* curr){
       return acc + curr->getTotalBlockCount();
     });
+}
+
+const glm::ivec3& VSWorld::getChunkSize() const
+{
+    return chunkSize;
+}
+
+void VSWorld::setChunkSize(const glm::ivec3& inChunkSize)
+{
+//    const auto length = inChunkSize.length();
+//    const auto maxSize = 16 * 16 * 256;
+//    auto scaledSize = inChunkSize;
+//    if (length > maxSize)
+//    {
+//        const float scale = maxSize / length;
+//        scaledSize  = {inChunkSize.x * scale, inChunkSize.y * scale, inChunkSize.z * scale};
+//    }
+    if (chunkSize != inChunkSize) {
+        chunkSize = inChunkSize;
+        initializeChunks();
+    }
+}
+
+const glm::ivec2& VSWorld::getChunkCount() const
+{
+    return chunkCount;
+}
+
+void VSWorld::setChunkCount(const glm::ivec2& inChunkCount)
+{
+    if (chunkCount != inChunkCount) {
+        chunkCount = inChunkCount;
+        initializeChunks();
+    }
+}
+
+void VSWorld::setShouldDrawBorderBlocks(bool state)
+{
+    for (auto* chunk : activeChunks) {
+        chunk->setShouldDrawBorderBlocks(state);
+    }
 }

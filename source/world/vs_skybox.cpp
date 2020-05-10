@@ -18,7 +18,7 @@ VSSkybox::VSSkybox()
     cubemapTexture = loadSkyboxCubemap();
 }
 
-void VSSkybox::draw(std::shared_ptr<VSWorld> world, std::shared_ptr<VSShader> shader) const
+void VSSkybox::draw(VSWorld* world, std::shared_ptr<VSShader> shader) const
 {
     glDepthFunc(GL_LEQUAL);
 

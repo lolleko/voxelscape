@@ -4,7 +4,7 @@
 #include "core/vs_cameracontroller.h"
 #include "core/vs_camera.h"
 
-VSCameraController::VSCameraController(const std::shared_ptr<VSCamera>& camera)
+VSCameraController::VSCameraController(VSCamera* camera)
     : movementSpeed(SPEED)
     , mouseSensitivity(SENSITIVITY)
 {

@@ -8,12 +8,8 @@ VSChunk::VSChunk(const glm::ivec3& size, VSBlockID defaultID)
     : size(size)
     , defaultID(defaultID)
 {
-    blocks = new VSBlockID[getTotalBlockCount()];
-
-    for (size_t blockIndex = 0; blockIndex < getTotalBlockCount(); blockIndex++)
-    {
-        blocks[blockIndex] = defaultID;
-    }
+    blocks.resize(getTotalBlockCount());
+    clearBlockData();
 
     vertexContext = loadVertexContext("models/cube.obj");
 
@@ -26,30 +22,27 @@ VSChunk::VSChunk(const glm::ivec3& size, VSBlockID defaultID)
     glVertexAttribPointer(nextAttribPointer, 3, GL_FLOAT, GL_FALSE, 0, nullptr);
     glBufferData(
         GL_ARRAY_BUFFER,
-        activeBlockOffsets.size() * sizeof(glm::vec3),
-        &activeBlockOffsets[0],
+        drawnBlocksOffsets.size() * sizeof(glm::vec3),
+        &drawnBlocksOffsets[0],
         GL_STATIC_DRAW);
     glVertexAttribDivisor(nextAttribPointer, 1);
 
     glBindVertexArray(0);
+}
 
-    updateActiveBlocks();
+VSChunk::~VSChunk()
+{
+    glBindVertexArray(vertexContext->vertexArrayObject);
+    glDeleteBuffers(1, &activeBlocksInstanceBuffer);
 }
 
 void VSChunk::updateActiveBlocks()
 {
-    activeBlockOffsets.clear();
+    drawnBlocksOffsets.clear();
     for (size_t blockIndex = 0; blockIndex < getTotalBlockCount(); blockIndex++)
     {
-        // std::random_device rd;
-        // std::mt19937 mt(rd());
-        // std::uniform_int_distribution<int> uniformDist(0, 1);
-        if (blocks[blockIndex] != defaultID && isBlockVisible(blockIndex))
-        {
-            // subtract size / 2 to center around 0, 0, 0
-            const auto offset = blockIndexToBlockCoordsFloat(blockIndex) - glm::vec3(size) / 2.f;
-            activeBlockOffsets.push_back(offset);
-        }
+        // Force update
+        updateBlock(blockIndex);
     }
 
     glBindVertexArray(vertexContext->vertexArrayObject);
@@ -57,11 +50,19 @@ void VSChunk::updateActiveBlocks()
     glBindBuffer(GL_ARRAY_BUFFER, activeBlocksInstanceBuffer);
     glBufferData(
         GL_ARRAY_BUFFER,
-        activeBlockOffsets.size() * sizeof(glm::vec3),
-        &activeBlockOffsets[0],
+        drawnBlocksOffsets.size() * sizeof(glm::vec3),
+        &drawnBlocksOffsets[0],
         GL_STATIC_DRAW);
 
     glBindVertexArray(0);
+}
+
+void VSChunk::clearBlockData()
+{
+    for (size_t blockIndex = 0; blockIndex < getTotalBlockCount(); blockIndex++)
+    {
+        blocks[blockIndex] = defaultID;
+    }
 }
 
 void VSChunk::setBlock(glm::ivec3 location, VSBlockID blockID)
@@ -78,7 +79,7 @@ int VSChunk::getTotalBlockCount() const
 int VSChunk::getActiveBlockCount() const
 {
     // depth, width, height
-    return activeBlockOffsets.size();
+    return drawnBlocksOffsets.size();
 }
 
 glm::vec3 VSChunk::getSize() const
@@ -86,7 +87,7 @@ glm::vec3 VSChunk::getSize() const
     return size;
 }
 
-void VSChunk::draw(std::shared_ptr<VSWorld> world, std::shared_ptr<VSShader> shader) const
+void VSChunk::draw(VSWorld* world, std::shared_ptr<VSShader> shader) const
 {
     shader->uniforms()
         .setVec3("lightPos", world->getDirectLightPos())
@@ -97,7 +98,7 @@ void VSChunk::draw(std::shared_ptr<VSWorld> world, std::shared_ptr<VSShader> sha
         .setMat4("MVP", world->getCamera()->getMVPMatrixFast(getModelMatrix()));
 
     // dont draw if no blocks active
-    if (!activeBlockOffsets.empty())
+    if (!drawnBlocksOffsets.empty())
     {
         glBindVertexArray(vertexContext->vertexArrayObject);
         glDrawElementsInstanced(
@@ -105,7 +106,7 @@ void VSChunk::draw(std::shared_ptr<VSWorld> world, std::shared_ptr<VSShader> sha
             vertexContext->triangleCount,
             GL_UNSIGNED_INT,
             nullptr,
-            activeBlockOffsets.size());
+            drawnBlocksOffsets.size());
         glBindVertexArray(0);
     }
 }
@@ -125,7 +126,15 @@ void VSChunk::setShouldDrawBorderBlocks(bool state)
     if (state != bShouldDrawBorderBlocks)
     {
         bShouldDrawBorderBlocks = state;
-        updateActiveBlocks();
+    }
+}
+
+void VSChunk::updateBlock(int blockIndex)
+{
+    // only update active blocks list if there is a visible change
+    if (blocks[blockIndex] != defaultID && isBlockVisible(blockIndex)) {
+        const auto offset = blockIndexToBlockCoordsFloat(blockIndex) - glm::vec3(size) / 2.f;
+        drawnBlocksOffsets.push_back(offset);
     }
 }
 
@@ -162,16 +171,21 @@ int VSChunk::blockCoordsToBlockIndex(const glm::ivec3& blockCoords) const
     return blockCoords.x + blockCoords.y * width + blockCoords.z * width * height;
 }
 
-bool VSChunk::isBlockVisible(int blockIndex)
+bool VSChunk::isBlockVisible(int blockIndex) const
 {
     const auto blockCoords = blockIndexToBlockCoords(blockIndex);
     const auto size = getSize();
 
-    // if we are at the chunk border always render
-    if (blockCoords.x == 0 || blockCoords.x == size.x - 1 || blockCoords.y == 0 ||
-        blockCoords.y == size.y - 1 || blockCoords.z == 0 || blockCoords.z == size.z - 1)
+    // if we are at the chunk border always visible
+    if (isAtBorder(blockCoords))
     {
-        return bShouldDrawBorderBlocks;
+        if (!bShouldDrawBorderBlocks) {
+            const auto top = glm::ivec3(blockCoords.x, blockCoords.y + 1, blockCoords.z);
+            if (blocks[blockCoordsToBlockIndex(top)] != defaultID) {
+                return false;
+            }
+        }
+        return true;
     }
 
     const auto right = glm::ivec3(blockCoords.x + 1, blockCoords.y, blockCoords.z);
@@ -190,4 +204,10 @@ bool VSChunk::isBlockVisible(int blockIndex)
            blocks[blockCoordsToBlockIndex(down)] == defaultID ||
            blocks[blockCoordsToBlockIndex(front)] == defaultID ||
            blocks[blockCoordsToBlockIndex(back)] == defaultID;
+}
+
+bool VSChunk::isAtBorder(const glm::ivec3& blockCoords) const
+{
+    return blockCoords.x == 0 || blockCoords.x == size.x - 1 || blockCoords.y == 0 ||
+           blockCoords.y == size.y - 1 || blockCoords.z == 0 || blockCoords.z == size.z - 1;
 }

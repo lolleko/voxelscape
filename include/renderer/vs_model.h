@@ -31,7 +31,9 @@ class VSModel : public IVSDrawable
 public:
     VSModel(std::string const& path, bool gamma = false);
 
-    void draw(std::shared_ptr<VSWorld> world, std::shared_ptr<VSShader> shader) const override;
+    ~VSModel();
+
+    void draw(VSWorld* world, std::shared_ptr<VSShader> shader) const override;
 
 private:
     std::vector<VSMesh> meshes;

@@ -6,7 +6,11 @@ VSModel::VSModel(std::string const& path, bool gamma)
     meshes = std::move(loadModel(path));
 }
 
-void VSModel::draw(std::shared_ptr<VSWorld> world, std::shared_ptr<VSShader> shader) const
+VSModel::~VSModel() {
+
+}
+
+void VSModel::draw(VSWorld* world, std::shared_ptr<VSShader> shader) const
 {
     for (const auto& mesh : meshes)
     {

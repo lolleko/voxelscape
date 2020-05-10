@@ -79,11 +79,9 @@ int main(int, char**)
     }
 
     // TODO move worl init down once this input mess has been solved
-    auto world = std::make_shared<VSWorld>();
-    // TODO this is dangerous as fuck since world might get deleted by the shared pointer
-    // maybe shared_ptr isn't the correct choice for world since world's lifetime should be fixed
-    // and as long as the program's lifetime
-    glfwSetWindowUserPointer(window, world.get());
+    auto* world = new VSWorld();
+
+    glfwSetWindowUserPointer(window, world);
 
     glfwMakeContextCurrent(window);
     glfwSetFramebufferSizeCallback(
@@ -130,7 +128,7 @@ int main(int, char**)
     // auto monkeyModel = std::make_shared<VSModel>("monkey.obj");
     // auto monkeyShader = std::make_shared<VSShader>("Monkey");
 
-    auto skybox = std::make_shared<VSSkybox>();
+    auto skybox = new VSSkybox();
     auto skyboxShader = std::make_shared<VSShader>("Skybox");
 
     world->initializeChunks();
@@ -177,7 +175,43 @@ int main(int, char**)
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         // Update world state with ui state
-        ///chunk->setShouldDrawBorderBlocks(UI.getState()->bShouldDrawChunkBorderblocks);
+        if (UI.getState()->bShouldUpdateChunks) {
+            world->setChunkSize(UI.getState()->chunkSize);
+            world->setChunkCount(UI.getState()->chunkCount);
+            world->setShouldDrawBorderBlocks(UI.getState()->bShouldDrawChunkBorderBlocks);
+            world->updateActiveChunks();
+        }
+
+        if (UI.getState()->bShouldGenerateHeightMap) {
+            const auto worldSize = world->getWorldSize();
+            VSHeightmap hm = VSHeightmap(42, worldSize.y, 1, 0.02F, 4.F);
+            for (int x = 0; x < worldSize.x; x++)
+            {
+                for (int z = 0; z < worldSize.z; z++)
+                {
+                    for (int y = 0; y < hm.getVoxelHeight(x, z); y++)
+                    {
+                        world->setBlock({x, y, z}, 1);
+                    }
+                }
+            }
+            world->updateActiveChunks();
+        }
+
+        if (UI.getState()->bShouldTestSetBlock) {
+            const auto worldSize = world->getWorldSize();
+            for (int x = 0; x < worldSize.x; x++)
+            {
+                for (int z = 0; z < worldSize.z; z++)
+                {
+                    for (int y = 0; y < worldSize.y - 1; y++)
+                    {
+                        world->setBlock({x, y, z}, 1);
+                    }
+                }
+            }
+            world->updateActiveChunks();
+        }
 
         // Update uistate with worldState
         UI.getMutableState()->totalBlockCount = world->getTotalBlockCount();

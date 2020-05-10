@@ -18,7 +18,7 @@ const float SENSITIVITY = 0.1F;
 class VSCameraController
 {
 public:
-    VSCameraController(const std::shared_ptr<VSCamera>& camera);
+    VSCameraController(VSCamera* camera);
 
     void processMouseButton(GLFWwindow* window, int button, int action, int mods);
 
@@ -37,7 +37,7 @@ public:
     void processKeyboardInput(GLFWwindow* window, float deltaTime) const;
 
 private:
-    std::shared_ptr<VSCamera> cam;
+    VSCamera* cam;
 
     bool firstMouse = true;
     float lastX = 0.F;

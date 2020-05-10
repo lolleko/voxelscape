@@ -3,6 +3,7 @@
 #include <glad/glad.h>
 
 #include <vector>
+#include <map>
 #include "renderer/vs_drawable.h"
 #include "world/vs_transformable.h"
 #include "world/vs_block.h"
@@ -15,7 +16,12 @@ public:
     // Size can only be set on construction
     VSChunk(const glm::ivec3& size, VSBlockID defaultID);
 
-    void updateActiveBlocks();;
+    ~VSChunk();
+
+    void updateActiveBlocks();
+
+    // This is very costly
+    void clearBlockData();;
 
     void setBlock(glm::ivec3 location, VSBlockID blockID);
 
@@ -25,7 +31,7 @@ public:
 
     glm::vec3 getSize() const;
 
-    void draw(std::shared_ptr<VSWorld> world, std::shared_ptr<VSShader> shader) const override;;
+    void draw(VSWorld* world, std::shared_ptr<VSShader> shader) const override;;
 
     glm::mat4 getModelMatrix() const override;
 
@@ -42,13 +48,15 @@ private:
 
     GLuint activeBlocksInstanceBuffer;
 
-    std::vector<glm::vec3> activeBlockOffsets;
+    std::vector<glm::vec3> drawnBlocksOffsets;
 
-    VSBlockID* blocks;
+    std::vector<VSBlockID> blocks;
 
-    bool bShouldDrawBorderBlocks = true;
+    bool bShouldDrawBorderBlocks = false;
 
     glm::mat4 modelMatrix = glm::mat4(1.f);
+
+    void updateBlock(int blockIndex);
 
     glm::ivec3 blockIndexToBlockCoords(int blockIndex) const;
 
@@ -56,5 +64,7 @@ private:
 
     int blockCoordsToBlockIndex(const glm::ivec3& blockCoords) const;
 
-    bool isBlockVisible(int blockIndex);
+    bool isBlockVisible(int blockIndex) const;
+
+    bool isAtBorder(const glm::ivec3& blockCoords) const;
 };

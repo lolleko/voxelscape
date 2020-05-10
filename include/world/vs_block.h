@@ -2,7 +2,7 @@
 
 #include <glm/glm.hpp>
 
-using VSBlockID = short;
+using VSBlockID = std::uint8_t;
 
 struct VSBlockData
 {

@@ -125,6 +125,7 @@ public:
 
     ~VSVertexContext()
     {
+        glBindVertexArray(vertexArrayObject);
         glDeleteBuffers(1, &vertexBuffer);
         glDeleteBuffers(1, &normalBuffer);
         glDeleteBuffers(1, &texCoordBuffer);

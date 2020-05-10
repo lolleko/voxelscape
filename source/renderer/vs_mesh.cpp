@@ -4,7 +4,11 @@ VSMesh::VSMesh(VSVertexContext* vertexContext, std::vector<VSTexture> textures)
     : vertexContext(vertexContext)
     , textures(std::move(textures)){};
 
-void VSMesh::draw(std::shared_ptr<VSWorld> world, std::shared_ptr<VSShader> shader) const
+VSMesh::~VSMesh() {
+    // TODO maybe cleanup textures in the future
+};
+
+void VSMesh::draw(VSWorld* world, std::shared_ptr<VSShader> shader) const
 {
     shader->use();
 

@@ -20,13 +20,17 @@ public:
 
     const VSBlockData* getBlockData(short ID);
 
-    void addDrawable(std::shared_ptr<IVSDrawable> drawable, std::shared_ptr<VSShader> shader);
+    void addDrawable(IVSDrawable* drawable, std::shared_ptr<VSShader> shader);
 
-    void draw(std::shared_ptr<VSWorld> world, std::shared_ptr<VSShader> shader) const override;
+    void removeDrawable(IVSDrawable* drawable);
 
-    std::shared_ptr<VSCamera> getCamera() const;
+    void removeDrawableDontDelete(IVSDrawable* drawable);
 
-    std::shared_ptr<VSCameraController> getCameraController() const;
+    void draw(VSWorld* world, std::shared_ptr<VSShader> shader) const override;
+
+    VSCamera* getCamera() const;
+
+    VSCameraController* getCameraController() const;
 
     glm::vec3 getDirectLightPos() const;
 
@@ -42,11 +46,21 @@ public:
 
     int getActiveBlockCount() const;
 
+    const glm::ivec3& getChunkSize() const;
+
+    void setChunkSize(const glm::ivec3& inChunkSize);
+
+    const glm::ivec2& getChunkCount() const;
+
+    void setChunkCount(const glm::ivec2& inChunkCount);
+
+    void setShouldDrawBorderBlocks(bool state);
+
 private:
     std::map<VSBlockID, VSBlockData*> blockIDtoBlockData;
 
     std::vector<VSChunk*> loadedChunks;
-    std::vector<std::shared_ptr<VSChunk>> activeChunks;
+    std::vector<VSChunk*> activeChunks;
 
     glm::ivec3 chunkSize;
 
@@ -54,8 +68,8 @@ private:
 
     glm::ivec2 chunkCount;
 
-    std::shared_ptr<VSCamera> camera;
-    std::shared_ptr<VSCameraController> cameraController;
+    VSCamera* camera;
+    VSCameraController* cameraController;
 
-    std::map<std::shared_ptr<IVSDrawable>, std::shared_ptr<VSShader>> drawables;
+    std::map<IVSDrawable*, std::shared_ptr<VSShader>> drawables;
 };

@@ -23,7 +23,9 @@ class VSMesh : public IVSDrawable
 public:
     VSMesh(VSVertexContext* vertexContext, std::vector<VSTexture> textures);
 
-    void draw(std::shared_ptr<VSWorld> world, std::shared_ptr<VSShader> shader) const override;
+    ~VSMesh();
+
+    void draw(VSWorld* world, std::shared_ptr<VSShader> shader) const override;
 
 private:
     VSVertexContext* vertexContext;
