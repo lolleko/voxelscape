@@ -157,3 +157,10 @@ void VSWorld::setShouldDrawBorderBlocks(bool state)
         chunk->setShouldDrawBorderBlocks(state);
     }
 }
+
+void VSWorld::clearBlocks() 
+{
+    for (auto* chunk :activeChunks) {
+        chunk->clearBlockData();
+    }
+}

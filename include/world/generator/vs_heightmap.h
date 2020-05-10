@@ -2,6 +2,7 @@
 
 #include <cmath>
 #include <memory>
+#include <array>
 
 // Defines possible basic noise functions, default is PERLIN
 // enum NoiseFunction {
@@ -23,7 +24,7 @@ public:
         float persistence = 0.5F);
 
     // Return integer height scaled with maxHeight
-    int getVoxelHeight(int x, int y);
+    virtual int getVoxelHeight(int x, int y);
 
     float getHeight(int x, int y);
 

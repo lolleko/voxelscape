@@ -20,6 +20,7 @@
 #include "world/vs_skybox.h"
 #include "renderer/vs_textureloader.h"
 #include "world/generator/vs_heightmap.h"
+#include "world/generator/vs_animatedheightmap.h"
 #include "world/vs_chunk.h"
 #include "world/vs_world.h"
 
@@ -130,6 +131,8 @@ int main(int, char**)
 
     auto skybox = new VSSkybox();
     auto skyboxShader = std::make_shared<VSShader>("Skybox");
+    const auto worldSize = world->getWorldSize();
+    VSAnimatedHeightmap animatedHm = VSAnimatedHeightmap(42, worldSize.y, 2, 0.02F, 4.F, 2.0F, 0.5F);
 
     world->initializeChunks();
 
@@ -175,14 +178,16 @@ int main(int, char**)
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         // Update world state with ui state
-        if (UI.getState()->bShouldUpdateChunks) {
+        if (UI.getState()->bShouldUpdateChunks)
+        {
             world->setChunkSize(UI.getState()->chunkSize);
             world->setChunkCount(UI.getState()->chunkCount);
             world->setShouldDrawBorderBlocks(UI.getState()->bShouldDrawChunkBorderBlocks);
             world->updateActiveChunks();
         }
 
-        if (UI.getState()->bShouldGenerateHeightMap) {
+        if (UI.getState()->bShouldGenerateHeightMap)
+        {
             const auto worldSize = world->getWorldSize();
             VSHeightmap hm = VSHeightmap(42, worldSize.y, 1, 0.02F, 4.F);
             for (int x = 0; x < worldSize.x; x++)
@@ -198,7 +203,25 @@ int main(int, char**)
             world->updateActiveChunks();
         }
 
-        if (UI.getState()->bShouldTestSetBlock) {
+        // Animate voxels, not pretty, will refactor
+        if (UI.getState()->bShouldAnimateHeightMap && animatedHm.animateStep())
+        {
+            world->clearBlocks();
+            for (int x = 0; x < worldSize.x; x++)
+            {
+                for (int z = 0; z < worldSize.z; z++)
+                {
+                    for (int y = 0; y < animatedHm.getVoxelHeight(x, z); y++)
+                    {
+                        world->setBlock({x, y, z}, 1);
+                    }
+                }
+            }
+            world->updateActiveChunks();
+        }
+
+        if (UI.getState()->bShouldTestSetBlock)
+        {
             const auto worldSize = world->getWorldSize();
             for (int x = 0; x < worldSize.x; x++)
             {

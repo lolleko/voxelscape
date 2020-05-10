@@ -56,6 +56,8 @@ public:
 
     void setShouldDrawBorderBlocks(bool state);
 
+    void clearBlocks();
+
 private:
     std::map<VSBlockID, VSBlockData*> blockIDtoBlockData;
 

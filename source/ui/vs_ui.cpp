@@ -67,6 +67,7 @@ void VSUI::render()
         } else {
             uiState->bShouldGenerateHeightMap = false;
         }
+        ImGui::Checkbox("Animate Heightmap", &uiState->bShouldAnimateHeightMap);
         ImGui::Text("Drawing blocks %d/%d", uiState->activeBlockCount, uiState->totalBlockCount);
         ImGui::Text(
             "Application average %.3f ms/frame (%.1f FPS)",

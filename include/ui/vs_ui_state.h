@@ -12,6 +12,7 @@ struct VSUIState
     bool bShouldUpdateChunks = false;
     bool bShouldTestSetBlock = false;
     bool bShouldGenerateHeightMap = false;
+    bool bShouldAnimateHeightMap = false;
     int activeBlockCount = 0;
     int totalBlockCount = 0;
     std::ostringstream logStream;
