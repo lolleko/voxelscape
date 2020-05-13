@@ -4,16 +4,18 @@
 // Include glfw3.h after our OpenGL definitions
 #include <GLFW/glfw3.h>
 #include <spdlog/common.h>
-#include <world/generator/vs_animatedheightmap.h>
+#include <thread>
 
+#include "core/vs_core.h"
 #include "core/vs_log.h"
 #include "core/vs_cameracontroller.h"
+#include "core/vs_camera.h"
+#include "core/vs_game.h"
 
 #include "ui/vs_ui.h"
 #include "ui/vs_ui_state.h"
 #include "world/vs_world.h"
 #include "world/vs_skybox.h"
-#include "core/vs_camera.h"
 
 VSApp::VSApp()
 {
@@ -21,6 +23,8 @@ VSApp::VSApp()
 
 int VSApp::initialize()
 {
+    debug_setMainThread();
+
     const auto glfwError = initializeGLFW();
     if (glfwError != 0) {
         return glfwError;
@@ -29,14 +33,14 @@ int VSApp::initialize()
     UI = new VSUI();
     // initialize logger
     VSLog::init(UI->getMutableState()->logStream);
-    VSLog::Log(VSLog::Category::Core, VSLog::Level::info, "Succesfully initialized logger");
+    VSLog::Log(VSLog::Category::Core, VSLog::Level::info, "Successfully initialized logger");
 
     world = new VSWorld();
 
     VSLog::Log(
         VSLog::Category::Core,
         VSLog::Level::info,
-        "Succesfully setup GLFW window and opengl context");
+        "Successfully setup GLFW window and opengl context");
 
     bool err = gladLoadGL() == 0;
     if (err)
@@ -59,16 +63,17 @@ int VSApp::initialize()
 
     auto skybox = new VSSkybox();
     auto skyboxShader = std::make_shared<VSShader>("Skybox");
-    const auto worldSize = world->getWorldSize();
-    // Messy, segfaults if world gets resized
-    VSAnimatedHeightmap animatedHm =
-        VSAnimatedHeightmap(42, worldSize.y, 2, 0.02F, 4.F, 2.0F, 0.5F);
 
     world->initializeChunks();
 
     world->addDrawable(skybox, skyboxShader);
 
-    VSLog::Log(VSLog::Category::Core, VSLog::Level::info, "Starting main loop");
+    VSLog::Log(VSLog::Category::Core, VSLog::Level::info, "Successfully initialized logger");
+
+    game = new VSGame();
+    game->initialize(this);
+
+    VSLog::Log(VSLog::Category::Core, VSLog::Level::info, "Successfully initialized game thread");
 
     return 0;
 }
@@ -143,21 +148,30 @@ VSWorld* VSApp::getWorld()
     return world;
 }
 
+VSUI* VSApp::getUI()
+{
+    return UI;
+}
+
+GLFWwindow* VSApp::getWindow()
+{
+    return window;
+}
+
 int VSApp::mainLoop()
 {
+    // start game loop
+    std::thread gameThread(&VSGame::gameLoop, game);
+
     // Main loop
     while (glfwWindowShouldClose(window) == 0)
     {
-        // per-frame time logic
-        // --------------------
-        double currentFrame = glfwGetTime();
-        deltaTime = currentFrame - lastFrame;
-        lastFrame = currentFrame;
-
-        world->getCameraController()->processKeyboardInput(window, deltaTime);
-
         glfwPollEvents();
 
+        // Start the Dear ImGui frame
+        UI->render();
+
+        // TODO one ui for game one for rendering debug
         if (UI->getState()->isWireframeModeEnabled)
         {
             glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
@@ -167,8 +181,8 @@ int VSApp::mainLoop()
             glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
         }
 
-        // Start the Dear ImGui frame
-        UI->render();
+        UI->getMutableState()->totalBlockCount = world->getTotalBlockCount();
+        UI->getMutableState()->activeBlockCount = world->getActiveBlockCount();
 
         auto display_w = 0;
         auto display_h = 0;
@@ -182,44 +196,22 @@ int VSApp::mainLoop()
         // Clear the screen and depth buffer
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        // Update world state with ui state
-        if (UI->getState()->bShouldUpdateChunks)
-        {
-            world->clearBlocks();
-            world->setChunkSize(UI->getState()->chunkSize);
-            world->setChunkCount(UI->getState()->chunkCount);
-            world->setShouldDrawBorderBlocks(UI->getState()->bShouldDrawChunkBorderBlocks);
-            world->updateActiveChunks();
-        }
-
-        if (UI->getState()->bShouldGenerateHeightMap)
-        {
-            const auto worldSize = world->getWorldSize();
-            VSHeightmap hm = VSHeightmap(42, worldSize.y, 1, 0.02F, 4.F);
-            for (int x = 0; x < worldSize.x; x++)
-            {
-                for (int z = 0; z < worldSize.z; z++)
-                {
-                    for (int y = 0; y < hm.getVoxelHeight(x, z); y++)
-                    {
-                        world->setBlock({x, y, z}, 1);
-                    }
-                }
-            }
-            world->updateActiveChunks();
-        }
-
-        // Update uistate with worldState
-        UI->getMutableState()->totalBlockCount = world->getTotalBlockCount();
-        UI->getMutableState()->activeBlockCount = world->getActiveBlockCount();
+        // update chunks
+        world->updateActiveChunks();
 
         // draw world
         world->draw(world, nullptr);
 
         // draw ui
         UI->draw();
+
         glfwSwapBuffers(window);
     }
+
+    // Shut down game thread
+    game->quit();
+
+    gameThread.join();
 
     // Cleanup
     UI->cleanup();

@@ -52,20 +52,14 @@ void VSUI::render()
         if (ImGui::Button("Refresh chunk settings"))
         {
             uiState->bShouldUpdateChunks = true;
-        } else {
-            uiState->bShouldUpdateChunks = false;
         }
         if (ImGui::Button("Test set block"))
         {
             uiState->bShouldTestSetBlock = true;
-        } else {
-            uiState->bShouldTestSetBlock = false;
         }
         if (ImGui::Button("Generate Heightmap"))
         {
             uiState->bShouldGenerateHeightMap = true;
-        } else {
-            uiState->bShouldGenerateHeightMap = false;
         }
         ImGui::Checkbox("Animate Heightmap", &uiState->bShouldAnimateHeightMap);
         ImGui::Text("Drawing blocks %d/%d", uiState->activeBlockCount, uiState->totalBlockCount);

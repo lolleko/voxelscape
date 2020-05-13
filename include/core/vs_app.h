@@ -1,10 +1,11 @@
 #pragma once
 
 #include <string>
+#include <thread>
 
 class VSUI;
-
 class VSWorld;
+class VSGame;
 
 struct GLFWwindow;
 
@@ -17,14 +18,19 @@ public:
     int mainLoop();
 
     VSWorld* getWorld();
+
+    VSUI* getUI();
+
+    GLFWwindow* getWindow();
+
 private:
     VSUI* UI;
+
     VSWorld* world;
 
-    GLFWwindow* window;
+    VSGame* game;
 
-    float deltaTime;
-    float lastFrame;
+    GLFWwindow* window;
 
     std::string glslVersion;
 

@@ -37,8 +37,6 @@ public:
 
     void setModelMatrix(const glm::mat4& mat) override;
 
-    void setShouldDrawBorderBlocks(bool state);
-
 private:
     glm::ivec3 size;
 
@@ -52,7 +50,7 @@ private:
 
     std::vector<VSBlockID> blocks;
 
-    bool bShouldDrawBorderBlocks = false;
+    std::atomic<bool> bIsDirty;
 
     glm::mat4 modelMatrix = glm::mat4(1.f);
 

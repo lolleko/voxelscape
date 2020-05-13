@@ -48,20 +48,15 @@ public:
 
     const glm::ivec3& getChunkSize() const;
 
-    void setChunkSize(const glm::ivec3& inChunkSize);
-
     const glm::ivec2& getChunkCount() const;
 
-    void setChunkCount(const glm::ivec2& inChunkCount);
-
-    void setShouldDrawBorderBlocks(bool state);
+    void setChunkDimensions(const glm::ivec3& inChunkSize, const glm::ivec2& inChunkCount);
 
     void clearBlocks();
 
 private:
     std::map<VSBlockID, VSBlockData*> blockIDtoBlockData;
 
-    std::vector<VSChunk*> loadedChunks;
     std::vector<VSChunk*> activeChunks;
 
     glm::ivec3 chunkSize;
@@ -74,4 +69,6 @@ private:
     VSCameraController* cameraController;
 
     std::map<IVSDrawable*, std::shared_ptr<VSShader>> drawables;
+
+    std::atomic<bool> bShouldRebuildChunks = false;
 };

@@ -38,23 +38,26 @@ VSChunk::~VSChunk()
 
 void VSChunk::updateActiveBlocks()
 {
-    drawnBlocksOffsets.clear();
-    for (size_t blockIndex = 0; blockIndex < getTotalBlockCount(); blockIndex++)
-    {
-        // Force update
-        updateBlock(blockIndex);
+    bool expected = true;
+    if (bIsDirty.compare_exchange_weak(expected, false)) {
+        drawnBlocksOffsets.clear();
+        for (size_t blockIndex = 0; blockIndex < getTotalBlockCount(); blockIndex++)
+        {
+            // Force update
+            updateBlock(blockIndex);
+        }
+
+        glBindVertexArray(vertexContext->vertexArrayObject);
+
+        glBindBuffer(GL_ARRAY_BUFFER, activeBlocksInstanceBuffer);
+        glBufferData(
+            GL_ARRAY_BUFFER,
+            drawnBlocksOffsets.size() * sizeof(glm::vec3),
+            &drawnBlocksOffsets[0],
+            GL_STATIC_DRAW);
+
+        glBindVertexArray(0);
     }
-
-    glBindVertexArray(vertexContext->vertexArrayObject);
-
-    glBindBuffer(GL_ARRAY_BUFFER, activeBlocksInstanceBuffer);
-    glBufferData(
-        GL_ARRAY_BUFFER,
-        drawnBlocksOffsets.size() * sizeof(glm::vec3),
-        &drawnBlocksOffsets[0],
-        GL_STATIC_DRAW);
-
-    glBindVertexArray(0);
 }
 
 void VSChunk::clearBlockData()
@@ -68,6 +71,7 @@ void VSChunk::clearBlockData()
 void VSChunk::setBlock(glm::ivec3 location, VSBlockID blockID)
 {
     blocks[blockCoordsToBlockIndex(location)] = blockID;
+    bIsDirty = true;
 }
 
 std::uint64_t VSChunk::getTotalBlockCount() const
@@ -121,14 +125,6 @@ void VSChunk::setModelMatrix(const glm::mat4& mat)
     modelMatrix = mat;
 }
 
-void VSChunk::setShouldDrawBorderBlocks(bool state)
-{
-    if (state != bShouldDrawBorderBlocks)
-    {
-        bShouldDrawBorderBlocks = state;
-    }
-}
-
 void VSChunk::updateBlock(int blockIndex)
 {
     // only update active blocks list if there is a visible change
@@ -175,12 +171,6 @@ bool VSChunk::isBlockVisible(int blockIndex) const
     // if we are at the chunk border always visible
     if (isAtBorder(blockCoords))
     {
-        if (!bShouldDrawBorderBlocks) {
-            const auto top = glm::ivec3(blockCoords.x, blockCoords.y + 1, blockCoords.z);
-            if (blocks[blockCoordsToBlockIndex(top)] != defaultID) {
-                return false;
-            }
-        }
         return true;
     }
 
@@ -207,3 +197,4 @@ bool VSChunk::isAtBorder(const glm::ivec3& blockCoords) const
     return blockCoords.x == 0 || blockCoords.x == size.x - 1 || blockCoords.y == 0 ||
            blockCoords.y == size.y - 1 || blockCoords.z == 0 || blockCoords.z == size.z - 1;
 }
+
