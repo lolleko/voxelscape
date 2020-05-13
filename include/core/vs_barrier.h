@@ -2,6 +2,7 @@
 
 #include <cstddef>
 #include <mutex>
+#include <condition_variable>
 
 class VSBarrier {
 public:
