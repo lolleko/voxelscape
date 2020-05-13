@@ -4,6 +4,7 @@
 
 #include <vector>
 #include <map>
+#include <atomic>
 #include "renderer/vs_drawable.h"
 #include "world/vs_transformable.h"
 #include "world/vs_block.h"

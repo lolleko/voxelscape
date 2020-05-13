@@ -1,6 +1,7 @@
 #include "core/vs_core.h"
 
 #include <thread>
+#include <cassert>
 
 std::thread::id g_debug_mainThreadID;
 bool g_debug_isMainThreadIDSet = false;
