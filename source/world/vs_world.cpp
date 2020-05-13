@@ -4,12 +4,12 @@
 #include <memory>
 #include <glm/ext/matrix_transform.hpp>
 #include <numeric>
+#include <cassert>
 
 #include "core/vs_camera.h"
 #include "core/vs_core.h"
 #include "core/vs_cameracontroller.h"
 #include "world/vs_chunk.h"
-#include "world/generator/vs_heightmap.h"
 
 VSWorld::VSWorld()
 {
