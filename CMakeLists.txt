@@ -8,6 +8,13 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS 1)
 
 set(CMAKE_CXX_FLAGS_RELEASE "-O3")
 
+if (UNIX)
+  set(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} -Wall -Wextra -Werror")
+endif()
+if ( MSVC )
+  set(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} /Wall /WX")
+endif()
+
 if(DEFINED ENV{VCPKG_INSTALLATION_ROOT} AND NOT DEFINED CMAKE_TOOLCHAIN_FILE)
   set(CMAKE_TOOLCHAIN_FILE "$ENV{VCPKG_INSTALLATION_ROOT}/scripts/buildsystems/vcpkg.cmake"
       CACHE STRING "")
@@ -19,7 +26,7 @@ project(voxelscape
 
 file(GLOB_RECURSE sources CONFIGURE_DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/source/*.cpp)
 
-add_executable("${CMAKE_PROJECT_NAME}" ${sources} source/world/vs_chunk.cpp source/renderer/vs_mesh.cpp source/renderer/vs_model.cpp)
+add_executable("${CMAKE_PROJECT_NAME}" ${sources})
 
 target_include_directories("${CMAKE_PROJECT_NAME}" PRIVATE "${CMAKE_CURRENT_SOURCE_DIR}/include/")
 

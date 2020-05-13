@@ -11,7 +11,6 @@ VSShader::VSShader(const char* name)
 
     const auto fragmentShaderPath = (shaderDirectory / name).replace_extension(".fs");
 
-    auto hasFragmentShader = false;
     GLuint fragmentShaderID = -1;
     if (!std::filesystem::exists(fragmentShaderPath))
     {

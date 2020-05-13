@@ -10,6 +10,8 @@ VSMesh::~VSMesh() {
 
 void VSMesh::draw(VSWorld* world, std::shared_ptr<VSShader> shader) const
 {
+    (void) world;
+
     shader->use();
 
     // bind appropriate textures

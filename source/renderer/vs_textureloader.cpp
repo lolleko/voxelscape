@@ -73,6 +73,8 @@ unsigned int loadSkyboxCubemap()
 
 unsigned int TextureFromFile(std::string filename, bool gamma)
 {
+    (void) gamma;
+
     unsigned int textureID;
     glGenTextures(1, &textureID);
 
@@ -82,7 +84,7 @@ unsigned int TextureFromFile(std::string filename, bool gamma)
     unsigned char* data = stbi_load(filename.c_str(), &width, &height, &nrComponents, 0);
     if (data)
     {
-        GLenum format;
+        GLenum format = GL_RGB;
         if (nrComponents == 1)
             format = GL_RED;
         else if (nrComponents == 3)

@@ -2,10 +2,9 @@
 #include "world/vs_world.h"
 #include "core/vs_camera.h"
 
-VSModel::VSModel(std::string const& path, bool gamma)
-    : gammaCorrection(gamma)
+VSModel::VSModel(std::string const& path)
 {
-    meshes = std::move(loadModel(path));
+    meshes = loadModel(path);
 }
 
 VSModel::~VSModel() {

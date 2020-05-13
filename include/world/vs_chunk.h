@@ -25,9 +25,9 @@ public:
 
     void setBlock(glm::ivec3 location, VSBlockID blockID);
 
-    int getTotalBlockCount() const;
+    std::uint64_t  getTotalBlockCount() const;
 
-    int getActiveBlockCount() const;
+    std::uint64_t  getActiveBlockCount() const;
 
     glm::vec3 getSize() const;
 

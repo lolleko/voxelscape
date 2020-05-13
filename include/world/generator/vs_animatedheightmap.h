@@ -29,6 +29,6 @@ private:
     int mVelocity; // How much movement between animation steps, defaults to 4
 
     // TODO: Animate amplutude maybe
-    int amplitudeOffset = 0;
-    const std::array<float, 8> amplitudes = {0.F, 0.2F, 0.4F, 0.6F, 0.8F, -0.5F, -1.F, -0.5F};
+    //int amplitudeOffset = 0;
+    //const std::array<float, 8> amplitudes = {0.F, 0.2F, 0.4F, 0.6F, 0.8F, -0.5F, -1.F, -0.5F};
 };

@@ -44,5 +44,6 @@ glm::mat4 VSSkybox::getModelMatrix() const
     return glm::mat4(1.f);
 }
 void VSSkybox::setModelMatrix(const glm::mat4& mat){
+    (void) mat;
     // TODO
 };

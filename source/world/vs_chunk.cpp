@@ -70,13 +70,13 @@ void VSChunk::setBlock(glm::ivec3 location, VSBlockID blockID)
     blocks[blockCoordsToBlockIndex(location)] = blockID;
 }
 
-int VSChunk::getTotalBlockCount() const
+std::uint64_t VSChunk::getTotalBlockCount() const
 {
     // depth, width, height
     return size.z * size.x * size.y;
 }
 
-int VSChunk::getActiveBlockCount() const
+std::uint64_t VSChunk::getActiveBlockCount() const
 {
     // depth, width, height
     return drawnBlocksOffsets.size();
@@ -141,7 +141,6 @@ void VSChunk::updateBlock(int blockIndex)
 glm::ivec3 VSChunk::blockIndexToBlockCoords(int blockIndex) const
 {
     const int width = size.x;
-    const int depth = size.z;
     const int height = size.y;
 
     int x = blockIndex % width;
@@ -153,7 +152,6 @@ glm::ivec3 VSChunk::blockIndexToBlockCoords(int blockIndex) const
 glm::vec3 VSChunk::blockIndexToBlockCoordsFloat(int blockIndex) const
 {
     const int width = size.x;
-    const int depth = size.z;
     const int height = size.y;
 
     int x = blockIndex % width;
@@ -165,7 +163,6 @@ glm::vec3 VSChunk::blockIndexToBlockCoordsFloat(int blockIndex) const
 int VSChunk::blockCoordsToBlockIndex(const glm::ivec3& blockCoords) const
 {
     const int width = size.x;
-    const int depth = size.z;
     const int height = size.y;
 
     return blockCoords.x + blockCoords.y * width + blockCoords.z * width * height;
@@ -174,7 +171,6 @@ int VSChunk::blockCoordsToBlockIndex(const glm::ivec3& blockCoords) const
 bool VSChunk::isBlockVisible(int blockIndex) const
 {
     const auto blockCoords = blockIndexToBlockCoords(blockIndex);
-    const auto size = getSize();
 
     // if we are at the chunk border always visible
     if (isAtBorder(blockCoords))

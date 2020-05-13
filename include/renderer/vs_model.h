@@ -31,7 +31,7 @@
 class VSModel : public IVSDrawable
 {
 public:
-    VSModel(std::string const& path, bool gamma = false);
+    VSModel(std::string const& path);
 
     ~VSModel();
 
@@ -40,6 +40,4 @@ public:
 private:
     std::vector<VSMesh> meshes;
     std::string directory;
-    bool gammaCorrection;
-
 };

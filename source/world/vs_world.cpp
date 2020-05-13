@@ -42,6 +42,7 @@ void VSWorld::initializeChunks()
 
 const VSBlockData* VSWorld::getBlockData(short ID)
 {
+    (void) ID;
     // TODO stub
     return nullptr;
 }
@@ -64,6 +65,7 @@ void VSWorld::removeDrawableDontDelete(IVSDrawable* drawable)
 
 void VSWorld::draw(VSWorld* world, std::shared_ptr<VSShader> shader) const
 {
+    (void) shader;
     for (const auto& [drawable, drawableShader] : drawables)
     {
         drawable->draw(world, drawableShader);

@@ -5,14 +5,15 @@
 #include "core/vs_camera.h"
 
 VSCameraController::VSCameraController(VSCamera* camera)
-    : movementSpeed(SPEED)
-    , mouseSensitivity(SENSITIVITY)
+    : mouseSensitivity(SENSITIVITY)
+    , movementSpeed(SPEED)
 {
     cam = camera;
 }
 
 void VSCameraController::processMouseButton(GLFWwindow* window, int button, int action, int mods)
 {
+    (void) mods;
     if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_PRESS)
     {
         double xpos;
@@ -76,6 +77,9 @@ void VSCameraController::processMouseMovement(
 void VSCameraController::processMouseScroll(GLFWwindow* window, double xoffset, double yoffset)
     const
 {
+    (void) window;
+    (void) xoffset;
+
     float zoom = cam->getZoom();
     if (zoom >= 1.0F && zoom <= 45.0F)
     {
@@ -136,6 +140,8 @@ void VSCameraController::processKeyboardInput(GLFWwindow* window, float deltaTim
 
 void VSCameraController::processFramebufferResize(GLFWwindow* window, int width, int height)
 {
-    float aspectRatio = (float) width / height;
+    (void) window;
+
+    float aspectRatio = (float)width / height;
     cam->setAspectRatio(aspectRatio);
 }
