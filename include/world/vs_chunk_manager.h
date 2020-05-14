@@ -59,9 +59,7 @@ private:
 
     glm::ivec2 chunkCount{};
 
-    glm::ivec3 worldSize;
-
-    glm::ivec3 worldSizeHalf;
+    glm::ivec3 worldSize{};
 
     VSShader chunkShader = VSShader("Chunk");
 

@@ -108,7 +108,6 @@ void VSChunkManager::setChunkDimensions(
     chunkSize = inChunkSize;
     chunkCount = inChunkCount;
     worldSize = {chunkSize.x * chunkCount.x, chunkSize.y, chunkSize.z * chunkCount.y};
-    worldSizeHalf = worldSize / 2;
     bShouldReinitializeChunks = true;
 }
 
