@@ -35,8 +35,6 @@ int VSApp::initialize()
     VSLog::init(UI->getMutableState()->logStream);
     VSLog::Log(VSLog::Category::Core, VSLog::Level::info, "Successfully initialized logger");
 
-    world = new VSWorld();
-
     VSLog::Log(
         VSLog::Category::Core,
         VSLog::Level::info,
@@ -59,14 +57,11 @@ int VSApp::initialize()
     glEnable(GL_CULL_FACE);
 
     // auto monkeyModel = std::make_shared<VSModel>("monkey.obj");
-    // auto monkeyShader = std::make_shared<VSShader>("Monkey");
+
+    world = new VSWorld();
 
     auto skybox = new VSSkybox();
-    auto skyboxShader = std::make_shared<VSShader>("Skybox");
-
-    world->initializeChunks();
-
-    world->addDrawable(skybox, skyboxShader);
+    world->addDrawable(skybox);
 
     VSLog::Log(VSLog::Category::Core, VSLog::Level::info, "Successfully initialized logger");
 
@@ -181,8 +176,9 @@ int VSApp::mainLoop()
             glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
         }
 
-        UI->getMutableState()->totalBlockCount = world->getTotalBlockCount();
-        UI->getMutableState()->activeBlockCount = world->getActiveBlockCount();
+        // TODO add to chunk manager to reenable
+        // UI->getMutableState()->totalBlockCount = world->getTotalBlockCount();
+        // UI->getMutableState()->activeBlockCount = world->getActiveBlockCount();
 
         auto display_w = 0;
         auto display_h = 0;
@@ -197,10 +193,10 @@ int VSApp::mainLoop()
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         // update chunks
-        world->updateActiveChunks();
+        world->update();
 
         // draw world
-        world->draw(world, nullptr);
+        world->draw(world);
 
         // draw ui
         UI->draw();

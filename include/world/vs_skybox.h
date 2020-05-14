@@ -12,7 +12,7 @@ class VSSkybox : public IVSDrawable, IVSTransformable
 public:
     VSSkybox();
 
-    void draw(VSWorld* world, std::shared_ptr<VSShader> shader) const override;
+    void draw(VSWorld* world) const override;
 
     glm::mat4 getModelMatrix() const override;
 
@@ -41,4 +41,6 @@ private:
 
     unsigned int cubemapTexture;
     unsigned int skyboxVAO{}, skyboxVBO{};
+
+    VSShader skyboxShader = VSShader("Skybox");
 };

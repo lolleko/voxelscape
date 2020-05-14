@@ -19,11 +19,11 @@ VSSkybox::VSSkybox()
     cubemapTexture = loadSkyboxCubemap();
 }
 
-void VSSkybox::draw(VSWorld* world, std::shared_ptr<VSShader> shader) const
+void VSSkybox::draw(VSWorld* world) const
 {
     glDepthFunc(GL_LEQUAL);
 
-    shader->uniforms()
+    skyboxShader.uniforms()
         .setMat4("view", glm::mat4(glm::mat3(world->getCamera()->getViewMatrix())))
         .setMat4("projection", world->getCamera()->getProjectionMatrix())
         .setVec3("viewPos", world->getCamera()->getPosition())

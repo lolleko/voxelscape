@@ -10,5 +10,5 @@ class IVSDrawable
 public:
     virtual ~IVSDrawable() = 0;
 
-    virtual void draw(VSWorld* world, std::shared_ptr<VSShader> shader) const = 0;
+    virtual void draw(VSWorld* world) const = 0;
 };

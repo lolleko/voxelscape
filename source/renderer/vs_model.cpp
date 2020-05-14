@@ -1,4 +1,5 @@
 #include "renderer/vs_model.h"
+
 #include "world/vs_world.h"
 #include "core/vs_camera.h"
 
@@ -11,10 +12,10 @@ VSModel::~VSModel() {
 
 }
 
-void VSModel::draw(VSWorld* world, std::shared_ptr<VSShader> shader) const
+void VSModel::draw(VSWorld* world) const
 {
     const auto model = glm::scale(glm::mat4(1.f), {3.f, 3.f, 3.f});
-    shader->uniforms()
+    modelShader.uniforms()
         .setVec3("lightPos", world->getDirectLightPos())
         .setVec3("lightColor", world->getDirectLightColor())
         .setVec3("viewPos", world->getCamera()->getPosition())
@@ -23,6 +24,6 @@ void VSModel::draw(VSWorld* world, std::shared_ptr<VSShader> shader) const
 
     for (const auto& mesh : meshes)
     {
-        mesh.draw(world, shader);
+        mesh.draw(modelShader);
     }
 }
