@@ -12,7 +12,13 @@ struct VSUIState
     bool bShouldUpdateChunks = false;
     bool bShouldTestSetBlock = false;
     bool bShouldGenerateHeightMap = false;
-    bool bShouldAnimateHeightMap = false;
+    bool bShouldSetGameActive = false;
+
+    // Editor Control flow
+    bool bShouldSetEditorActive = false;
+    bool bShouldResetEditor = false;
+    bool bEditorActive = false;
+    
     int activeBlockCount = 0;
     int totalBlockCount = 0;
     std::ostringstream logStream;

@@ -43,6 +43,11 @@ void VSUI::render()
 
     // 2. Show a simple window that we create ourselves. We use a Begin/End pair to created a
     // named window.
+    if (uiState->bEditorActive)
+    {
+        renderEditorGUI();
+    }
+    else
     {
         ImGui::ColorEdit3("clear color", (float*)&uiState->clearColor);
         ImGui::Checkbox("wireframe", (bool*)&uiState->isWireframeModeEnabled);
@@ -61,7 +66,11 @@ void VSUI::render()
         {
             uiState->bShouldGenerateHeightMap = true;
         }
-        ImGui::Checkbox("Animate Heightmap", &uiState->bShouldAnimateHeightMap);
+        if (ImGui::Button("Show Editor"))
+        {
+            uiState->bShouldSetEditorActive = true;
+            uiState->bEditorActive = true;
+        }
         ImGui::Text("Drawing blocks %d/%d", uiState->activeBlockCount, uiState->totalBlockCount);
         ImGui::Text(
             "Application average %.3f ms/frame (%.1f FPS)",
@@ -76,6 +85,45 @@ void VSUI::render()
 
     // Rendering
     ImGui::Render();
+}
+
+void VSUI::renderEditorGUI()
+{
+    ImGui::Checkbox("wireframe", (bool*)&uiState->isWireframeModeEnabled);
+    ImGui::Checkbox("draw chunk border blocks", (bool*)&uiState->bShouldDrawChunkBorderBlocks);
+    ImGui::InputInt3("chunk size", (int*)&uiState->chunkSize);
+    ImGui::InputInt2("world size", (int*)&uiState->chunkCount);
+    if (ImGui::Button("Refresh chunk settings"))
+    {
+        uiState->bShouldUpdateChunks = true;
+    }
+    if (ImGui::Button("Test set block"))
+    {
+        uiState->bShouldTestSetBlock = true;
+    }
+    if (ImGui::Button("Generate Heightmap"))
+    {
+        uiState->bShouldGenerateHeightMap = true;
+    }
+    if (ImGui::Button("Show Game"))
+    {
+        uiState->bShouldSetGameActive = true;
+        uiState->bEditorActive = false;
+    }
+    if (ImGui::Button("Reset Editor"))
+    {
+        uiState->bShouldResetEditor = true;
+    }
+    ImGui::Text("Drawing blocks %d/%d", uiState->activeBlockCount, uiState->totalBlockCount);
+    ImGui::Text(
+        "Application average %.3f ms/frame (%.1f FPS)",
+        1000.0f / ImGui::GetIO().Framerate,
+        ImGui::GetIO().Framerate);
+
+    ImGui::TextColored(ImVec4(1, 1, 0, 1), "Log");
+    ImGui::BeginChild("Scrolling");
+    ImGui::Text("%s", uiState->logStream.str().c_str());
+    ImGui::EndChild();
 }
 
 void VSUI::draw()

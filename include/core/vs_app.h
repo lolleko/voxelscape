@@ -19,6 +19,11 @@ public:
 
     VSWorld* getWorld();
 
+    VSWorld* getEditorWorld();
+    void setEditorWorldActive();
+    void setGameWorldActive();
+    VSWorld* getActiveWorld();
+
     VSUI* getUI();
 
     GLFWwindow* getWindow();
@@ -27,6 +32,8 @@ private:
     VSUI* UI;
 
     VSWorld* world;
+    VSWorld* editorWorld;
+    VSWorld* activeWorld;
 
     VSGame* game;
 

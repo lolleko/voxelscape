@@ -13,6 +13,7 @@ public:
     void cleanup();
 
     void render();
+    void renderEditorGUI();
 
     void draw();
 

@@ -26,7 +26,8 @@ int VSApp::initialize()
     debug_setMainThread();
 
     const auto glfwError = initializeGLFW();
-    if (glfwError != 0) {
+    if (glfwError != 0)
+    {
         return glfwError;
     }
 
@@ -36,6 +37,7 @@ int VSApp::initialize()
     VSLog::Log(VSLog::Category::Core, VSLog::Level::info, "Successfully initialized logger");
 
     world = new VSWorld();
+    editorWorld = new VSWorld();
 
     VSLog::Log(
         VSLog::Category::Core,
@@ -65,8 +67,25 @@ int VSApp::initialize()
     auto skyboxShader = std::make_shared<VSShader>("Skybox");
 
     world->initializeChunks();
+    editorWorld->initializeChunks();
+
+    // TODO: initialize editor world method, maybe in VSWorld?
+    const auto worldSize = editorWorld->getWorldSize();
+    for (int x = 0; x < worldSize.x; x++)
+    {
+        for (int z = 0; z < worldSize.z; z++)
+        {
+            editorWorld->setBlock({x, 0, z}, 1);
+        }
+    }
+    editorWorld->getCamera()->setPosition(glm::vec3(-50.F, -5.F, -50.F));
+    editorWorld->getCamera()->setPitchYaw(-10.F, 45.F);
+
+    // Set game world active initially
+    activeWorld = world;
 
     world->addDrawable(skybox, skyboxShader);
+    editorWorld->addDrawable(skybox, skyboxShader);
 
     VSLog::Log(VSLog::Category::Core, VSLog::Level::info, "Successfully initialized logger");
 
@@ -124,19 +143,21 @@ int VSApp::initializeGLFW()
     glfwSetFramebufferSizeCallback(window, [](GLFWwindow* window, int width, int height) {
         glViewport(0, 0, width, height);
         auto* app = static_cast<VSApp*>(glfwGetWindowUserPointer(window));
-        app->getWorld()->getCameraController()->processFramebufferResize(window, width, height);
+        app->getActiveWorld()->getCameraController()->processFramebufferResize(
+            window, width, height);
     });
     glfwSetCursorPosCallback(window, [](GLFWwindow* window, double xpos, double ypos) {
         auto* app = static_cast<VSApp*>(glfwGetWindowUserPointer(window));
-        app->getWorld()->getCameraController()->processMouseMovement(window, xpos, ypos);
+        app->getActiveWorld()->getCameraController()->processMouseMovement(window, xpos, ypos);
     });
     glfwSetMouseButtonCallback(window, [](GLFWwindow* window, int button, int action, int mods) {
         auto* app = static_cast<VSApp*>(glfwGetWindowUserPointer(window));
-        app->getWorld()->getCameraController()->processMouseButton(window, button, action, mods);
+        app->getActiveWorld()->getCameraController()->processMouseButton(
+            window, button, action, mods);
     });
     glfwSetScrollCallback(window, [](GLFWwindow* window, double xoffset, double yoffset) {
         auto* app = static_cast<VSApp*>(glfwGetWindowUserPointer(window));
-        app->getWorld()->getCameraController()->processMouseScroll(window, xoffset, yoffset);
+        app->getActiveWorld()->getCameraController()->processMouseScroll(window, xoffset, yoffset);
     });
     glfwSwapInterval(1);
 
@@ -146,6 +167,26 @@ int VSApp::initializeGLFW()
 VSWorld* VSApp::getWorld()
 {
     return world;
+}
+
+VSWorld* VSApp::getEditorWorld()
+{
+    return editorWorld;
+}
+
+void VSApp::setEditorWorldActive()
+{
+    activeWorld = editorWorld;
+}
+
+void VSApp::setGameWorldActive()
+{
+    activeWorld = world;
+}
+
+VSWorld* VSApp::getActiveWorld()
+{
+    return activeWorld;
 }
 
 VSUI* VSApp::getUI()
@@ -181,8 +222,8 @@ int VSApp::mainLoop()
             glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
         }
 
-        UI->getMutableState()->totalBlockCount = world->getTotalBlockCount();
-        UI->getMutableState()->activeBlockCount = world->getActiveBlockCount();
+        UI->getMutableState()->totalBlockCount = activeWorld->getTotalBlockCount();
+        UI->getMutableState()->activeBlockCount = activeWorld->getActiveBlockCount();
 
         auto display_w = 0;
         auto display_h = 0;
@@ -197,10 +238,10 @@ int VSApp::mainLoop()
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         // update chunks
-        world->updateActiveChunks();
+        activeWorld->updateActiveChunks();
 
         // draw world
-        world->draw(world, nullptr);
+        activeWorld->draw(activeWorld, nullptr);
 
         // draw ui
         UI->draw();
