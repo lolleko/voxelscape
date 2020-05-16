@@ -8,13 +8,14 @@
 
 #include "core/vs_camera.h"
 #include "core/vs_core.h"
-#include "core/vs_cameracontroller.h"
+#include "core/vs_fpcameracontroller.h"
 #include "world/vs_chunk.h"
 
 VSWorld::VSWorld()
 {
     camera = new VSCamera(glm::vec3(0.0F, 30.0F, 0.0F));
-    cameraController = new VSCameraController(camera);
+    // Default is first person camera controller
+    cameraController = std::move(new VSFPCameraController(camera));
     chunkSize = {32.f, 64.f, 32.f};
     chunkCount = {2, 2};
     // request chunk rebuild at first frame
@@ -91,6 +92,11 @@ VSCamera* VSWorld::getCamera() const
 VSCameraController* VSWorld::getCameraController() const
 {
     return cameraController;
+}
+
+void VSWorld::setCameraController(VSCameraController* newCameraController) 
+{
+    cameraController = newCameraController;
 }
 
 glm::vec3 VSWorld::getDirectLightPos() const

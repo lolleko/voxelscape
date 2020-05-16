@@ -9,6 +9,8 @@
 #include "core/vs_core.h"
 #include "core/vs_log.h"
 #include "core/vs_cameracontroller.h"
+// TODO: Remove and find better position to set camera cantroller
+#include "core/vs_rtscameracontroller.h"
 #include "core/vs_camera.h"
 #include "core/vs_game.h"
 
@@ -80,6 +82,8 @@ int VSApp::initialize()
     }
     editorWorld->getCamera()->setPosition(glm::vec3(-50.F, -5.F, -50.F));
     editorWorld->getCamera()->setPitchYaw(-10.F, 45.F);
+    VSRTSCameraController *rtsCameraController = new VSRTSCameraController(editorWorld->getCamera());
+    editorWorld->setCameraController(rtsCameraController);
 
     // Set game world active initially
     activeWorld = world;

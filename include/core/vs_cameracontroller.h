@@ -19,26 +19,28 @@ class VSCameraController
 {
 public:
     VSCameraController(VSCamera* camera);
+    virtual ~VSCameraController() = default;
 
-    void processMouseButton(GLFWwindow* window, int button, int action, int mods);
+    // Processes mouse click
+    virtual void processMouseButton(GLFWwindow* window, int button, int action, int mods) = 0;
 
     // Processes input received from a mouse input system. Expects the offset value in both the x
     // and y direction.
-    void processMouseMovement(
+    virtual void processMouseMovement(
         GLFWwindow* window,
         double xpos,
         double ypos,
-        GLboolean constrainPitch = GL_TRUE);
+        GLboolean constrainPitch = GL_TRUE) = 0;
 
     // Processes input received from a mouse scroll-wheel event. Only requires input on the vertical
     // wheel-axis
-    void processMouseScroll(GLFWwindow* window, double xoffset, double yoffset) const;
+    virtual void processMouseScroll(GLFWwindow* window, double xoffset, double yoffset) const = 0;
 
-    void processKeyboardInput(GLFWwindow* window, float deltaTime) const;
+    virtual void processKeyboardInput(GLFWwindow* window, float deltaTime) const = 0;
 
-    void processFramebufferResize(GLFWwindow* window, int width, int height);
+    virtual void processFramebufferResize(GLFWwindow* window, int width, int height) = 0;
 
-private:
+protected:
     VSCamera* cam;
 
     bool firstMouse = true;

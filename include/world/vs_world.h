@@ -32,6 +32,8 @@ public:
 
     VSCameraController* getCameraController() const;
 
+    void setCameraController(VSCameraController* newCameraController);
+
     glm::vec3 getDirectLightPos() const;
 
     glm::vec3 getDirectLightColor() const;
