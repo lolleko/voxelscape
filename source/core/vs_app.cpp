@@ -16,11 +16,20 @@
 
 #include "ui/vs_ui.h"
 #include "ui/vs_ui_state.h"
+#include "world/vs_chunk_manager.h"
 #include "world/vs_world.h"
 #include "world/vs_skybox.h"
 
+VSApp* VSApp::instance = nullptr;
+
 VSApp::VSApp()
 {
+    // singleton dont construct more than once
+    assert(!VSApp::instance);
+    if (!VSApp::instance)
+    {
+        VSApp::instance = this;
+    }
 }
 
 int VSApp::initialize()
@@ -37,9 +46,6 @@ int VSApp::initialize()
     // initialize logger
     VSLog::init(UI->getMutableState()->logStream);
     VSLog::Log(VSLog::Category::Core, VSLog::Level::info, "Successfully initialized logger");
-
-    world = new VSWorld();
-    editorWorld = new VSWorld();
 
     VSLog::Log(
         VSLog::Category::Core,
@@ -63,33 +69,31 @@ int VSApp::initialize()
     glEnable(GL_CULL_FACE);
 
     // auto monkeyModel = std::make_shared<VSModel>("monkey.obj");
-    // auto monkeyShader = std::make_shared<VSShader>("Monkey");
+
+    world = new VSWorld();
+    editorWorld = new VSWorld();
 
     auto skybox = new VSSkybox();
-    auto skyboxShader = std::make_shared<VSShader>("Skybox");
-
-    world->initializeChunks();
-    editorWorld->initializeChunks();
+    world->addDrawable(skybox);
+    editorWorld->addDrawable(skybox);
 
     // TODO: initialize editor world method, maybe in VSWorld?
-    const auto worldSize = editorWorld->getWorldSize();
+    const auto worldSize = editorWorld->getChunkManager()->getWorldSize();
     for (int x = 0; x < worldSize.x; x++)
     {
         for (int z = 0; z < worldSize.z; z++)
         {
-            editorWorld->setBlock({x, 0, z}, 1);
+            editorWorld->getChunkManager()->setBlock({x, 0, z}, 1);
         }
     }
     editorWorld->getCamera()->setPosition(glm::vec3(-50.F, -5.F, -50.F));
     editorWorld->getCamera()->setPitchYaw(-10.F, 45.F);
-    VSRTSCameraController *rtsCameraController = new VSRTSCameraController(editorWorld->getCamera());
+    VSRTSCameraController* rtsCameraController =
+        new VSRTSCameraController(editorWorld->getCamera());
     editorWorld->setCameraController(rtsCameraController);
 
     // Set game world active initially
     activeWorld = world;
-
-    world->addDrawable(skybox, skyboxShader);
-    editorWorld->addDrawable(skybox, skyboxShader);
 
     VSLog::Log(VSLog::Category::Core, VSLog::Level::info, "Successfully initialized logger");
 
@@ -203,6 +207,11 @@ GLFWwindow* VSApp::getWindow()
     return window;
 }
 
+VSApp* VSApp::getInstance()
+{
+    return instance;
+}
+
 int VSApp::mainLoop()
 {
     // start game loop
@@ -226,8 +235,9 @@ int VSApp::mainLoop()
             glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
         }
 
-        UI->getMutableState()->totalBlockCount = activeWorld->getTotalBlockCount();
-        UI->getMutableState()->activeBlockCount = activeWorld->getActiveBlockCount();
+        // TODO add to chunk manager to reenable
+        // UI->getMutableState()->totalBlockCount = activeWorld->getTotalBlockCount();
+        // UI->getMutableState()->activeBlockCount = activeWorld->getActiveBlockCount();
 
         auto display_w = 0;
         auto display_h = 0;
@@ -242,10 +252,10 @@ int VSApp::mainLoop()
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         // update chunks
-        activeWorld->updateActiveChunks();
+        activeWorld->update();
 
         // draw world
-        activeWorld->draw(activeWorld, nullptr);
+        activeWorld->draw(activeWorld);
 
         // draw ui
         UI->draw();

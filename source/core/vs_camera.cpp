@@ -50,6 +50,11 @@ glm::mat4 VSCamera::getProjectionMatrix() const
     return cachedProjectionMatrix;
 }
 
+glm::mat4 VSCamera::getVPMatrix() const
+{
+    return cachedVPMatrix;
+}
+
 glm::mat4 VSCamera::getMVPMatrixFast(const glm::mat4& model) const
 {
     return cachedVPMatrix * model;
@@ -126,7 +131,7 @@ void VSCamera::updateCameraVectors()
 
     cachedViewMatrix = glm::lookAt(position, position + front, up);
     // aspec ration fixed to 16.9 for now
-    cachedProjectionMatrix = glm::perspective(glm::radians(zoom), aspectRatio, 0.1F, 2000.0F);
+    cachedProjectionMatrix = glm::perspective(glm::radians(zoom), aspectRatio, 0.1F, 1000.0F);
 
     cachedVPMatrix = cachedProjectionMatrix * cachedViewMatrix;
 }

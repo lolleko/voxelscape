@@ -7,6 +7,7 @@
 #include "ui/vs_ui_state.h"
 
 #include "world/vs_world.h"
+#include "world/vs_chunk_manager.h"
 
 #include "world/generator/vs_heightmap.h"
 
@@ -43,14 +44,13 @@ void VSGame::gameLoop()
         // Update world state with ui state
         if (UI->getState()->bShouldUpdateChunks)
         {
-            world->clearBlocks();
-            world->setChunkDimensions(UI->getState()->chunkSize, UI->getState()->chunkCount);
+            world->getChunkManager()->setChunkDimensions(UI->getState()->chunkSize, UI->getState()->chunkCount);
             UI->getMutableState()->bShouldUpdateChunks = false;
         }
 
         if (UI->getState()->bShouldGenerateHeightMap)
         {
-            const auto worldSize = world->getWorldSize();
+            const auto worldSize = world->getChunkManager()->getWorldSize();
             VSHeightmap hm = VSHeightmap(42, worldSize.y, 1, 0.02F, 4.F);
             for (int x = 0; x < worldSize.x; x++)
             {
@@ -58,7 +58,7 @@ void VSGame::gameLoop()
                 {
                     for (int y = 0; y < hm.getVoxelHeight(x, z); y++)
                     {
-                        world->setBlock({x, y, z}, 1);
+                        world->getChunkManager()->setBlock({x, y, z}, 1);
                     }
                 }
             }
@@ -70,13 +70,14 @@ void VSGame::gameLoop()
             std::cout << "Camera pitch " << world->getCamera()->getPitch() << std::endl;
             std::cout << "Camera yaw " << world->getCamera()->getYaw() << std::endl;
             std::cout << "Camera Position " << (world->getCamera()->getPosition()).x << ", " << (world->getCamera()->getPosition()).y << ", " << (world->getCamera()->getPosition()).z << std::endl;
-            world->clearBlocks();
-            const auto worldSize = world->getWorldSize();
+            // TODO: Clear world
+            // world->getChunkManager()->clearBlocks();
+            const auto worldSize = world->getChunkManager()->getWorldSize();
             for (int x = 0; x < worldSize.x; x++)
             {
                 for (int z = 0; z < worldSize.z; z++)
                 {
-                    world->setBlock({x, 0, z}, 1);
+                    world->getChunkManager()->setBlock({x, 0, z}, 1);
                 }
             }
             UI->getMutableState()->bShouldResetEditor = false;

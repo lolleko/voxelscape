@@ -1,6 +1,6 @@
 #pragma once
 
-#include <map>
+#include <set>
 #include <memory>
 
 #include "renderer/vs_drawable.h"
@@ -9,24 +9,23 @@
 
 class VSCamera;
 class VSCameraController;
-class VSChunk;
+class VSChunkManager;
+class VSDebugDraw;
 
 class VSWorld : public IVSDrawable
 {
 public:
     VSWorld();
 
-    void initializeChunks();
-
     const VSBlockData* getBlockData(short ID);
 
-    void addDrawable(IVSDrawable* drawable, std::shared_ptr<VSShader> shader);
+    void addDrawable(IVSDrawable* drawable);
 
     void removeDrawable(IVSDrawable* drawable);
 
-    void removeDrawableDontDelete(IVSDrawable* drawable);
+    void update();
 
-    void draw(VSWorld* world, std::shared_ptr<VSShader> shader) const override;
+    void draw(VSWorld* world) const override;
 
     VSCamera* getCamera() const;
 
@@ -38,39 +37,19 @@ public:
 
     glm::vec3 getDirectLightColor() const;
 
-    void setBlock(glm::ivec3 location, VSBlockID blockID);
+    VSChunkManager* getChunkManager() const;
 
-    void updateActiveChunks();
-
-    glm::ivec3 getWorldSize();
-
-    int getTotalBlockCount() const;
-
-    int getActiveBlockCount() const;
-
-    const glm::ivec3& getChunkSize() const;
-
-    const glm::ivec2& getChunkCount() const;
-
-    void setChunkDimensions(const glm::ivec3& inChunkSize, const glm::ivec2& inChunkCount);
-
-    void clearBlocks();
+    VSDebugDraw* getDebugDraw() const;
 
 private:
     std::map<VSBlockID, VSBlockData*> blockIDtoBlockData;
 
-    std::vector<VSChunk*> activeChunks;
-
-    glm::ivec3 chunkSize;
-
-    std::shared_ptr<VSShader> chunkShader;
-
-    glm::ivec2 chunkCount;
-
     VSCamera* camera;
     VSCameraController* cameraController;
 
-    std::map<IVSDrawable*, std::shared_ptr<VSShader>> drawables;
+    VSChunkManager* chunkManager;
 
-    std::atomic<bool> bShouldRebuildChunks = false;
+    VSDebugDraw* debugDraw;
+
+    std::set<IVSDrawable*> drawables;
 };

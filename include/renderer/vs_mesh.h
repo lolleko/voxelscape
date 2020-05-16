@@ -20,14 +20,14 @@ struct VSTexture
     std::string path;
 };
 
-class VSMesh : public IVSDrawable
+class VSMesh
 {
 public:
     VSMesh(VSVertexContext* vertexContext, std::vector<VSTexture> textures);
 
     ~VSMesh();
 
-    void draw(VSWorld* world, std::shared_ptr<VSShader> shader) const override;
+    void draw(const VSShader& shader) const;
 
 private:
     VSVertexContext* vertexContext;

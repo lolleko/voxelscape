@@ -35,7 +35,9 @@ public:
 
     ~VSModel();
 
-    void draw(VSWorld* world, std::shared_ptr<VSShader> shader) const override;
+    void draw(VSWorld* world) const override;
+
+    VSShader modelShader = VSShader("Monkey"); // TODO rename to model
 
 private:
     std::vector<VSMesh> meshes;

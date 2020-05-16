@@ -1,19 +1,20 @@
 #include "renderer/vs_mesh.h"
 
-VSMesh::VSMesh(VSVertexContext* vertexContext, std::vector<VSTexture> textures)
-    : vertexContext(vertexContext)
-    , textures(std::move(textures)){};
+#include "renderer/vs_model.h"
 
-VSMesh::~VSMesh() {
+VSMesh::VSMesh(
+    VSVertexContext* vertexContext,
+    std::vector<VSTexture> textures)
+    : vertexContext(vertexContext)
+    , textures(std::move(textures))
+    {};
+
+VSMesh::~VSMesh(){
     // TODO maybe cleanup textures in the future
 };
 
-void VSMesh::draw(VSWorld* world, std::shared_ptr<VSShader> shader) const
+void VSMesh::draw(const VSShader& shader) const
 {
-    (void) world;
-
-    shader->use();
-
     // bind appropriate textures
     unsigned int diffuseNr = 1;
     unsigned int specularNr = 1;
@@ -43,7 +44,7 @@ void VSMesh::draw(VSWorld* world, std::shared_ptr<VSShader> shader) const
         }
 
         // now set the sampler to the correct texture unit
-        glUniform1i(glGetUniformLocation(shader->getID(), (name + number).c_str()), i);
+        glUniform1i(glGetUniformLocation(shader.getID(), (name + number).c_str()), i);
         // and finally bind the texture
         glBindTexture(GL_TEXTURE_2D, textures[i].id);
     }
