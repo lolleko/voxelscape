@@ -18,6 +18,8 @@ public:
 
     void drawBox(const VSBox& box, glm::vec<3, std::byte> color, float thickness = 1.f);
 
+    void drawSphere(const glm::vec3& center, float radius, const glm::vec<3, std::byte>& color, std::uint32_t segments = 12, float thickness = 1.f);
+
     void draw(VSWorld* world) const override;
 
 private:
@@ -44,7 +46,7 @@ private:
 
     GLuint vertexBuffer;
 
-    static constexpr auto maxVertexCount = 4096;
-
     void drawPrimitive(const VSDebugPrimitive& primitive) const;
+
+    void addPrimitiveVertices(VSDebugPrimitive& inPrimitive, const std::vector<VSDebugVertexData>& vertices);
 };

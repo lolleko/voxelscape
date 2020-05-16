@@ -71,7 +71,7 @@ void VSChunkManager::draw(VSWorld* world) const
         .setVec3("lightColor", world->getDirectLightColor())
         .setVec3("viewPos", world->getCamera()->getPosition())
         .setVec3("chunkSize", chunkSize);
-
+    
     for (const auto chunk : chunks)
     {
         if (VSApp::getInstance()->getUI()->getState()->bShouldDrawChunkBorder) {
