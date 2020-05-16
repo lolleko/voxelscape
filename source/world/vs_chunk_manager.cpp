@@ -5,6 +5,11 @@
 
 #include "world/vs_world.h"
 #include "core/vs_camera.h"
+#include "core/vs_app.h"
+#include "ui/vs_ui.h"
+#include "ui/vs_ui_state.h"
+
+#include "core/vs_debug_draw.h"
 
 VSChunkManager::VSChunkManager() {
 }
@@ -69,6 +74,10 @@ void VSChunkManager::draw(VSWorld* world) const
 
     for (const auto chunk : chunks)
     {
+        if (VSApp::getInstance()->getUI()->getState()->bShouldDrawChunkBorder) {
+            const auto chunkPos = glm::vec3(chunk->modelMatrix[3]);
+            world->getDebugDraw()->drawBox({chunkPos - glm::vec3(chunkSize / 2), chunkPos + glm::vec3(chunkSize / 2)}, {255, 0, 0});
+        }
         // dont draw if no blocks active
         if (!chunk->drawnBlocksOffsets.empty())
         {

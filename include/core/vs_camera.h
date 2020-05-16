@@ -40,6 +40,8 @@ public:
 
     glm::mat4 getProjectionMatrix() const;
 
+    glm::mat4 getVPMatrix() const;
+
     glm::mat4 getMVPMatrixFast(const glm::mat4& model) const;
 
     float getZoom() const;

@@ -50,6 +50,11 @@ glm::mat4 VSCamera::getProjectionMatrix() const
     return cachedProjectionMatrix;
 }
 
+glm::mat4 VSCamera::getVPMatrix() const
+{
+    return cachedVPMatrix;
+}
+
 glm::mat4 VSCamera::getMVPMatrixFast(const glm::mat4& model) const
 {
     return cachedVPMatrix * model;

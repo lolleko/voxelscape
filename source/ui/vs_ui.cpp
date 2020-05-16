@@ -46,22 +46,17 @@ void VSUI::render()
     {
         ImGui::ColorEdit3("clear color", (float*)&uiState->clearColor);
         ImGui::Checkbox("wireframe", (bool*)&uiState->isWireframeModeEnabled);
-        ImGui::Checkbox("draw chunk border blocks", (bool*)&uiState->bShouldDrawChunkBorderBlocks);
+        ImGui::Checkbox("draw chunk border", (bool*)&uiState->bShouldDrawChunkBorder);
         ImGui::InputInt3("chunk size", (int*)&uiState->chunkSize);
         ImGui::InputInt2("world size", (int*)&uiState->chunkCount);
         if (ImGui::Button("Refresh chunk settings"))
         {
             uiState->bShouldUpdateChunks = true;
         }
-        if (ImGui::Button("Test set block"))
-        {
-            uiState->bShouldTestSetBlock = true;
-        }
         if (ImGui::Button("Generate Heightmap"))
         {
             uiState->bShouldGenerateHeightMap = true;
         }
-        ImGui::Checkbox("Animate Heightmap", &uiState->bShouldAnimateHeightMap);
         ImGui::Text("Drawing blocks %d/%d", uiState->activeBlockCount, uiState->totalBlockCount);
         ImGui::Text(
             "Application average %.3f ms/frame (%.1f FPS)",

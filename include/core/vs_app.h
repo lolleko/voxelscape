@@ -23,6 +23,8 @@ public:
 
     GLFWwindow* getWindow();
 
+    static VSApp* getInstance();
+
 private:
     VSUI* UI;
 
@@ -33,6 +35,8 @@ private:
     GLFWwindow* window;
 
     std::string glslVersion;
+
+    static VSApp* instance;
 
     int initializeGLFW();
 };

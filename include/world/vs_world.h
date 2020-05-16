@@ -10,6 +10,7 @@
 class VSCamera;
 class VSCameraController;
 class VSChunkManager;
+class VSDebugDraw;
 
 class VSWorld : public IVSDrawable
 {
@@ -36,6 +37,8 @@ public:
 
     VSChunkManager* getChunkManager() const;
 
+    VSDebugDraw* getDebugDraw() const;
+
 private:
     std::map<VSBlockID, VSBlockData*> blockIDtoBlockData;
 
@@ -43,6 +46,8 @@ private:
     VSCameraController* cameraController;
 
     VSChunkManager* chunkManager;
+
+    VSDebugDraw* debugDraw;
 
     std::set<IVSDrawable*> drawables;
 };

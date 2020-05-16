@@ -17,8 +17,15 @@
 #include "world/vs_world.h"
 #include "world/vs_skybox.h"
 
+VSApp* VSApp::instance = nullptr;
+
 VSApp::VSApp()
 {
+    // singleton dont cosntruct more than once
+    assert(!VSApp::instance);
+    if (!VSApp::instance) {
+        VSApp::instance = this;
+    }
 }
 
 int VSApp::initialize()
@@ -151,6 +158,10 @@ VSUI* VSApp::getUI()
 GLFWwindow* VSApp::getWindow()
 {
     return window;
+}
+
+VSApp* VSApp::getInstance() {
+    return instance;
 }
 
 int VSApp::mainLoop()
