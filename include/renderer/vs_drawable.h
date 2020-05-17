@@ -10,5 +10,5 @@ class IVSDrawable
 public:
     virtual ~IVSDrawable() = 0;
 
-    virtual void draw(VSWorld* world) const = 0;
+    virtual void draw(VSWorld* world) = 0;
 };

@@ -7,7 +7,7 @@ layout (location = 3) in vec3 inTangent;
 layout (location = 4) in vec3 inBiTangent;
 layout (location = 5) in vec3 inColor;
 
-layout (location = 6) in vec3 blockOffset;
+layout (location = 6) in vec3 blockLocation;
 
 out VertexData {
     vec3 worldPosition;
@@ -18,19 +18,16 @@ out VertexData {
     vec3 color;
 } o;
 
-uniform mat4 MVP;
-uniform mat4 model;
-
-uniform vec3 chunkSize;
+uniform mat4 VP;
 
 void main()
 {
-    gl_Position = MVP * vec4(inPosition + blockOffset, 1.0);
-
-    o.worldPosition = vec3(model * vec4(inPosition, 1.0));
-    o.normal = vec3(model * vec4(inNormal, 0.0));;
+    o.worldPosition = vec3(blockLocation + inPosition);
+    o.normal = inNormal;
     o.texCoord = inTexCoord;
-    o.tangent = vec3(model * vec4(inTangent, 0.0));;
-    o.biTangent = vec3(model * vec4(inBiTangent, 0.0));;
+    o.tangent = inTangent;
+    o.biTangent = inBiTangent;
     o.color = inColor;
+
+    gl_Position = VP * vec4(o.worldPosition, 1.0);
 }

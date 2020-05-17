@@ -1,6 +1,7 @@
 #pragma once
 
 #include <atomic>
+#include <chrono>
 
 class VSApp;
 
@@ -14,8 +15,8 @@ public:
 private:
     VSApp* app;
 
+    std::chrono::time_point<std::chrono::steady_clock> lastFrameStartTime;
     float deltaTime;
-    float lastFrame;
 
     std::atomic<bool> bShouldQuit;
 };

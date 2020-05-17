@@ -12,7 +12,7 @@ VSModel::~VSModel() {
 
 }
 
-void VSModel::draw(VSWorld* world) const
+void VSModel::draw(VSWorld* world)
 {
     const auto model = glm::scale(glm::mat4(1.f), {3.f, 3.f, 3.f});
     modelShader.uniforms()

@@ -1,7 +1,6 @@
 #include "world/vs_chunk_manager.h"
 
 #include "renderer/vs_modelloader.h"
-#include "renderer/vs_shader.h"
 
 #include "world/vs_world.h"
 #include "core/vs_camera.h"
@@ -11,38 +10,38 @@
 
 #include "core/vs_debug_draw.h"
 
-VSChunkManager::VSChunkManager() {
-}
+VSChunkManager::VSChunkManager()
+{
+    vertexContext = loadVertexContext("models/cube.obj");
 
-VSChunkManager::VSChunk* VSChunkManager::createChunk() {
-    auto* chunk = new VSChunk();
+    glBindVertexArray(vertexContext->vertexArrayObject);
 
-    chunk->blocks.resize(glm::compMul(chunkSize), VS_DEFAULT_BLOCK_ID);
-
-    chunk->vertexContext = loadVertexContext("models/cube.obj");
-
-    glBindVertexArray(chunk->vertexContext->vertexArrayObject);
-
-    const auto nextAttribPointer = chunk->vertexContext->lastAttribPointer + 1;
-    glGenBuffers(1, &chunk->activeBlocksInstanceBuffer);
-    glBindBuffer(GL_ARRAY_BUFFER, chunk->activeBlocksInstanceBuffer);
+    const auto nextAttribPointer = vertexContext->lastAttribPointer + 1;
+    glGenBuffers(1, &activeBlocksInstanceBuffer);
+    glBindBuffer(GL_ARRAY_BUFFER, activeBlocksInstanceBuffer);
     glEnableVertexAttribArray(nextAttribPointer);
     glVertexAttribPointer(nextAttribPointer, 3, GL_FLOAT, GL_FALSE, 0, nullptr);
     glBufferData(
         GL_ARRAY_BUFFER,
-        chunk->drawnBlocksOffsets.size() * sizeof(glm::vec3),
-        &chunk->drawnBlocksOffsets[0],
+        drawnBlocksOffsets.size() * sizeof(glm::vec3),
+        &drawnBlocksOffsets[0],
         GL_STATIC_DRAW);
     glVertexAttribDivisor(nextAttribPointer, 1);
 
     glBindVertexArray(0);
+}
+
+VSChunkManager::VSChunk* VSChunkManager::createChunk()
+{
+    auto* chunk = new VSChunk();
+
+    chunk->blocks.resize(getTotalBlockCount(), VS_DEFAULT_BLOCK_ID);
 
     return chunk;
 }
 
-void VSChunkManager::deleteChunk(VSChunk* chunk) {
-    glBindVertexArray(chunk->vertexContext->vertexArrayObject);
-    glDeleteBuffers(1, &chunk->activeBlocksInstanceBuffer);
+void VSChunkManager::deleteChunk(VSChunk* chunk)
+{
     delete chunk;
 }
 
@@ -54,9 +53,23 @@ VSBlockID VSChunkManager::getBlock(glm::ivec3 location) const
 
 void VSChunkManager::setBlock(glm::ivec3 location, VSBlockID blockID)
 {
-    const auto [chunkIndex, blockIndex] = worldCoordinatesToChunkAndBlockIndex(location);
-    chunks[chunkIndex]->blocks[blockIndex] = blockID;
-    chunks[chunkIndex]->bIsDirty = true;
+    assert(!bShouldReinitializeChunks);
+
+    const auto [chunkCoordinates, blockIndex] = worldCoordinatesToChunkCoordinatesAndBlockIndex(location);
+
+    chunks[chunkCoordinatesToChunkIndex(chunkCoordinates)]->blocks[blockIndex] = blockID;
+    chunks[chunkCoordinatesToChunkIndex(chunkCoordinates)]->bIsDirty = true;
+
+    const auto right = glm::clamp(chunkCoordinates + glm::ivec2(1, 0), {0, 0}, chunkCount - 1);
+    const auto left = glm::clamp(chunkCoordinates - glm::ivec2(1, 0), {0, 0}, chunkCount - 1);
+
+    const auto top = glm::clamp(chunkCoordinates + glm::ivec2(0, 1), {0, 0}, chunkCount - 1);
+    const auto down = glm::clamp(chunkCoordinates - glm::ivec2(1, 0), {0, 0}, chunkCount - 1);
+
+    chunks[chunkCoordinatesToChunkIndex(right)]->bIsDirty = true;
+    chunks[chunkCoordinatesToChunkIndex(left)]->bIsDirty = true;
+    chunks[chunkCoordinatesToChunkIndex(top)]->bIsDirty = true;
+    chunks[chunkCoordinatesToChunkIndex(down)]->bIsDirty = true;
 }
 
 glm::ivec3 VSChunkManager::getWorldSize() const
@@ -64,36 +77,50 @@ glm::ivec3 VSChunkManager::getWorldSize() const
     return worldSize;
 }
 
-void VSChunkManager::draw(VSWorld* world) const
+void VSChunkManager::draw(VSWorld* world)
 {
+    drawnBlocksOffsets.clear();
+    
+    for (const auto chunk : chunks)
+    {
+        if (VSApp::getInstance()->getUI()->getState()->bShouldDrawChunkBorder)
+        {
+            const auto chunkPos = glm::vec3(chunk->modelMatrix[3]);
+            world->getDebugDraw()->drawBox(
+                {chunkPos - glm::vec3(chunkSize / 2), chunkPos + glm::vec3(chunkSize / 2)},
+                {255, 0, 0});
+        }
+        drawnBlocksOffsets.insert(drawnBlocksOffsets.end(), chunk->visibleBlockLocationsWorldSpace.begin(), chunk->visibleBlockLocationsWorldSpace.end());
+    }
+
+    glBindVertexArray(vertexContext->vertexArrayObject);
+
+    glBindBuffer(GL_ARRAY_BUFFER, activeBlocksInstanceBuffer);
+    glBufferData(
+        GL_ARRAY_BUFFER,
+        drawnBlocksOffsets.size() * sizeof(glm::vec3),
+        &drawnBlocksOffsets[0],
+        GL_STATIC_DRAW);
+
+    glBindVertexArray(0);
+
     chunkShader.uniforms()
         .setVec3("lightPos", world->getDirectLightPos())
         .setVec3("lightColor", world->getDirectLightColor())
         .setVec3("viewPos", world->getCamera()->getPosition())
-        .setVec3("chunkSize", chunkSize);
-    
-    for (const auto chunk : chunks)
-    {
-        if (VSApp::getInstance()->getUI()->getState()->bShouldDrawChunkBorder) {
-            const auto chunkPos = glm::vec3(chunk->modelMatrix[3]);
-            world->getDebugDraw()->drawBox({chunkPos - glm::vec3(chunkSize / 2), chunkPos + glm::vec3(chunkSize / 2)}, {255, 0, 0});
-        }
-        // dont draw if no blocks active
-        if (!chunk->drawnBlocksOffsets.empty())
-        {
-            chunkShader.uniforms()
-                .setMat4("model", chunk->modelMatrix)
-                .setMat4("MVP", world->getCamera()->getMVPMatrixFast(chunk->modelMatrix));
+        .setMat4("VP", world->getCamera()->getVPMatrix());
 
-            glBindVertexArray(chunk->vertexContext->vertexArrayObject);
-            glDrawElementsInstanced(
-                GL_TRIANGLES,
-                chunk->vertexContext->triangleCount,
-                GL_UNSIGNED_INT,
-                nullptr,
-                chunk->drawnBlocksOffsets.size());
-            glBindVertexArray(0);
-        }
+    // dont draw if no blocks active
+    if (!drawnBlocksOffsets.empty())
+    {
+        glBindVertexArray(vertexContext->vertexArrayObject);
+        glDrawElementsInstanced(
+            GL_TRIANGLES,
+            vertexContext->triangleCount,
+            GL_UNSIGNED_INT,
+            nullptr,
+            drawnBlocksOffsets.size());
+        glBindVertexArray(0);
     }
 }
 
@@ -102,10 +129,11 @@ void VSChunkManager::updateChunks()
     assert(debug_isMainThread());
 
     initializeChunks();
-    for (int chunkIndex = 0; chunkIndex < glm::compMul(chunkCount); ++chunkIndex)
+    for (std::size_t chunkIndex = 0; chunkIndex < getTotalChunkCount(); ++chunkIndex)
     {
         // to avoid stutter we only update one chunk per frame
-        if (updateVisibleBlocks(chunkIndex)) {
+        if (updateVisibleBlocks(chunkIndex))
+        {
             return;
         }
     }
@@ -114,10 +142,21 @@ void VSChunkManager::setChunkDimensions(
     const glm::ivec3& inChunkSize,
     const glm::ivec2& inChunkCount)
 {
-    chunkSize = inChunkSize;
-    chunkCount = inChunkCount;
+    // Force even number of chunks and blocks
+    chunkSize = (inChunkSize / 2) * 2;
+    chunkCount = (inChunkCount / 2) * 2;
     worldSize = {chunkSize.x * chunkCount.x, chunkSize.y, chunkSize.z * chunkCount.y};
     bShouldReinitializeChunks = true;
+}
+
+std::size_t VSChunkManager::getTotalBlockCount() const
+{
+    return glm::compMul(chunkSize);
+}
+
+std::size_t VSChunkManager::getTotalChunkCount() const
+{
+    return glm::compMul(chunkCount);
 }
 
 void VSChunkManager::initializeChunks()
@@ -138,7 +177,10 @@ void VSChunkManager::initializeChunks()
             {
                 auto newChunk = createChunk();
                 newChunk->modelMatrix = glm::translate(
-                    newChunk->modelMatrix, glm::vec3(chunkSize.x * x, 0.f, chunkSize.z * y));
+                    newChunk->modelMatrix,
+                    glm::vec3(chunkSize.x * (x + 0.5f), 0.f, chunkSize.z * (y + 0.5f)) -
+                        (glm::vec3(chunkSize.x * chunkCount.x, 0.f, chunkSize.z * chunkCount.y) /
+                            2.f));
                 chunks[y * chunkCount.x + x] = newChunk;
             }
         }
@@ -151,31 +193,17 @@ bool VSChunkManager::updateVisibleBlocks(std::size_t chunkIndex)
     bool expected = true;
     if (chunk->bIsDirty.compare_exchange_weak(expected, false))
     {
-        chunk->drawnBlocksOffsets.clear();
-        for (std::size_t blockIndex = 0;
-             blockIndex < static_cast<std::size_t>(glm::compMul(chunkSize));
-             blockIndex++)
+        chunk->visibleBlockLocationsWorldSpace.clear();
+        for (std::size_t blockIndex = 0; blockIndex < getTotalBlockCount(); blockIndex++)
         {
             if (chunk->blocks[blockIndex] != VS_DEFAULT_BLOCK_ID &&
                 isBlockVisible(chunkIndex, blockIndex))
             {
-                const auto offset = glm::vec3(blockIndexToBlockCoordinates(blockIndex)) -
-                                    glm::vec3(chunkSize) / 2.f;
-                chunk->drawnBlocksOffsets.push_back(offset);
+                const auto offset = chunk->modelMatrix * (glm::vec4(glm::vec3(blockIndexToBlockCoordinates(blockIndex)) + glm::vec3(0.5f) -
+                                    glm::vec3(chunkSize) / 2.f, 1.f));
+                chunk->visibleBlockLocationsWorldSpace.emplace_back(offset);
             }
         }
-
-        glBindVertexArray(chunk->vertexContext->vertexArrayObject);
-
-        glBindBuffer(GL_ARRAY_BUFFER, chunk->activeBlocksInstanceBuffer);
-        glBufferData(
-            GL_ARRAY_BUFFER,
-            chunk->drawnBlocksOffsets.size() * sizeof(glm::vec3),
-            &chunk->drawnBlocksOffsets[0],
-            GL_STATIC_DRAW);
-
-        glBindVertexArray(0);
-
         return true;
     }
     return false;
@@ -186,8 +214,7 @@ bool VSChunkManager::isBlockVisible(std::size_t chunkIndex, std::size_t blockInd
     const auto blockCoords = blockIndexToBlockCoordinates(blockIndex);
 
     if (blockCoords.x == 0 || blockCoords.x == chunkSize.x - 1 || blockCoords.y == 0 ||
-        blockCoords.y == chunkSize.y - 1 || blockCoords.z == 0 ||
-        blockCoords.z == chunkSize.z - 1)
+        blockCoords.y == chunkSize.y - 1 || blockCoords.z == 0 || blockCoords.z == chunkSize.z - 1)
     {
         return isBorderBlockVisible(chunkIndex, blockCoords);
     }
@@ -200,20 +227,15 @@ bool VSChunkManager::isCenterBlockVisible(
 {
     const auto& blocks = chunks[chunkIndex]->blocks;
 
-    const auto right =
-        glm::ivec3(blockCoordinates.x + 1, blockCoordinates.y, blockCoordinates.z);
-    const auto left =
-        glm::ivec3(blockCoordinates.x - 1, blockCoordinates.y, blockCoordinates.z);
+    const auto right = glm::ivec3(blockCoordinates.x + 1, blockCoordinates.y, blockCoordinates.z);
+    const auto left = glm::ivec3(blockCoordinates.x - 1, blockCoordinates.y, blockCoordinates.z);
 
     const auto top = glm::ivec3(blockCoordinates.x, blockCoordinates.y + 1, blockCoordinates.z);
-    const auto down =
-        glm::ivec3(blockCoordinates.x, blockCoordinates.y - 1, blockCoordinates.z);
+    const auto down = glm::ivec3(blockCoordinates.x, blockCoordinates.y - 1, blockCoordinates.z);
 
-    const auto front =
-        glm::ivec3(blockCoordinates.x, blockCoordinates.y, blockCoordinates.z + 1);
+    const auto front = glm::ivec3(blockCoordinates.x, blockCoordinates.y, blockCoordinates.z + 1);
     // TODO is + 1 or -1 back?
-    const auto back =
-        glm::ivec3(blockCoordinates.x, blockCoordinates.y, blockCoordinates.z - 1);
+    const auto back = glm::ivec3(blockCoordinates.x, blockCoordinates.y, blockCoordinates.z - 1);
 
     return blocks[blockCoordinatesToBlockIndex(right)] == VS_DEFAULT_BLOCK_ID ||
            blocks[blockCoordinatesToBlockIndex(left)] == VS_DEFAULT_BLOCK_ID ||
@@ -227,16 +249,17 @@ bool VSChunkManager::isBorderBlockVisible(
     std::size_t chunkIndex,
     const glm::ivec3& blockCoordinates) const
 {
-    glm::ivec3 blockWorldCoordinates = blockCoordinatesToWorldCoordinates(
-        chunkIndex, blockCoordinates);
-    if (blockWorldCoordinates.x == 0 || blockWorldCoordinates.x == worldSize.x - 1 || blockWorldCoordinates.y == 0 ||
-        blockWorldCoordinates.y == worldSize.y - 1 || blockWorldCoordinates.z == 0 ||
-        blockWorldCoordinates.z == worldSize.z - 1)
+    glm::ivec3 blockWorldCoordinates =
+        blockCoordinatesToWorldCoordinates(chunkIndex, blockCoordinates);
+    if (blockWorldCoordinates.x == 0 || blockWorldCoordinates.x == worldSize.x - 1 ||
+        blockWorldCoordinates.y == 0 || blockWorldCoordinates.y == worldSize.y - 1 ||
+        blockWorldCoordinates.z == 0 || blockWorldCoordinates.z == worldSize.z - 1)
     {
         const auto top = blockCoordinatesToWorldCoordinates(
             chunkIndex, glm::ivec3(blockCoordinates.x, blockCoordinates.y + 1, blockCoordinates.z));
 
-        if (top.y <= worldSize.y && getBlock(top) == VS_DEFAULT_BLOCK_ID) {
+        if (top.y <= worldSize.y && getBlock(top) == VS_DEFAULT_BLOCK_ID)
+        {
             return true;
         }
         return false;
@@ -307,6 +330,18 @@ VSChunkManager::worldCoordinatesToChunkAndBlockIndex(const glm::ivec3& worldCoor
     const auto chunkIndex = chunkCoordinatesToChunkIndex(chunkCoordinates);
     return {
         chunkIndex,
+        blockCoordinatesToBlockIndex(
+            {worldCoords.x - chunkCoordinates.x * chunkSize.x,
+             worldCoords.y,
+             worldCoords.z - chunkCoordinates.y * chunkSize.z})};
+}
+
+std::tuple<glm::ivec2, std::size_t>
+VSChunkManager::worldCoordinatesToChunkCoordinatesAndBlockIndex(const glm::ivec3& worldCoords) const
+{
+    const auto chunkCoordinates = worldCoordinatesToChunkCoordinates(worldCoords);
+    return {
+        chunkCoordinates,
         blockCoordinatesToBlockIndex(
             {worldCoords.x - chunkCoordinates.x * chunkSize.x,
              worldCoords.y,

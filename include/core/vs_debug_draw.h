@@ -20,7 +20,7 @@ public:
 
     void drawSphere(const glm::vec3& center, float radius, const glm::vec<3, std::byte>& color, std::uint32_t segments = 12, float thickness = 1.f);
 
-    void draw(VSWorld* world) const override;
+    void draw(VSWorld* world) override;
 
 private:
     struct VSDebugPrimitive

@@ -12,7 +12,7 @@ class VSSkybox : public IVSDrawable, IVSTransformable
 public:
     VSSkybox();
 
-    void draw(VSWorld* world) const override;
+    void draw(VSWorld* world) override;
 
     glm::mat4 getModelMatrix() const override;
 

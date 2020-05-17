@@ -40,9 +40,9 @@ void VSWorld::update()
     chunkManager->updateChunks();
 }
 
-void VSWorld::draw(VSWorld* world) const
+void VSWorld::draw(VSWorld* world)
 {
-    for (const auto* drawable : drawables)
+    for (auto* drawable : drawables)
     {
         drawable->draw(world);
     }

@@ -6,6 +6,7 @@
 
 #include "world/vs_world.h"
 
+#define _USE_MATH_DEFINES
 #include <cmath>
 
 VSDebugDraw::VSDebugDraw()
@@ -144,7 +145,7 @@ void VSDebugDraw::drawSphere(
     primitives.push_back(sphere);
 }
 
-void VSDebugDraw::draw(VSWorld* world) const
+void VSDebugDraw::draw(VSWorld* world)
 {
     (void)world;
     primitiveShader->uniforms().setMat4("VP", world->getCamera()->getVPMatrix());
@@ -165,9 +166,8 @@ void VSDebugDraw::draw(VSWorld* world) const
 
     glBindVertexArray(0);
 
-    // TODO never never never cons_cast
-    const_cast<VSDebugDraw*>(this)->primitives.clear();
-    const_cast<VSDebugDraw*>(this)->vertexData.clear();
+    primitives.clear();
+    vertexData.clear();
 }
 
 void VSDebugDraw::drawPrimitive(const VSDebugDraw::VSDebugPrimitive& primitive) const

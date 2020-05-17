@@ -35,7 +35,7 @@ public:
 
     ~VSModel();
 
-    void draw(VSWorld* world) const override;
+    void draw(VSWorld* world) override;
 
     VSShader modelShader = VSShader("Monkey"); // TODO rename to model
 

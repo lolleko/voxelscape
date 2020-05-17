@@ -25,7 +25,7 @@ public:
 
     void update();
 
-    void draw(VSWorld* world) const override;
+    void draw(VSWorld* world) override;
 
     VSCamera* getCamera() const;
 

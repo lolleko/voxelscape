@@ -19,7 +19,7 @@ VSSkybox::VSSkybox()
     cubemapTexture = loadSkyboxCubemap();
 }
 
-void VSSkybox::draw(VSWorld* world) const
+void VSSkybox::draw(VSWorld* world)
 {
     glDepthFunc(GL_LEQUAL);
 
