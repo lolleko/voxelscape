@@ -45,7 +45,6 @@ public:
     void draw(VSWorld* world) override;
 
     void updateChunks();
-    ;
 
     void setChunkDimensions(const glm::ivec3& inChunkSize, const glm::ivec2& inChunkCount);
 

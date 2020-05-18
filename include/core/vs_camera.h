@@ -64,6 +64,10 @@ public:
 
     void setAspectRatio(float newAspectRatio);
 
+    float getZNear() const;
+
+    float getZFar() const;
+
 private:
     glm::mat4 cachedViewMatrix;
     glm::mat4 cachedProjectionMatrix;
@@ -82,6 +86,9 @@ private:
     float zoom;
     // Current aspect ratio
     float aspectRatio = 16.F / 9.F;
+
+    float zNear = 0.1F;
+    float zFar = 1000.F;
 
     // Calculates the front vector from the Camera's (updated) Euler Angles
     void updateCameraVectors();
