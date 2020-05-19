@@ -87,8 +87,8 @@ void VSChunkManager::draw(VSWorld* world)
 
         if ((chunkCenterInP.z - horizontalRadius) < world->getCamera()->getZFar() * 1.F &&
             (chunkCenterInP.z + horizontalRadius) > world->getCamera()->getZNear() * 1.F &&
-            (abs(chunkCenterInP.x) - horizontalRadius) < (chunkCenterInP.w * 1.F) &&
-            (abs(chunkCenterInP.y) - chunkSize.y) < (chunkCenterInP.w * 1.F))
+            (glm::abs(chunkCenterInP.x) - horizontalRadius) < (chunkCenterInP.w * 1.F) &&
+            (glm::abs(chunkCenterInP.y) - chunkSize.y) < (chunkCenterInP.w * 1.F))
         {
             drawnBlocksOffsets.insert(
                 drawnBlocksOffsets.end(),
