@@ -17,7 +17,8 @@ public:
 private:
     VSApp* app;
 
-    std::chrono::time_point<std::chrono::steady_clock, std::chrono::nanoseconds> lastFrameStartTime;
+    std::chrono::time_point<std::chrono::high_resolution_clock, std::chrono::nanoseconds>
+        lastFrameStartTime;
 
     /** Delta time in seconds */
     float deltaTime;
