@@ -31,20 +31,6 @@ VSChunkManager::VSChunkManager()
     glBindVertexArray(0);
 }
 
-VSChunkManager::VSChunk* VSChunkManager::createChunk()
-{
-    auto* chunk = new VSChunk();
-
-    chunk->blocks.resize(getTotalBlockCount(), VS_DEFAULT_BLOCK_ID);
-
-    return chunk;
-}
-
-void VSChunkManager::deleteChunk(VSChunk* chunk)
-{
-    delete chunk;
-}
-
 VSBlockID VSChunkManager::getBlock(glm::ivec3 location) const
 {
     const auto [chunkIndex, blockIndex] = worldCoordinatesToChunkAndBlockIndex(location);
@@ -82,7 +68,7 @@ void VSChunkManager::draw(VSWorld* world)
 {
     drawnBlocksOffsets.clear();
 
-    for (const auto chunk : chunks)
+    for (const auto* chunk : chunks)
     {
         if (VSApp::getInstance()->getUI()->getState()->bShouldDrawChunkBorder)
         {
@@ -99,10 +85,10 @@ void VSChunkManager::draw(VSWorld* world)
         const auto horizontalRadius =
             glm::sqrt(chunkSize.x * chunkSize.x + chunkSize.z * chunkSize.z);
 
-        if ((chunkCenterInP.z - horizontalRadius) < world->getCamera()->getZFar() * 1.f &&
-            (chunkCenterInP.z + horizontalRadius) > world->getCamera()->getZNear() * 1.f &&
-            (abs(chunkCenterInP.x) - horizontalRadius) < (chunkCenterInP.w * 1.f) &&
-            (abs(chunkCenterInP.y) - chunkSize.y) < (chunkCenterInP.w * 1.f))
+        if ((chunkCenterInP.z - horizontalRadius) < world->getCamera()->getZFar() * 1.F &&
+            (chunkCenterInP.z + horizontalRadius) > world->getCamera()->getZNear() * 1.F &&
+            (abs(chunkCenterInP.x) - horizontalRadius) < (chunkCenterInP.w * 1.F) &&
+            (abs(chunkCenterInP.y) - chunkSize.y) < (chunkCenterInP.w * 1.F))
         {
             drawnBlocksOffsets.insert(
                 drawnBlocksOffsets.end(),
@@ -182,32 +168,49 @@ void VSChunkManager::initializeChunks()
     bool expected = true;
     if (bShouldReinitializeChunks.compare_exchange_weak(expected, false))
     {
-        for (auto& chunk : chunks)
+        for (auto* chunk : chunks)
         {
             deleteChunk(chunk);
         }
-        chunks.empty();
+        chunks.clear();
         chunks.resize(chunkCount.x * chunkCount.y);
 
         for (int y = 0; y < chunkCount.x; y++)
         {
             for (int x = 0; x < chunkCount.x; x++)
             {
-                auto newChunk = createChunk();
+                VSChunk* newChunk = createChunk();
                 newChunk->modelMatrix = glm::translate(
                     newChunk->modelMatrix,
-                    glm::vec3(chunkSize.x * (x + 0.5f), 0.f, chunkSize.z * (y + 0.5f)) -
-                        (glm::vec3(chunkSize.x * chunkCount.x, 0.f, chunkSize.z * chunkCount.y) /
-                         2.f));
+                    glm::vec3(
+                        chunkSize.x * (static_cast<float>(x) + 0.5F),
+                        0.F,
+                        chunkSize.z * (static_cast<float>(y) + 0.5F)) -
+                        (glm::vec3(chunkSize.x * chunkCount.x, 0.F, chunkSize.z * chunkCount.y) /
+                         2.F));
                 chunks[y * chunkCount.x + x] = newChunk;
             }
         }
     }
 }
 
+VSChunkManager::VSChunk* VSChunkManager::createChunk() const
+{
+    auto* chunk = new VSChunk();
+
+    chunk->blocks.resize(getTotalBlockCount(), VS_DEFAULT_BLOCK_ID);
+
+    return chunk;
+}
+
+void VSChunkManager::deleteChunk(VSChunk* chunk)
+{
+    delete chunk;
+}
+
 bool VSChunkManager::updateVisibleBlocks(std::size_t chunkIndex)
 {
-    const auto chunk = chunks[chunkIndex];
+    auto* const chunk = chunks[chunkIndex];
     bool expected = true;
     if (chunk->bIsDirty.compare_exchange_weak(expected, false))
     {
@@ -220,8 +223,8 @@ bool VSChunkManager::updateVisibleBlocks(std::size_t chunkIndex)
                 const auto offset =
                     chunk->modelMatrix * (glm::vec4(
                                              glm::vec3(blockIndexToBlockCoordinates(blockIndex)) +
-                                                 glm::vec3(0.5f) - glm::vec3(chunkSize) / 2.f,
-                                             1.f));
+                                                 glm::vec3(0.5F) - glm::vec3(chunkSize) / 2.F,
+                                             1.F));
                 chunk->visibleBlockLocationsWorldSpace.emplace_back(offset);
             }
         }
@@ -279,11 +282,7 @@ bool VSChunkManager::isBorderBlockVisible(
         const auto top = blockCoordinatesToWorldCoordinates(
             chunkIndex, glm::ivec3(blockCoordinates.x, blockCoordinates.y + 1, blockCoordinates.z));
 
-        if (top.y <= worldSize.y && getBlock(top) == VS_DEFAULT_BLOCK_ID)
-        {
-            return true;
-        }
-        return false;
+        return top.y <= worldSize.y && getBlock(top) == VS_DEFAULT_BLOCK_ID;
     }
 
     const auto right = blockCoordinatesToWorldCoordinates(
@@ -310,7 +309,7 @@ bool VSChunkManager::isBorderBlockVisible(
            getBlock(front) == VS_DEFAULT_BLOCK_ID || getBlock(back) == VS_DEFAULT_BLOCK_ID;
 }
 
-std::size_t VSChunkManager::chunkCoordinatesToChunkIndex(glm::ivec2 chunkCoordinates) const
+std::size_t VSChunkManager::chunkCoordinatesToChunkIndex(const glm::ivec2& chunkCoordinates) const
 {
     return chunkCoordinates.y * chunkCount.x + chunkCoordinates.x;
 }
@@ -333,9 +332,9 @@ glm::ivec3 VSChunkManager::blockIndexToBlockCoordinates(std::size_t blockIndex) 
     const int width = chunkSize.x;
     const int height = chunkSize.y;
 
-    int x = blockIndex % width;
-    int z = blockIndex / (width * height);
-    int y = (blockIndex / width) % height;
+    std::size_t x = blockIndex % width;
+    std::size_t z = blockIndex / (width * height);
+    std::size_t y = (blockIndex / width) % height;
     return {x, y, z};
 }
 

@@ -27,17 +27,17 @@ public:
 
     void draw(VSWorld* world) override;
 
-    VSCamera* getCamera() const;
+    [[nodiscard]] VSCamera* getCamera() const;
 
-    VSCameraController* getCameraController() const;
+    [[nodiscard]] VSCameraController* getCameraController() const;
 
-    glm::vec3 getDirectLightPos() const;
+    [[nodiscard]] glm::vec3 getDirectLightPos() const;
 
-    glm::vec3 getDirectLightColor() const;
+    [[nodiscard]] glm::vec3 getDirectLightColor() const;
 
-    VSChunkManager* getChunkManager() const;
+    [[nodiscard]] VSChunkManager* getChunkManager() const;
 
-    VSDebugDraw* getDebugDraw() const;
+    [[nodiscard]] VSDebugDraw* getDebugDraw() const;
 
 private:
     std::map<VSBlockID, VSBlockData*> blockIDtoBlockData;

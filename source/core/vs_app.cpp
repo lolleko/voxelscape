@@ -23,7 +23,8 @@ VSApp::VSApp()
 {
     // singleton dont construct more than once
     assert(!VSApp::instance);
-    if (!VSApp::instance) {
+    if (!VSApp::instance)
+    {
         VSApp::instance = this;
     }
 }
@@ -33,7 +34,8 @@ int VSApp::initialize()
     debug_setMainThread();
 
     const auto glfwError = initializeGLFW();
-    if (glfwError != 0) {
+    if (glfwError != 0)
+    {
         return glfwError;
     }
 
@@ -145,22 +147,23 @@ int VSApp::initializeGLFW()
     return 0;
 }
 
-VSWorld* VSApp::getWorld()
+VSWorld* VSApp::getWorld() const
 {
     return world;
 }
 
-VSUI* VSApp::getUI()
+VSUI* VSApp::getUI() const
 {
     return UI;
 }
 
-GLFWwindow* VSApp::getWindow()
+GLFWwindow* VSApp::getWindow() const
 {
     return window;
 }
 
-VSApp* VSApp::getInstance() {
+VSApp* VSApp::getInstance()
+{
     return instance;
 }
 

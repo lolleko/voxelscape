@@ -1,7 +1,5 @@
 #pragma once
 
-#include <glm/glm.hpp>
-
 using VSBlockID = std::uint8_t;
 
 constexpr std::uint8_t VS_DEFAULT_BLOCK_ID = 0;

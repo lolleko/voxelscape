@@ -1,5 +1,6 @@
-#include "glm/glm.hpp"
-
+#include <glm/ext/vector_float4.hpp>
+#include <glm/ext/vector_int3.hpp>
+#include <glm/ext/vector_int2.hpp>
 #include <sstream>
 
 struct VSUIState

@@ -6,9 +6,9 @@
 #include <glad/glad.h>
 
 // Default camera values
-const float YAW = -90.0F;
-const float PITCH = 0.0F;
-const float ZOOM = 45.0F;
+constexpr float YAW = -90.0F;
+constexpr float PITCH = 0.0F;
+constexpr float ZOOM = 45.0F;
 
 // An abstract camera class that processes input and calculates the corresponding Euler Angles,
 // Vectors and Matrices for use in OpenGL
@@ -33,28 +33,28 @@ public:
         float yaw,
         float pitch);
 
-    glm::vec3 getPosition() const;
+    [[nodiscard]] glm::vec3 getPosition() const;
 
     // Returns the view matrix calculated using Euler Angles and the LookAt Matrix
-    glm::mat4 getViewMatrix() const;
+    [[nodiscard]] glm::mat4 getViewMatrix() const;
 
-    glm::mat4 getProjectionMatrix() const;
+    [[nodiscard]] glm::mat4 getProjectionMatrix() const;
 
-    glm::mat4 getVPMatrix() const;
+    [[nodiscard]] glm::mat4 getVPMatrix() const;
 
-    glm::mat4 getMVPMatrixFast(const glm::mat4& model) const;
+    [[nodiscard]] glm::mat4 getMVPMatrixFast(const glm::mat4& model) const;
 
-    float getZoom() const;
+    [[nodiscard]] float getZoom() const;
 
-    float getYaw() const;
+    [[nodiscard]] float getYaw() const;
 
-    float getPitch() const;
+    [[nodiscard]] float getPitch() const;
 
-    glm::vec3 getFront() const;
+    [[nodiscard]] glm::vec3 getFront() const;
 
-    glm::vec3 getRight() const;
-    
-    glm::vec3 getUp() const;
+    [[nodiscard]] glm::vec3 getRight() const;
+
+    [[nodiscard]] glm::vec3 getUp() const;
 
     void setZoom(float newZoom);
 
@@ -64,9 +64,9 @@ public:
 
     void setAspectRatio(float newAspectRatio);
 
-    float getZNear() const;
+    [[nodiscard]] float getZNear() const;
 
-    float getZFar() const;
+    [[nodiscard]] float getZFar() const;
 
 private:
     glm::mat4 cachedViewMatrix;

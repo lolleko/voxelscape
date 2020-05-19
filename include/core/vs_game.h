@@ -5,9 +5,11 @@
 
 class VSApp;
 
-class VSGame {
+class VSGame
+{
 public:
     void initialize(VSApp* inApp);
+
     void gameLoop();
 
     void quit();
@@ -15,7 +17,9 @@ public:
 private:
     VSApp* app;
 
-    std::chrono::time_point<std::chrono::steady_clock> lastFrameStartTime;
+    std::chrono::time_point<std::chrono::steady_clock, std::chrono::nanoseconds> lastFrameStartTime;
+
+    /** Delta time in seconds */
     float deltaTime;
 
     std::atomic<bool> bShouldQuit;

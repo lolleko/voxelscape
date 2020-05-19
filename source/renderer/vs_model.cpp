@@ -1,15 +1,13 @@
 #include "renderer/vs_model.h"
 
+#include <glm/ext/matrix_transform.hpp>
+
 #include "world/vs_world.h"
 #include "core/vs_camera.h"
 
 VSModel::VSModel(std::string const& path)
 {
     meshes = loadModel(path);
-}
-
-VSModel::~VSModel() {
-
 }
 
 void VSModel::draw(VSWorld* world)

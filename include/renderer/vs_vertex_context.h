@@ -2,7 +2,6 @@
 
 #include <glad/glad.h>
 
-#include <glm/glm.hpp>
 #include <vector>
 
 // PDO does not ocntain any functionality except cosntruct/desctruct

@@ -7,7 +7,6 @@
 #include "core/vs_debug_draw.h"
 #include "world/vs_chunk_manager.h"
 
-
 VSWorld::VSWorld()
 {
     camera = new VSCamera(glm::vec3(0.0F, 30.0F, 0.0F));
@@ -19,7 +18,7 @@ VSWorld::VSWorld()
 
 const VSBlockData* VSWorld::getBlockData(short ID)
 {
-    (void) ID;
+    (void)ID;
     // TODO stub
     return nullptr;
 }
@@ -62,15 +61,16 @@ VSCameraController* VSWorld::getCameraController() const
 
 glm::vec3 VSWorld::getDirectLightPos() const
 {
-    return glm::vec3(10000.f, 10000.f, 20000.f);
+    return {10000.F, 10000.F, 20000.F};
 }
 
 glm::vec3 VSWorld::getDirectLightColor() const
 {
-    return glm::vec3(1.f, 1.f, 1.f);
+    return glm::vec3(1.F, 1.F, 1.F);
 }
 
-VSChunkManager* VSWorld::getChunkManager() const {
+VSChunkManager* VSWorld::getChunkManager() const
+{
     return chunkManager;
 }
 

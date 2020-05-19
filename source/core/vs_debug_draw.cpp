@@ -1,13 +1,13 @@
 #include "core/vs_debug_draw.h"
 
-#include "core/vs_camera.h"
-
-#include "renderer/vs_shader.h"
-
-#include "world/vs_world.h"
+#include <glm/trigonometric.hpp>
 
 #define _USE_MATH_DEFINES
 #include <cmath>
+
+#include "core/vs_camera.h"
+#include "renderer/vs_shader.h"
+#include "world/vs_world.h"
 
 VSDebugDraw::VSDebugDraw()
 {
@@ -117,8 +117,8 @@ void VSDebugDraw::drawSphere(
         sinY2 = glm::sin(latitude);
         cosY2 = glm::cos(latitude);
 
-        vertex1 = glm::vec3(sinY1, cosY1, 0.f) * radius + center;
-        vertex3 = glm::vec3(sinY2, cosY2, 0.f) * radius + center;
+        vertex1 = glm::vec3(sinY1, cosY1, 0.F) * radius + center;
+        vertex3 = glm::vec3(sinY2, cosY2, 0.F) * radius + center;
         longitude = angleInc;
 
         numSegmentsX = segments;

@@ -1,7 +1,6 @@
 #pragma once
 
 #include <assimp/material.h>
-#include <glm/glm.hpp>
 
 #include <vector>
 #include <filesystem>

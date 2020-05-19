@@ -13,14 +13,18 @@
 
 #include "world/generator/vs_heightmap.h"
 
-void VSGame::initialize(VSApp* inApp) {
+void VSGame::initialize(VSApp* inApp)
+{
     app = inApp;
 }
 
-void VSGame::gameLoop() {
-    while (!bShouldQuit) {
+void VSGame::gameLoop()
+{
+    while (!bShouldQuit)
+    {
         auto frameStartTime = std::chrono::high_resolution_clock::now();
-        const std::chrono::duration<float> deltaDurationSeconds = frameStartTime - lastFrameStartTime;
+        const std::chrono::duration<float> deltaDurationSeconds =
+            frameStartTime - lastFrameStartTime;
 
         deltaTime = deltaDurationSeconds.count();
         lastFrameStartTime = frameStartTime;
@@ -31,7 +35,8 @@ void VSGame::gameLoop() {
         // Update world state with ui state
         if (UI->getState()->bShouldUpdateChunks)
         {
-            world->getChunkManager()->setChunkDimensions(UI->getState()->chunkSize, UI->getState()->chunkCount);
+            world->getChunkManager()->setChunkDimensions(
+                UI->getState()->chunkSize, UI->getState()->chunkCount);
             UI->getMutableState()->bShouldUpdateChunks = false;
         }
 
@@ -56,12 +61,12 @@ void VSGame::gameLoop() {
         // to make thread separation clearer
         world->getCameraController()->processKeyboardInput(app->getWindow(), deltaTime);
 
-
         // Limit game update rate to around 120 fps
         const auto frameEndTime = std::chrono::high_resolution_clock::now();
         constexpr auto minimumFrameDuration = std::chrono::nanoseconds(1000000000 / 120);
         const auto actualFrameDuration = frameEndTime - frameStartTime;
-        if (actualFrameDuration < minimumFrameDuration) {
+        if (actualFrameDuration < minimumFrameDuration)
+        {
             const auto sleepDuration = minimumFrameDuration - actualFrameDuration;
             std::this_thread::sleep_for(sleepDuration);
         }

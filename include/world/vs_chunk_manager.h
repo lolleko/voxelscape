@@ -1,10 +1,9 @@
 #pragma once
 
 #include <glad/glad.h>
-#include <glm/glm.hpp>
 #include <glm/gtx/component_wise.hpp>
-#include <vector>
 #include <glm/ext/matrix_transform.hpp>
+#include <vector>
 #include <renderer/vs_shader.h>
 
 #include "core/vs_core.h"
@@ -30,7 +29,7 @@ class VSChunkManager : public IVSDrawable
 
         std::vector<glm::vec3> visibleBlockLocationsWorldSpace;
 
-        glm::mat4 modelMatrix = glm::mat4(1.f);
+        glm::mat4 modelMatrix = glm::mat4(1.F);
     };
 
 public:
@@ -67,13 +66,13 @@ private:
 
     VSVertexContext* vertexContext;
 
-    GLuint activeBlocksInstanceBuffer;
+    GLuint activeBlocksInstanceBuffer = -1;
 
     std::vector<glm::vec3> drawnBlocksOffsets;
 
     void initializeChunks();
 
-    VSChunk* createChunk();
+    VSChunk* createChunk() const;
 
     void deleteChunk(VSChunk* chunk);
 
@@ -85,7 +84,7 @@ private:
 
     bool isBorderBlockVisible(std::size_t chunkIndex, const glm::ivec3& blockCoordinates) const;
 
-    std::size_t chunkCoordinatesToChunkIndex(const glm::ivec2 chunkCoordinates) const;
+    std::size_t chunkCoordinatesToChunkIndex(const glm::ivec2& chunkCoordinates) const;
 
     glm::ivec2 chunkIndexToChunkCoordinates(std::size_t chunkIndex) const;
 

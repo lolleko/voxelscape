@@ -9,7 +9,8 @@ class VSGame;
 
 struct GLFWwindow;
 
-class VSApp {
+class VSApp
+{
 public:
     VSApp();
 
@@ -17,11 +18,11 @@ public:
 
     int mainLoop();
 
-    VSWorld* getWorld();
+    [[nodiscard]] VSWorld* getWorld() const;
 
-    VSUI* getUI();
+    [[nodiscard]] VSUI* getUI() const;
 
-    GLFWwindow* getWindow();
+    [[nodiscard]] GLFWwindow* getWindow() const;
 
     static VSApp* getInstance();
 

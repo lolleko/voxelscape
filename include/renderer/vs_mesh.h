@@ -2,7 +2,6 @@
 
 #include <glad/glad.h>
 
-#include <glm/glm.hpp>
 #include <memory>
 #include <utility>
 #include <vector>
