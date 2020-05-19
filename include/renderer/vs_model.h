@@ -31,8 +31,6 @@ class VSModel : public IVSDrawable
 public:
     VSModel(std::string const& path);
 
-    ~VSModel() override = default;
-
     void draw(VSWorld* world) override;
 
 private:
