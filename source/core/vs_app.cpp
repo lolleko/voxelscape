@@ -12,6 +12,8 @@
 #include "core/vs_camera.h"
 #include "core/vs_game.h"
 
+#include "world/vs_chunk_manager.h"
+
 #include "ui/vs_ui.h"
 #include "ui/vs_ui_state.h"
 #include "world/vs_world.h"
@@ -190,9 +192,8 @@ int VSApp::mainLoop()
             glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
         }
 
-        // TODO add to chunk manager to reenable
-        // UI->getMutableState()->totalBlockCount = world->getTotalBlockCount();
-        // UI->getMutableState()->activeBlockCount = world->getActiveBlockCount();
+        UI->getMutableState()->totalBlockCount = world->getChunkManager()->getTotalBlockCount();
+        UI->getMutableState()->activeBlockCount = world->getChunkManager()->getVisibleBlockCount();
 
         auto display_w = 0;
         auto display_h = 0;

@@ -17,8 +17,6 @@ class VSWorld : public IVSDrawable
 public:
     VSWorld();
 
-    const VSBlockData* getBlockData(short ID);
-
     void addDrawable(IVSDrawable* drawable);
 
     void removeDrawable(IVSDrawable* drawable);
@@ -40,8 +38,6 @@ public:
     [[nodiscard]] VSDebugDraw* getDebugDraw() const;
 
 private:
-    std::map<VSBlockID, VSBlockData*> blockIDtoBlockData;
-
     VSCamera* camera;
     VSCameraController* cameraController;
 

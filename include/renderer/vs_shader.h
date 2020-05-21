@@ -56,6 +56,13 @@ public:
             return *this;
         }
 
+        VSShaderUniformProxy&
+        setVec3Array(const std::string& name, const std::vector<glm::vec3>& values)
+        {
+            glUniform3fv(glGetUniformLocation(ID, name.c_str()), 256, &values[0][0]);
+            return *this;
+        }
+
     private:
         GLuint ID;
     };

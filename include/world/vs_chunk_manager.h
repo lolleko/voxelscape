@@ -29,6 +29,8 @@ class VSChunkManager : public IVSDrawable
 
         std::vector<glm::vec3> visibleBlockLocationsWorldSpace;
 
+        std::vector<VSBlockID> visibleBlockIDs;
+
         glm::mat4 modelMatrix = glm::mat4(1.F);
     };
 
@@ -47,7 +49,11 @@ public:
 
     void setChunkDimensions(const glm::ivec3& inChunkSize, const glm::ivec2& inChunkCount);
 
+    std::size_t getChunkBlockCount() const;
+
     std::size_t getTotalBlockCount() const;
+
+    std::size_t getVisibleBlockCount() const;
 
     std::size_t getTotalChunkCount() const;
 
@@ -66,9 +72,13 @@ private:
 
     VSVertexContext* vertexContext;
 
-    GLuint activeBlocksInstanceBuffer = -1;
+    GLuint drawnBlocksOffsetBuffer = -1;
+
+    GLuint drawnBlocksIDBuffer = -1;
 
     std::vector<glm::vec3> drawnBlocksOffsets;
+
+    std::vector<VSBlockID> drawnBlocksIDs;
 
     void initializeChunks();
 

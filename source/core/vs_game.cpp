@@ -50,7 +50,14 @@ void VSGame::gameLoop()
                 {
                     for (int y = 0; y < hm.getVoxelHeight(x, z); y++)
                     {
-                        world->getChunkManager()->setBlock({x, y, z}, 1);
+                        if (y > worldSize.y / 2)
+                        {
+                            world->getChunkManager()->setBlock({x, y, z}, 1);
+                        }
+                        else
+                        {
+                            world->getChunkManager()->setBlock({x, y, z}, 2);
+                        }
                     }
                 }
             }

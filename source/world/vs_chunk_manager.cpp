@@ -1,7 +1,12 @@
 #include "world/vs_chunk_manager.h"
 
+#include <algorithm>
+#include <numeric>
+#include <array>
+
 #include "renderer/vs_modelloader.h"
 
+#include "world/vs_block.h"
 #include "world/vs_world.h"
 #include "core/vs_camera.h"
 #include "core/vs_app.h"
@@ -16,9 +21,9 @@ VSChunkManager::VSChunkManager()
 
     glBindVertexArray(vertexContext->vertexArrayObject);
 
-    const auto nextAttribPointer = vertexContext->lastAttribPointer + 1;
-    glGenBuffers(1, &activeBlocksInstanceBuffer);
-    glBindBuffer(GL_ARRAY_BUFFER, activeBlocksInstanceBuffer);
+    auto nextAttribPointer = vertexContext->lastAttribPointer + 1;
+    glGenBuffers(1, &drawnBlocksOffsetBuffer);
+    glBindBuffer(GL_ARRAY_BUFFER, drawnBlocksOffsetBuffer);
     glEnableVertexAttribArray(nextAttribPointer);
     glVertexAttribPointer(nextAttribPointer, 3, GL_FLOAT, GL_FALSE, 0, nullptr);
     glBufferData(
@@ -28,7 +33,25 @@ VSChunkManager::VSChunkManager()
         GL_STATIC_DRAW);
     glVertexAttribDivisor(nextAttribPointer, 1);
 
+    nextAttribPointer++;
+    glGenBuffers(1, &drawnBlocksIDBuffer);
+    glBindBuffer(GL_ARRAY_BUFFER, drawnBlocksIDBuffer);
+    glEnableVertexAttribArray(nextAttribPointer);
+    glVertexAttribIPointer(nextAttribPointer, 1, GL_BYTE, 0, nullptr);
+    glBufferData(
+        GL_ARRAY_BUFFER,
+        drawnBlocksIDs.size() * sizeof(VSBlockID),
+        &drawnBlocksIDs[0],
+        GL_STATIC_DRAW);
+    glVertexAttribDivisor(nextAttribPointer, 1);
+
     glBindVertexArray(0);
+
+    std::vector<glm::vec3> blockColors = {
+        {0.F, 0.F, 0.F}, {0.3F, 0.3F, 0.3F}, {0.01F, 0.5F, 0.15F}};
+    blockColors.reserve(256);
+
+    chunkShader.uniforms().setVec3Array("blockColors", blockColors);
 }
 
 VSBlockID VSChunkManager::getBlock(glm::ivec3 location) const
@@ -67,7 +90,7 @@ glm::ivec3 VSChunkManager::getWorldSize() const
 void VSChunkManager::draw(VSWorld* world)
 {
     drawnBlocksOffsets.clear();
-
+    drawnBlocksIDs.clear();
     for (const auto* chunk : chunks)
     {
         if (VSApp::getInstance()->getUI()->getState()->bShouldDrawChunkBorder)
@@ -94,16 +117,26 @@ void VSChunkManager::draw(VSWorld* world)
                 drawnBlocksOffsets.end(),
                 chunk->visibleBlockLocationsWorldSpace.begin(),
                 chunk->visibleBlockLocationsWorldSpace.end());
+
+            drawnBlocksIDs.insert(
+                drawnBlocksIDs.end(), chunk->visibleBlockIDs.begin(), chunk->visibleBlockIDs.end());
         }
     }
 
     glBindVertexArray(vertexContext->vertexArrayObject);
 
-    glBindBuffer(GL_ARRAY_BUFFER, activeBlocksInstanceBuffer);
+    glBindBuffer(GL_ARRAY_BUFFER, drawnBlocksOffsetBuffer);
     glBufferData(
         GL_ARRAY_BUFFER,
         drawnBlocksOffsets.size() * sizeof(glm::vec3),
         &drawnBlocksOffsets[0],
+        GL_STATIC_DRAW);
+
+    glBindBuffer(GL_ARRAY_BUFFER, drawnBlocksIDBuffer);
+    glBufferData(
+        GL_ARRAY_BUFFER,
+        drawnBlocksIDs.size() * sizeof(VSBlockID),
+        &drawnBlocksIDs[0],
         GL_STATIC_DRAW);
 
     glBindVertexArray(0);
@@ -153,9 +186,21 @@ void VSChunkManager::setChunkDimensions(
     bShouldReinitializeChunks = true;
 }
 
-std::size_t VSChunkManager::getTotalBlockCount() const
+std::size_t VSChunkManager::getChunkBlockCount() const
 {
     return glm::compMul(chunkSize);
+}
+
+std::size_t VSChunkManager::getTotalBlockCount() const
+{
+    return glm::compMul(chunkSize) * getTotalChunkCount();
+}
+
+std::size_t VSChunkManager::getVisibleBlockCount() const
+{
+    return std::accumulate(chunks.begin(), chunks.end(), 0, [](std::size_t acc, VSChunk* curr) {
+        return acc + curr->visibleBlockLocationsWorldSpace.size();
+    });
 }
 
 std::size_t VSChunkManager::getTotalChunkCount() const
@@ -198,7 +243,7 @@ VSChunkManager::VSChunk* VSChunkManager::createChunk() const
 {
     auto* chunk = new VSChunk();
 
-    chunk->blocks.resize(getTotalBlockCount(), VS_DEFAULT_BLOCK_ID);
+    chunk->blocks.resize(getChunkBlockCount(), VS_DEFAULT_BLOCK_ID);
 
     return chunk;
 }
@@ -215,7 +260,8 @@ bool VSChunkManager::updateVisibleBlocks(std::size_t chunkIndex)
     if (chunk->bIsDirty.compare_exchange_weak(expected, false))
     {
         chunk->visibleBlockLocationsWorldSpace.clear();
-        for (std::size_t blockIndex = 0; blockIndex < getTotalBlockCount(); blockIndex++)
+        chunk->visibleBlockIDs.clear();
+        for (std::size_t blockIndex = 0; blockIndex < getChunkBlockCount(); blockIndex++)
         {
             if (chunk->blocks[blockIndex] != VS_DEFAULT_BLOCK_ID &&
                 isBlockVisible(chunkIndex, blockIndex))
@@ -226,6 +272,7 @@ bool VSChunkManager::updateVisibleBlocks(std::size_t chunkIndex)
                                                  glm::vec3(0.5F) - glm::vec3(chunkSize) / 2.F,
                                              1.F));
                 chunk->visibleBlockLocationsWorldSpace.emplace_back(offset);
+                chunk->visibleBlockIDs.emplace_back(chunk->blocks[blockIndex]);
             }
         }
         return true;

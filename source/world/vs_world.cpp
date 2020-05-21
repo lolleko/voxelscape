@@ -16,13 +16,6 @@ VSWorld::VSWorld()
     addDrawable(debugDraw);
 }
 
-const VSBlockData* VSWorld::getBlockData(short ID)
-{
-    (void)ID;
-    // TODO stub
-    return nullptr;
-}
-
 void VSWorld::addDrawable(IVSDrawable* drawable)
 {
     drawables.insert(drawable);
