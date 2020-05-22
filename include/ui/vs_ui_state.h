@@ -12,6 +12,7 @@ struct VSUIState
     glm::ivec2 chunkCount = {2, 2};
     bool bShouldUpdateChunks = false;
     bool bShouldGenerateHeightMap = false;
+    bool bShouldFreezeFrustum = false;
     int activeBlockCount = 0;
     int totalBlockCount = 0;
     std::ostringstream logStream;

@@ -80,6 +80,8 @@ private:
 
     std::vector<VSBlockID> drawnBlocksIDs;
 
+    glm::mat4 frozenVPMatrix;
+
     void initializeChunks();
 
     VSChunk* createChunk() const;

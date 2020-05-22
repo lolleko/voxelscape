@@ -47,6 +47,7 @@ void VSUI::render()
         ImGui::ColorEdit3("clear color", (float*)&uiState->clearColor);
         ImGui::Checkbox("wireframe", (bool*)&uiState->isWireframeModeEnabled);
         ImGui::Checkbox("draw chunk border", (bool*)&uiState->bShouldDrawChunkBorder);
+        ImGui::Checkbox("freeze frustum", (bool*)&uiState->bShouldFreezeFrustum);
         ImGui::InputInt3("chunk size", (int*)&uiState->chunkSize);
         ImGui::InputInt2("world size", (int*)&uiState->chunkCount);
         if (ImGui::Button("Refresh chunk settings"))

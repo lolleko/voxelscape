@@ -3,6 +3,8 @@
 #include <glad/glad.h>
 
 #include <glm/vec3.hpp>
+#include <glm/mat4x4.hpp>
+
 #include <vector>
 #include <set>
 #include <glm/vector_relational.hpp>
@@ -16,6 +18,14 @@ public:
     VSDebugDraw();
 
     void drawBox(const VSBox& box, glm::vec<3, std::byte> color, float thickness = 1.F);
+
+    void drawLine(
+        const glm::vec3& start,
+        const glm::vec3& end,
+        glm::vec<3, std::byte> color,
+        float thickness = 1.F);
+
+    void drawFrustum(const glm::mat4& VP, glm::vec<3, std::byte> color, float thickness = 1.F);
 
     void drawSphere(
         const glm::vec3& center,

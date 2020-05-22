@@ -101,7 +101,13 @@ void VSChunkManager::draw(VSWorld* world)
                 {255, 0, 0});
         }
 
-        const auto VP = world->getCamera()->getVPMatrix();
+        glm::mat4 VP = world->getCamera()->getVPMatrix();
+        if (VSApp::getInstance()->getUI()->getState()->bShouldFreezeFrustum)
+        {
+            VP = frozenVPMatrix;
+            world->getDebugDraw()->drawFrustum(VP, {255, 0, 0});
+        }
+        frozenVPMatrix = VP;
 
         const auto chunkCenterInP = VP * glm::vec4(chunk->modelMatrix[3]);
 

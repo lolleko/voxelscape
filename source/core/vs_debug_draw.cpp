@@ -1,5 +1,7 @@
 #include "core/vs_debug_draw.h"
 
+#include <cstdint>
+#include <glm/matrix.hpp>
 #include <glm/trigonometric.hpp>
 
 #define _USE_MATH_DEFINES
@@ -82,6 +84,55 @@ void VSDebugDraw::drawBox(const VSBox& box, glm::vec<3, std::byte> color, float 
     primitives.push_back(topRectangle);
     primitives.push_back(botRectangle);
     primitives.push_back(connections);
+}
+
+void VSDebugDraw::drawLine(
+    const glm::vec3& start,
+    const glm::vec3& end,
+    glm::vec<3, std::byte> color,
+    float thickness)
+{
+    VSDebugPrimitive line;
+    line.startIndex = vertexData.size();
+    addPrimitiveVertices(line, {{start, color}, {end, color}});
+    line.thickness = thickness;
+    line.primitiveMode = GL_LINES;
+
+    primitives.push_back(line);
+}
+
+void VSDebugDraw::drawFrustum(const glm::mat4& VP, glm::vec<3, std::byte> color, float thickness)
+{
+    glm::vec3 vertices[2][2][2];
+    const auto VPToWorld = glm::inverse(VP);
+    for (std::uint32_t Z = 0; Z < 2; Z++)
+    {
+        for (std::uint32_t Y = 0; Y < 2; Y++)
+        {
+            for (std::uint32_t X = 0; X < 2; X++)
+            {
+                const auto unprojectedVertex =
+                    VPToWorld *
+                    glm::vec4((X ? -1.0f : 1.0f), (Y ? -1.0f : 1.0f), (Z ? 0.0f : 1.0f), 1.0f);
+                vertices[X][Y][Z] = glm::vec3(unprojectedVertex) / unprojectedVertex.w;
+            }
+        }
+    }
+
+    drawLine(vertices[0][0][0], vertices[0][0][1], color, thickness);
+    drawLine(vertices[1][0][0], vertices[1][0][1], color, thickness);
+    drawLine(vertices[0][1][0], vertices[0][1][1], color, thickness);
+    drawLine(vertices[1][1][0], vertices[1][1][1], color, thickness);
+
+    drawLine(vertices[0][0][0], vertices[0][1][0], color, thickness);
+    drawLine(vertices[1][0][0], vertices[1][1][0], color, thickness);
+    drawLine(vertices[0][0][1], vertices[0][1][1], color, thickness);
+    drawLine(vertices[1][0][1], vertices[1][1][1], color, thickness);
+
+    drawLine(vertices[0][0][0], vertices[1][0][0], color, thickness);
+    drawLine(vertices[0][1][0], vertices[1][1][0], color, thickness);
+    drawLine(vertices[0][0][1], vertices[1][0][1], color, thickness);
+    drawLine(vertices[0][1][1], vertices[1][1][1], color, thickness);
 }
 
 void VSDebugDraw::drawSphere(
