@@ -193,7 +193,8 @@ int VSApp::mainLoop()
         }
 
         UI->getMutableState()->totalBlockCount = world->getChunkManager()->getTotalBlockCount();
-        UI->getMutableState()->activeBlockCount = world->getChunkManager()->getVisibleBlockCount();
+        UI->getMutableState()->visibleBlockCount = world->getChunkManager()->getVisibleBlockCount();
+        UI->getMutableState()->drawnBlockCount = world->getChunkManager()->getDrawnBlockCount();
 
         auto display_w = 0;
         auto display_h = 0;

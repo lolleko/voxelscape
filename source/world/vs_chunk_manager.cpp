@@ -105,7 +105,7 @@ void VSChunkManager::draw(VSWorld* world)
         if (VSApp::getInstance()->getUI()->getState()->bShouldFreezeFrustum)
         {
             VP = frozenVPMatrix;
-            world->getDebugDraw()->drawFrustum(VP, {255, 0, 0});
+            world->getDebugDraw()->drawFrustum(VP, {0, 255, 0});
         }
         frozenVPMatrix = VP;
 
@@ -207,6 +207,11 @@ std::size_t VSChunkManager::getVisibleBlockCount() const
     return std::accumulate(chunks.begin(), chunks.end(), 0, [](std::size_t acc, VSChunk* curr) {
         return acc + curr->visibleBlockLocationsWorldSpace.size();
     });
+}
+
+std::size_t VSChunkManager::getDrawnBlockCount() const
+{
+    return drawnBlocksOffsets.size();
 }
 
 std::size_t VSChunkManager::getTotalChunkCount() const

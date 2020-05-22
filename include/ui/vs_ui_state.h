@@ -13,7 +13,8 @@ struct VSUIState
     bool bShouldUpdateChunks = false;
     bool bShouldGenerateHeightMap = false;
     bool bShouldFreezeFrustum = false;
-    int activeBlockCount = 0;
     int totalBlockCount = 0;
+    int visibleBlockCount = 0;
+    int drawnBlockCount = 0;
     std::ostringstream logStream;
 };

@@ -55,6 +55,8 @@ public:
 
     std::size_t getVisibleBlockCount() const;
 
+    std::size_t getDrawnBlockCount() const;
+
     std::size_t getTotalChunkCount() const;
 
 private:

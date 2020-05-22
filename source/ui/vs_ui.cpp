@@ -58,7 +58,11 @@ void VSUI::render()
         {
             uiState->bShouldGenerateHeightMap = true;
         }
-        ImGui::Text("Drawing blocks %d/%d", uiState->activeBlockCount, uiState->totalBlockCount);
+        ImGui::Text(
+            "Blocks Total/Visible/Drawn %d/%d/%d",
+            uiState->totalBlockCount,
+            uiState->visibleBlockCount,
+            uiState->drawnBlockCount);
         ImGui::Text(
             "Application average %.3f ms/frame (%.1f FPS)",
             1000.0f / ImGui::GetIO().Framerate,
