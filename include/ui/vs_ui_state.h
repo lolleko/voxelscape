@@ -16,5 +16,6 @@ struct VSUIState
     int totalBlockCount = 0;
     int visibleBlockCount = 0;
     int drawnBlockCount = 0;
+    int drawCallCount = 0;
     std::ostringstream logStream;
 };

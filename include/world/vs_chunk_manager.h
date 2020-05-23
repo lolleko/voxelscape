@@ -4,6 +4,7 @@
 #include <glm/gtx/component_wise.hpp>
 #include <glm/ext/matrix_transform.hpp>
 #include <vector>
+#include <array>
 #include <renderer/vs_shader.h>
 
 #include "core/vs_core.h"
@@ -21,15 +22,19 @@ class VSChunkManager : public IVSDrawable
 {
     struct VSChunk
     {
+        struct VSVisibleBlockInfo
+        {
+            glm::vec3 locationWorldSpace;
+            VSBlockID id;
+        };
+
         std::vector<VSBlockID> blocks;
 
         std::vector<bool> blockVisibility;
 
         std::atomic<bool> bIsDirty;
 
-        std::vector<glm::vec3> visibleBlockLocationsWorldSpace;
-
-        std::vector<VSBlockID> visibleBlockIDs;
+        std::array<std::vector<VSVisibleBlockInfo>, 64> visibleBlockInfos;
 
         glm::mat4 modelMatrix = glm::mat4(1.F);
     };
@@ -59,6 +64,8 @@ public:
 
     std::size_t getTotalChunkCount() const;
 
+    std::size_t getDrawCallCount() const;
+
 private:
     std::vector<VSChunk*> chunks;
 
@@ -72,17 +79,15 @@ private:
 
     std::atomic<bool> bShouldReinitializeChunks = false;
 
-    VSVertexContext* vertexContext;
+    std::array<VSVertexContext*, 64> vertexContexts;
 
-    GLuint drawnBlocksOffsetBuffer = -1;
+    std::array<GLuint, 64> visibleBlockInfoBuffers;
 
-    GLuint drawnBlocksIDBuffer = -1;
-
-    std::vector<glm::vec3> drawnBlocksOffsets;
-
-    std::vector<VSBlockID> drawnBlocksIDs;
+    std::array<std::vector<VSChunk::VSVisibleBlockInfo>, 64> visibleBlockInfos;
 
     glm::mat4 frozenVPMatrix;
+
+    std::uint32_t drawCallCount;
 
     void initializeChunks();
 
@@ -92,11 +97,13 @@ private:
 
     bool updateVisibleBlocks(std::size_t chunkIndex);
 
-    bool isBlockVisible(std::size_t chunkIndex, std::size_t blockIndex) const;
+    std::uint8_t isBlockVisible(std::size_t chunkIndex, std::size_t blockIndex) const;
 
-    bool isCenterBlockVisible(std::size_t chunkIndex, const glm::ivec3& blockCoordinates) const;
+    std::uint8_t
+    isCenterBlockVisible(std::size_t chunkIndex, const glm::ivec3& blockCoordinates) const;
 
-    bool isBorderBlockVisible(std::size_t chunkIndex, const glm::ivec3& blockCoordinates) const;
+    std::uint8_t
+    isBorderBlockVisible(std::size_t chunkIndex, const glm::ivec3& blockCoordinates) const;
 
     std::size_t chunkCoordinatesToChunkIndex(const glm::ivec2& chunkCoordinates) const;
 
