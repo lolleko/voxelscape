@@ -178,7 +178,7 @@ void VSChunkManager::draw(VSWorld* world)
 
             glDrawElementsInstanced(
                 GL_TRIANGLES,
-                vertexContexts[i]->triangleCount,
+                vertexContexts[i]->indexCount,
                 GL_UNSIGNED_INT,
                 nullptr,
                 visibleBlockInfos[i].size());
@@ -204,6 +204,7 @@ void VSChunkManager::updateChunks()
         }
     }
 }
+
 void VSChunkManager::setChunkDimensions(
     const glm::ivec3& inChunkSize,
     const glm::ivec2& inChunkCount)
