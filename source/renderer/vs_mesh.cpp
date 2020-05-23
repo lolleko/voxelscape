@@ -2,12 +2,9 @@
 
 #include "renderer/vs_model.h"
 
-VSMesh::VSMesh(
-    VSVertexContext* vertexContext,
-    std::vector<VSTexture> textures)
+VSMesh::VSMesh(VSVertexContext* vertexContext, std::vector<VSTexture> textures)
     : vertexContext(vertexContext)
-    , textures(std::move(textures))
-    {};
+    , textures(std::move(textures)){};
 
 VSMesh::~VSMesh(){
     // TODO maybe cleanup textures in the future
@@ -51,7 +48,7 @@ void VSMesh::draw(const VSShader& shader) const
 
     // draw mesh
     glBindVertexArray(vertexContext->vertexArrayObject);
-    glDrawElements(GL_TRIANGLES, vertexContext->triangleCount, GL_UNSIGNED_INT, nullptr);
+    glDrawElements(GL_TRIANGLES, vertexContext->indexCount, GL_UNSIGNED_INT, nullptr);
     glBindVertexArray(0);
 
     // always good practice to set everything back to defaults once configured.

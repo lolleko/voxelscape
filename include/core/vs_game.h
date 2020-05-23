@@ -1,12 +1,15 @@
 #pragma once
 
 #include <atomic>
+#include <chrono>
 
 class VSApp;
 
-class VSGame {
+class VSGame
+{
 public:
     void initialize(VSApp* inApp);
+
     void gameLoop();
     void handleEditor();
 
@@ -15,8 +18,11 @@ public:
 private:
     VSApp* app;
 
+    std::chrono::time_point<std::chrono::high_resolution_clock, std::chrono::nanoseconds>
+        lastFrameStartTime;
+
+    /** Delta time in seconds */
     float deltaTime;
-    float lastFrame;
 
     std::atomic<bool> bShouldQuit;
 };

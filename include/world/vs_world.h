@@ -17,33 +17,29 @@ class VSWorld : public IVSDrawable
 public:
     VSWorld();
 
-    const VSBlockData* getBlockData(short ID);
-
     void addDrawable(IVSDrawable* drawable);
 
     void removeDrawable(IVSDrawable* drawable);
 
     void update();
 
-    void draw(VSWorld* world) const override;
+    void draw(VSWorld* world) override;
 
-    VSCamera* getCamera() const;
+    [[nodiscard]] VSCamera* getCamera() const;
 
-    VSCameraController* getCameraController() const;
+    [[nodiscard]] VSCameraController* getCameraController() const;
 
     void setCameraController(VSCameraController* newCameraController);
+    
+    [[nodiscard]] glm::vec3 getDirectLightPos() const;
 
-    glm::vec3 getDirectLightPos() const;
+    [[nodiscard]] glm::vec3 getDirectLightColor() const;
 
-    glm::vec3 getDirectLightColor() const;
+    [[nodiscard]] VSChunkManager* getChunkManager() const;
 
-    VSChunkManager* getChunkManager() const;
-
-    VSDebugDraw* getDebugDraw() const;
+    [[nodiscard]] VSDebugDraw* getDebugDraw() const;
 
 private:
-    std::map<VSBlockID, VSBlockData*> blockIDtoBlockData;
-
     VSCamera* camera;
     VSCameraController* cameraController;
 

@@ -5,11 +5,29 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "(lldb) Launch",
+            "name": "(lldb) Launch Release",
             "type": "cppdbg",
             "request": "launch",
-            "preLaunchTask": "build",
-            "program": "${workspaceFolder}/build/voxelscape",
+            "preLaunchTask": "build (release)",
+            "program": "${workspaceFolder}/build-release/voxelscape",
+            "args": [],
+            "stopAtEntry": false,
+            "cwd": "${workspaceFolder}",
+            "environment": [
+                {
+                    "name": "Display",
+                    "value": ":0"
+                }
+            ],
+            "externalConsole": false,
+            "MIMode": "lldb"
+        },
+        {
+            "name": "(lldb) Launch Debug",
+            "type": "cppdbg",
+            "request": "launch",
+            "preLaunchTask": "build (debug)",
+            "program": "${workspaceFolder}/build-debug/voxelscape",
             "args": [],
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}",

@@ -3,8 +3,6 @@
 #include <assimp/vector3.h>
 #include <glad/glad.h>
 
-#include <glm/glm.hpp>
-#include <glm/gtc/matrix_transform.hpp>
 #include <stb_image.h>
 #include <assimp/Importer.hpp>
 #include <assimp/scene.h>
@@ -33,13 +31,11 @@ class VSModel : public IVSDrawable
 public:
     VSModel(std::string const& path);
 
-    ~VSModel();
-
-    void draw(VSWorld* world) const override;
-
-    VSShader modelShader = VSShader("Monkey"); // TODO rename to model
+    void draw(VSWorld* world) override;
 
 private:
+    VSShader modelShader = VSShader("Monkey");  // TODO rename to model
+
     std::vector<VSMesh> meshes;
     std::string directory;
 };

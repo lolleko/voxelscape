@@ -1,5 +1,7 @@
 #include "core/vs_game.h"
 
+#include <ratio>
+
 #include "core/vs_app.h"
 #include "core/vs_cameracontroller.h"
 
@@ -11,10 +13,13 @@
 
 #include "world/generator/vs_heightmap.h"
 
+<<<<<<< HEAD
 // TODO: Remove debugging includes
 #include <iostream>
 #include "core/vs_camera.h"
 
+=======
+>>>>>>> master
 void VSGame::initialize(VSApp* inApp)
 {
     app = inApp;
@@ -24,9 +29,12 @@ void VSGame::gameLoop()
 {
     while (!bShouldQuit)
     {
-        double currentFrame = glfwGetTime();
-        deltaTime = currentFrame - lastFrame;
-        lastFrame = currentFrame;
+        auto frameStartTime = std::chrono::high_resolution_clock::now();
+        const std::chrono::duration<float> deltaDurationSeconds =
+            frameStartTime - lastFrameStartTime;
+
+        deltaTime = deltaDurationSeconds.count();
+        lastFrameStartTime = frameStartTime;
 
         auto* UI = app->getUI();
         if (UI->getState()->bShouldSetEditorActive)
@@ -44,7 +52,8 @@ void VSGame::gameLoop()
         // Update world state with ui state
         if (UI->getState()->bShouldUpdateChunks)
         {
-            world->getChunkManager()->setChunkDimensions(UI->getState()->chunkSize, UI->getState()->chunkCount);
+            world->getChunkManager()->setChunkDimensions(
+                UI->getState()->chunkSize, UI->getState()->chunkCount);
             UI->getMutableState()->bShouldUpdateChunks = false;
         }
 
@@ -58,7 +67,14 @@ void VSGame::gameLoop()
                 {
                     for (int y = 0; y < hm.getVoxelHeight(x, z); y++)
                     {
-                        world->getChunkManager()->setBlock({x, y, z}, 1);
+                        if (y > worldSize.y / 2)
+                        {
+                            world->getChunkManager()->setBlock({x, y, z}, 1);
+                        }
+                        else
+                        {
+                            world->getChunkManager()->setBlock({x, y, z}, 2);
+                        }
                     }
                 }
             }
@@ -86,6 +102,16 @@ void VSGame::gameLoop()
         // TODO dont pass window as param make abstract input more
         // to make thread separation clearer
         world->getCameraController()->processKeyboardInput(app->getWindow(), deltaTime);
+
+        // Limit game update rate to around 120 fps
+        const auto frameEndTime = std::chrono::high_resolution_clock::now();
+        constexpr auto minimumFrameDuration = std::chrono::nanoseconds(1000000000 / 120);
+        const auto actualFrameDuration = frameEndTime - frameStartTime;
+        if (actualFrameDuration < minimumFrameDuration)
+        {
+            const auto sleepDuration = minimumFrameDuration - actualFrameDuration;
+            std::this_thread::sleep_for(sleepDuration);
+        }
     }
 }
 

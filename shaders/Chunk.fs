@@ -15,8 +15,6 @@ uniform vec3 lightPos;
 uniform vec3 lightColor; 
 uniform vec3 viewPos;
 
-uniform sampler2D texture_normal1;
-
 void main(){
     // ambient
     float ambientStrength = 0.1;

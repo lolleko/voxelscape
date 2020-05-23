@@ -1,12 +1,15 @@
 #include "core/vs_debug_draw.h"
 
-#include "core/vs_camera.h"
+#include <cstdint>
+#include <glm/matrix.hpp>
+#include <glm/trigonometric.hpp>
 
-#include "renderer/vs_shader.h"
-
-#include "world/vs_world.h"
-
+#define _USE_MATH_DEFINES
 #include <cmath>
+
+#include "core/vs_camera.h"
+#include "renderer/vs_shader.h"
+#include "world/vs_world.h"
 
 VSDebugDraw::VSDebugDraw()
 {
@@ -83,6 +86,55 @@ void VSDebugDraw::drawBox(const VSBox& box, glm::vec<3, std::byte> color, float 
     primitives.push_back(connections);
 }
 
+void VSDebugDraw::drawLine(
+    const glm::vec3& start,
+    const glm::vec3& end,
+    glm::vec<3, std::byte> color,
+    float thickness)
+{
+    VSDebugPrimitive line;
+    line.startIndex = vertexData.size();
+    addPrimitiveVertices(line, {{start, color}, {end, color}});
+    line.thickness = thickness;
+    line.primitiveMode = GL_LINES;
+
+    primitives.push_back(line);
+}
+
+void VSDebugDraw::drawFrustum(const glm::mat4& VP, glm::vec<3, std::byte> color, float thickness)
+{
+    glm::vec3 vertices[2][2][2];
+    const auto VPToWorld = glm::inverse(VP);
+    for (std::uint32_t Z = 0; Z < 2; Z++)
+    {
+        for (std::uint32_t Y = 0; Y < 2; Y++)
+        {
+            for (std::uint32_t X = 0; X < 2; X++)
+            {
+                const auto unprojectedVertex =
+                    VPToWorld *
+                    glm::vec4((X ? -1.0f : 1.0f), (Y ? -1.0f : 1.0f), (Z ? 0.0f : 1.0f), 1.0f);
+                vertices[X][Y][Z] = glm::vec3(unprojectedVertex) / unprojectedVertex.w;
+            }
+        }
+    }
+
+    drawLine(vertices[0][0][0], vertices[0][0][1], color, thickness);
+    drawLine(vertices[1][0][0], vertices[1][0][1], color, thickness);
+    drawLine(vertices[0][1][0], vertices[0][1][1], color, thickness);
+    drawLine(vertices[1][1][0], vertices[1][1][1], color, thickness);
+
+    drawLine(vertices[0][0][0], vertices[0][1][0], color, thickness);
+    drawLine(vertices[1][0][0], vertices[1][1][0], color, thickness);
+    drawLine(vertices[0][0][1], vertices[0][1][1], color, thickness);
+    drawLine(vertices[1][0][1], vertices[1][1][1], color, thickness);
+
+    drawLine(vertices[0][0][0], vertices[1][0][0], color, thickness);
+    drawLine(vertices[0][1][0], vertices[1][1][0], color, thickness);
+    drawLine(vertices[0][0][1], vertices[1][0][1], color, thickness);
+    drawLine(vertices[0][1][1], vertices[1][1][1], color, thickness);
+}
+
 void VSDebugDraw::drawSphere(
     const glm::vec3& center,
     float radius,
@@ -116,8 +168,8 @@ void VSDebugDraw::drawSphere(
         sinY2 = glm::sin(latitude);
         cosY2 = glm::cos(latitude);
 
-        vertex1 = glm::vec3(sinY1, cosY1, 0.f) * radius + center;
-        vertex3 = glm::vec3(sinY2, cosY2, 0.f) * radius + center;
+        vertex1 = glm::vec3(sinY1, cosY1, 0.F) * radius + center;
+        vertex3 = glm::vec3(sinY2, cosY2, 0.F) * radius + center;
         longitude = angleInc;
 
         numSegmentsX = segments;
@@ -144,7 +196,7 @@ void VSDebugDraw::drawSphere(
     primitives.push_back(sphere);
 }
 
-void VSDebugDraw::draw(VSWorld* world) const
+void VSDebugDraw::draw(VSWorld* world)
 {
     (void)world;
     primitiveShader->uniforms().setMat4("VP", world->getCamera()->getVPMatrix());
@@ -165,9 +217,8 @@ void VSDebugDraw::draw(VSWorld* world) const
 
     glBindVertexArray(0);
 
-    // TODO never never never cons_cast
-    const_cast<VSDebugDraw*>(this)->primitives.clear();
-    const_cast<VSDebugDraw*>(this)->vertexData.clear();
+    primitives.clear();
+    vertexData.clear();
 }
 
 void VSDebugDraw::drawPrimitive(const VSDebugDraw::VSDebugPrimitive& primitive) const

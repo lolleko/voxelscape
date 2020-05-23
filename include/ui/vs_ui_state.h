@@ -1,5 +1,6 @@
-#include "glm/glm.hpp"
-
+#include <glm/ext/vector_float4.hpp>
+#include <glm/ext/vector_int3.hpp>
+#include <glm/ext/vector_int2.hpp>
 #include <sstream>
 
 struct VSUIState
@@ -19,6 +20,10 @@ struct VSUIState
     bool bEditorActive = false;
     
     int activeBlockCount = 0;
+    bool bShouldFreezeFrustum = false;
     int totalBlockCount = 0;
+    int visibleBlockCount = 0;
+    int drawnBlockCount = 0;
+    int drawCallCount = 0;
     std::ostringstream logStream;
 };

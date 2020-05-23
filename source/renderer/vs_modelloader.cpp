@@ -62,38 +62,40 @@ VSVertexContext* processMeshVertices(aiMesh*& mesh)
     // the following only works if assimp and glm vector have the same size
     assert(sizeof(glm::vec3) == sizeof(aiVector3D));
 
-    std::vector<glm::vec3> vertexPositions(
-        (glm::vec3*)mesh->mVertices, (glm::vec3*)(mesh->mVertices + mesh->mNumVertices));
+    std::vector<VSVertexData> vertexDataList;
 
-    std::vector<glm::vec3> vertexNormals(
-        (glm::vec3*)mesh->mNormals, (glm::vec3*)(mesh->mNormals + mesh->mNumVertices));
-
-    std::vector<glm::vec2> vertexTexCoords;
-    vertexTexCoords.reserve(mesh->mNumVertices);
-
-    if (mesh->mTextureCoords[0])  // does the mesh contain texture coordinates?
+    for (std::size_t i = 0; i < mesh->mNumVertices; i++)
     {
-        std::for_each(
-            mesh->mTextureCoords[0],
-            mesh->mTextureCoords[0] + mesh->mNumVertices,
-            [&vertexTexCoords](const aiVector3D& coord) {
-                vertexTexCoords.push_back(glm::vec2(coord.x, coord.y));
-            });
+        VSVertexData currentVertex{};
+        currentVertex.position = {mesh->mVertices[i].x, mesh->mVertices[i].y, mesh->mVertices[i].z};
+
+        currentVertex.normal = {mesh->mNormals[i].x, mesh->mNormals[i].y, mesh->mNormals[i].z};
+
+        if (mesh->mTextureCoords[0] != nullptr)
+        {
+            currentVertex.texCoords = {mesh->mTextureCoords[0][i].x, mesh->mTextureCoords[0][i].y};
+        }
+        else
+        {
+            currentVertex.texCoords = {0.0F, 0.0F};
+        }
+
+        currentVertex.tangent = {mesh->mTangents[i].x, mesh->mTangents[i].y, mesh->mTangents[i].z};
+        currentVertex.biTangent = {
+            mesh->mBitangents[i].x, mesh->mBitangents[i].y, mesh->mBitangents[i].z};
+
+        if (mesh->mColors[0] != nullptr)
+        {
+            currentVertex.color = {
+                mesh->mColors[0][i].r, mesh->mColors[0][i].g, mesh->mColors[i][0].b};
+        }
+        else
+        {
+            currentVertex.color = {0.0F, 0.0F, 0.0F};
+        }
+
+        vertexDataList.emplace_back(currentVertex);
     }
-    else
-    {
-        vertexTexCoords.insert(vertexTexCoords.end(), mesh->mNumVertices, glm::vec2(0.0f, 0.0f));
-    }
-
-    std::vector<glm::vec3> vertexTangents(
-        (glm::vec3*)mesh->mTangents, (glm::vec3*)(mesh->mTangents + mesh->mNumVertices));
-
-    std::vector<glm::vec3> vertexBiTangents(
-        (glm::vec3*)mesh->mBitangents, (glm::vec3*)(mesh->mBitangents + mesh->mNumVertices));
-
-    // TODO default initialize for now
-    // in future either read vertex colors or set to constant
-    std::vector<glm::vec3> vertexColors(mesh->mNumVertices, glm::vec3(0.5, 0.5, 0.5));
 
     std::vector<GLuint> triangleIndices;
 
@@ -109,14 +111,7 @@ VSVertexContext* processMeshVertices(aiMesh*& mesh)
         }
     }
 
-    return new VSVertexContext(
-        vertexPositions,
-        vertexNormals,
-        vertexTexCoords,
-        vertexTangents,
-        vertexBiTangents,
-        vertexColors,
-        triangleIndices);
+    return new VSVertexContext(vertexDataList, triangleIndices);
 }
 
 VSMesh processMesh(aiMesh* mesh, const aiScene* scene)

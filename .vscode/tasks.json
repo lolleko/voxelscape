@@ -3,8 +3,20 @@
     "tasks": [
         {
             "type": "shell",
-            "label": "build",
-            "command": "cmake -Bbuild -DCMAKE_BUILD_TYPE=Debug . && cmake --build build",
+            "label": "build (debug)",
+            "command": "cmake -Bbuild-debug -DCMAKE_BUILD_TYPE=Debug . && cmake --build build-debug",
+            "problemMatcher": [
+                "$gcc"
+            ],
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            }
+        },
+        {
+            "type": "shell",
+            "label": "build (release)",
+            "command": "cmake -Bbuild-release -DCMAKE_BUILD_TYPE=Release . && cmake --build build-release",
             "problemMatcher": [
                 "$gcc"
             ],

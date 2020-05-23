@@ -1,6 +1,6 @@
 #pragma once
 
-#include <glm/glm.hpp>
+#include <glm/ext/vector_float3.hpp>
 
 using VSBlockID = std::uint8_t;
 
@@ -8,5 +8,5 @@ constexpr std::uint8_t VS_DEFAULT_BLOCK_ID = 0;
 
 struct VSBlockData
 {
-    glm::vec4 color;  // tODO maybe vec3
+    glm::vec<3, std::byte> color;
 };

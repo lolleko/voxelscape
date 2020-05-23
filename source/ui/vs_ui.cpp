@@ -52,6 +52,7 @@ void VSUI::render()
         ImGui::ColorEdit3("clear color", (float*)&uiState->clearColor);
         ImGui::Checkbox("wireframe", (bool*)&uiState->isWireframeModeEnabled);
         ImGui::Checkbox("draw chunk border", (bool*)&uiState->bShouldDrawChunkBorder);
+        ImGui::Checkbox("freeze frustum", (bool*)&uiState->bShouldFreezeFrustum);
         ImGui::InputInt3("chunk size", (int*)&uiState->chunkSize);
         ImGui::InputInt2("world size", (int*)&uiState->chunkCount);
         if (ImGui::Button("Refresh chunk settings"))
@@ -67,7 +68,12 @@ void VSUI::render()
             uiState->bShouldSetEditorActive = true;
             uiState->bEditorActive = true;
         }
-        ImGui::Text("Drawing blocks %d/%d", uiState->activeBlockCount, uiState->totalBlockCount);
+        ImGui::Text(
+            "Blocks Total; Visible; Drawn: %d; %d; %d",
+            uiState->totalBlockCount,
+            uiState->visibleBlockCount,
+            uiState->drawnBlockCount);
+        ImGui::Text("Drawcalls %d/64", uiState->drawCallCount);
         ImGui::Text(
             "Application average %.3f ms/frame (%.1f FPS)",
             1000.0f / ImGui::GetIO().Framerate,
