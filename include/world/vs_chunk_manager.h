@@ -79,15 +79,17 @@ private:
 
     std::atomic<bool> bShouldReinitializeChunks = false;
 
-    std::array<VSVertexContext*, 64> vertexContexts;
+    static constexpr auto faceCombinationCount = 64;
 
-    std::array<GLuint, 64> visibleBlockInfoBuffers;
+    std::array<VSVertexContext*, faceCombinationCount> vertexContexts;
 
-    std::array<std::vector<VSChunk::VSVisibleBlockInfo>, 64> visibleBlockInfos;
+    std::array<GLuint, faceCombinationCount> visibleBlockInfoBuffers;
 
     glm::mat4 frozenVPMatrix;
 
     std::uint32_t drawCallCount;
+
+    std::uint32_t drawnBlockCount;
 
     void initializeChunks();
 

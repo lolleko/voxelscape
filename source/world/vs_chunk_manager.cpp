@@ -29,7 +29,7 @@ enum VSCubeFace : std::uint8_t
 
 VSChunkManager::VSChunkManager()
 {
-    for (std::size_t i = 1; i < visibleBlockInfos.size(); i++)
+    for (std::size_t i = 1; i < 64; i++)
     {
         auto* vertexContext = loadVertexContext("models/cubes/" + std::to_string(i) + ".obj");
         vertexContexts[i] = vertexContext;
@@ -39,11 +39,6 @@ VSChunkManager::VSChunkManager()
         auto nextAttribPointer = vertexContext->lastAttribPointer + 1;
         glGenBuffers(1, &visibleBlockInfoBuffers[i]);
         glBindBuffer(GL_ARRAY_BUFFER, visibleBlockInfoBuffers[i]);
-        glBufferData(
-            GL_ARRAY_BUFFER,
-            visibleBlockInfos[i].size() * sizeof(VSChunk::VSVisibleBlockInfo),
-            &visibleBlockInfos[i][0],
-            GL_STATIC_DRAW);
 
         glEnableVertexAttribArray(nextAttribPointer);
         glVertexAttribPointer(
@@ -53,6 +48,7 @@ VSChunkManager::VSChunkManager()
             GL_FALSE,
             sizeof(VSChunk::VSVisibleBlockInfo),
             (void*)offsetof(VSChunk::VSVisibleBlockInfo, locationWorldSpace));
+
         glVertexAttribDivisor(nextAttribPointer, 1);
 
         nextAttribPointer++;
@@ -111,12 +107,12 @@ glm::ivec3 VSChunkManager::getWorldSize() const
 
 void VSChunkManager::draw(VSWorld* world)
 {
-    for (auto& info : visibleBlockInfos)
-    {
-        info.clear();
-    }
+    std::array<std::size_t, faceCombinationCount> visibleBlockInfoCount{};
+    std::array<std::size_t, faceCombinationCount> visibleBlockInfoCopiedCount{};
+    std::vector<VSChunk*> visibleChunks;
+    drawnBlockCount = 0;
 
-    for (const auto* chunk : chunks)
+    for (auto* chunk : chunks)
     {
         if (VSApp::getInstance()->getUI()->getState()->bShouldDrawChunkBorder)
         {
@@ -146,48 +142,58 @@ void VSChunkManager::draw(VSWorld* world)
         {
             for (std::size_t i = 0; i < chunk->visibleBlockInfos.size(); i++)
             {
-                visibleBlockInfos[i].insert(
-                    visibleBlockInfos[i].end(),
-                    chunk->visibleBlockInfos[i].begin(),
-                    chunk->visibleBlockInfos[i].end());
+                visibleBlockInfoCount[i] += chunk->visibleBlockInfos[i].size();
+                drawnBlockCount += chunk->visibleBlockInfos[i].size();
             }
+            visibleChunks.push_back(chunk);
         }
     }
 
+    chunkShader.uniforms()
+        .setVec3("lightPos", world->getDirectLightPos())
+        .setVec3("lightColor", world->getDirectLightColor())
+        .setVec3("viewPos", world->getCamera()->getPosition())
+        .setMat4("VP", world->getCamera()->getVPMatrix());
+
     drawCallCount = 0;
 
-    for (std::size_t i = 1; i < visibleBlockInfos.size(); i++)
+    for (std::size_t i = 1; i < faceCombinationCount; i++)
     {
-        chunkShader.uniforms()
-            .setVec3("lightPos", world->getDirectLightPos())
-            .setVec3("lightColor", world->getDirectLightColor())
-            .setVec3("viewPos", world->getCamera()->getPosition())
-            .setMat4("VP", world->getCamera()->getVPMatrix());
-
         // dont draw if no blocks active
-        if (!visibleBlockInfos[i].empty())
+        if (visibleBlockInfoCount[i] != 0)
         {
             glBindVertexArray(vertexContexts[i]->vertexArrayObject);
 
             glBindBuffer(GL_ARRAY_BUFFER, visibleBlockInfoBuffers[i]);
             glBufferData(
                 GL_ARRAY_BUFFER,
-                visibleBlockInfos[i].size() * sizeof(VSChunk::VSVisibleBlockInfo),
-                &(visibleBlockInfos[i][0]),
-                GL_STATIC_DRAW);
+                visibleBlockInfoCount[i] * sizeof(VSChunk::VSVisibleBlockInfo),
+                nullptr,
+                GL_DYNAMIC_DRAW);
+
+            for (const auto* chunk : visibleChunks)
+            {
+                glBufferSubData(
+                    GL_ARRAY_BUFFER,
+                    visibleBlockInfoCopiedCount[i] * sizeof(VSChunk::VSVisibleBlockInfo),
+                    chunk->visibleBlockInfos[i].size() * sizeof(VSChunk::VSVisibleBlockInfo),
+                    chunk->visibleBlockInfos[i].data());
+
+                visibleBlockInfoCopiedCount[i] += chunk->visibleBlockInfos[i].size();
+            }
 
             glDrawElementsInstanced(
                 GL_TRIANGLES,
                 vertexContexts[i]->indexCount,
                 GL_UNSIGNED_INT,
                 nullptr,
-                visibleBlockInfos[i].size());
-
-            glBindVertexArray(0);
+                visibleBlockInfoCount[i]);
 
             drawCallCount++;
         }
     }
+
+    glBindVertexArray(0);
 }
 
 void VSChunkManager::updateChunks()
@@ -242,13 +248,7 @@ std::size_t VSChunkManager::getVisibleBlockCount() const
 
 std::size_t VSChunkManager::getDrawnBlockCount() const
 {
-    return std::accumulate(
-        visibleBlockInfos.begin(),
-        visibleBlockInfos.end(),
-        0,
-        [](std::size_t acc, const std::vector<VSChunk::VSVisibleBlockInfo>& curr) {
-            return acc + curr.size();
-        });
+    return drawnBlockCount;
 }
 
 std::size_t VSChunkManager::getTotalChunkCount() const
