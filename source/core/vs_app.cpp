@@ -74,10 +74,12 @@ int VSApp::initialize()
 
     world = new VSWorld();
     editorWorld = new VSWorld();
+    menuWorld = new VSWorld();
 
     auto skybox = new VSSkybox();
     world->addDrawable(skybox);
     editorWorld->addDrawable(skybox);
+    menuWorld->addDrawable(skybox);
 
     // TODO: initialize editor world method, maybe in VSWorld?
     const auto worldSize = editorWorld->getChunkManager()->getWorldSize();
@@ -90,12 +92,12 @@ int VSApp::initialize()
     }
     editorWorld->getCamera()->setPosition(glm::vec3(-50.F, -5.F, -50.F));
     editorWorld->getCamera()->setPitchYaw(-10.F, 45.F);
-    // VSRTSCameraController* rtsCameraController =
-    //     new VSRTSCameraController(editorWorld->getCamera(), editorWorld);
-    // editorWorld->setCameraController(rtsCameraController);
 
-    // Set game world active initially
-    activeWorld = world;
+    // TODO: initialize menu world somewhere else, maybe in VSWorld?
+    // TODO: initiialize menu world
+
+    // Set menu world active initially
+    activeWorld = menuWorld;
 
     VSLog::Log(VSLog::Category::Core, VSLog::Level::info, "Successfully initialized logger");
 

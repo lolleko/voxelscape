@@ -36,6 +36,7 @@ private:
 
     VSWorld* world;
     VSWorld* editorWorld;
+    VSWorld* menuWorld;
     VSWorld* activeWorld;
 
     VSGame* game;

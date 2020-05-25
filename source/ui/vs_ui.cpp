@@ -1,5 +1,4 @@
 #include "ui/vs_ui.h"
-
 #include <imgui.h>
 
 #include "ui/imgui_impl/imgui_impl_glfw.h"
@@ -26,6 +25,10 @@ void VSUI::setup(const char* glsl_version, GLFWwindow* window)
     // Setup Platform/Renderer bindings
     ImGui_ImplGlfw_InitForOpenGL(window, true);
     ImGui_ImplOpenGL3_Init(glsl_version);
+
+    // Prepare Fonts
+    debugFont = io.Fonts->AddFontDefault();
+    menuFont = io.Fonts->AddFontFromFileTTF("resources/arial.ttf", 40.F);
 };
 
 void VSUI::cleanup()
@@ -46,6 +49,10 @@ void VSUI::render()
     if (uiState->bEditorActive)
     {
         renderEditorGUI();
+    }
+    else if (uiState->bMenuActive)
+    {
+        renderMainMenu();
     }
     else
     {
@@ -123,6 +130,33 @@ void VSUI::renderEditorGUI()
     ImGui::BeginChild("Scrolling");
     ImGui::Text("%s", uiState->logStream.str().c_str());
     ImGui::EndChild();
+}
+
+void VSUI::renderMainMenu()
+{
+    ImGui::PushFont(menuFont);
+    ImGui::SetNextWindowPos(
+        ImVec2(ImGui::GetIO().DisplaySize.x * 0.5F, ImGui::GetIO().DisplaySize.y * 0.5F),
+        ImGuiCond_Always,
+        ImVec2(0.5F, 0.5F));
+    ImGui::SetNextWindowSize(ImVec2(0.F, 0.F));
+    ImGui::Begin(
+        "Voxelscape",
+        0,
+        ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoCollapse |
+            ImGuiWindowFlags_NoTitleBar);
+    ImGui::Text("Voxelscape");
+    if (ImGui::Button("Start Game"))
+    {
+        // TODO: Start Game
+    }
+    if (ImGui::Button("Start Editor"))
+    {
+        uiState->bShouldSetEditorActive = true;
+        uiState->bEditorActive = true;
+    }
+    ImGui::End();
+    ImGui::PopFont();
 }
 
 void VSUI::draw()

@@ -1,5 +1,7 @@
 #pragma once
 
+#include <imgui.h>
+
 struct VSUIState;
 struct GLFWwindow;
 
@@ -14,6 +16,7 @@ public:
 
     void render();
     void renderEditorGUI();
+    void renderMainMenu();
 
     void draw();
 
@@ -23,4 +26,7 @@ public:
 
 private:
     VSUIState* uiState;
+
+    ImFont* menuFont;
+    ImFont* debugFont;
 };
