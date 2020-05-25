@@ -21,10 +21,11 @@ if(DEFINED ENV{VCPKG_INSTALLATION_ROOT} AND NOT DEFINED CMAKE_TOOLCHAIN_FILE)
 endif()
 
 project(voxelscape
-  LANGUAGES CXX
+  LANGUAGES CXX C
 )
 
 file(GLOB_RECURSE sources CONFIGURE_DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/source/*.cpp)
+list(APPEND sources ${CMAKE_CURRENT_SOURCE_DIR}/source/glad/glad.c)
 
 add_executable("${CMAKE_PROJECT_NAME}" ${sources})
 
@@ -34,9 +35,6 @@ set_target_properties("${CMAKE_PROJECT_NAME}" PROPERTIES
   CXX_STANDARD 17 
   OUTPUT_NAME "${CMAKE_PROJECT_NAME}"
 )
-
-find_package(glad REQUIRED)
-target_link_libraries("${CMAKE_PROJECT_NAME}" PRIVATE glad::glad)
 
 find_package(glfw3 CONFIG REQUIRED)
 target_link_libraries("${CMAKE_PROJECT_NAME}" PRIVATE glfw)
