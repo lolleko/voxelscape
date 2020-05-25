@@ -22,6 +22,21 @@ void VSUI::setup(const char* glsl_version, GLFWwindow* window)
     ImGui::StyleColorsDark();
     // ImGui::StyleColorsClassic();
 
+    // Adapt style
+    ImGuiStyle* style = &ImGui::GetStyle();
+    style->WindowPadding = ImVec2(15, 15);
+    style->WindowRounding = 5.0f;
+    style->FramePadding = ImVec2(5, 5);
+    style->FrameRounding = 4.0f;
+    style->ItemSpacing = ImVec2(12, 8);
+    style->ItemInnerSpacing = ImVec2(8, 6);
+    style->IndentSpacing = 25.0f;
+    style->ScrollbarSize = 15.0f;
+    style->ScrollbarRounding = 9.0f;
+    style->GrabMinSize = 5.0f;
+    style->GrabRounding = 3.0f;
+    style->WindowTitleAlign = ImVec2(0.5F, 0.5F);
+
     // Setup Platform/Renderer bindings
     ImGui_ImplGlfw_InitForOpenGL(window, true);
     ImGui_ImplOpenGL3_Init(glsl_version);
@@ -98,7 +113,22 @@ void VSUI::render()
 
 void VSUI::renderEditorGUI()
 {
-    ImGui::ColorEdit3("clear color", (float*)&uiState->clearColor);
+    if (ImGui::BeginMainMenuBar())
+    {
+        if (ImGui::BeginMenu("File..."))
+        {
+            if (ImGui::MenuItem("Load model...", "Ctrl+O"))
+            {
+                // TODO: Open File dialog
+            }
+            if (ImGui::MenuItem("Save model...", "Ctrl+S"))
+            {
+                // TODO: Open File dialog
+            }
+            ImGui::EndMenu();
+        }
+    }
+    ImGui::EndMainMenuBar();
     ImGui::Checkbox("wireframe", (bool*)&uiState->isWireframeModeEnabled);
     ImGui::Checkbox("draw chunk border", (bool*)&uiState->bShouldDrawChunkBorder);
     ImGui::InputInt3("chunk size", (int*)&uiState->chunkSize);
@@ -110,11 +140,6 @@ void VSUI::renderEditorGUI()
     if (ImGui::Button("Generate Heightmap"))
     {
         uiState->bShouldGenerateHeightMap = true;
-    }
-    if (ImGui::Button("Show Game"))
-    {
-        uiState->bShouldSetGameActive = true;
-        uiState->bEditorActive = false;
     }
     if (ImGui::Button("Reset Editor"))
     {
@@ -143,14 +168,15 @@ void VSUI::renderMainMenu()
     ImGui::Begin(
         "Voxelscape",
         0,
-        ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoCollapse |
-            ImGuiWindowFlags_NoTitleBar);
-    ImGui::Text("Voxelscape");
-    if (ImGui::Button("Start Game"))
+        ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoCollapse);
+    ImGui::Dummy(ImVec2(ImGui::GetIO().DisplaySize.x * 0.5F, ImGui::GetIO().DisplaySize.y * 0.05F));
+    if (ImGui::Button("Start Game", ImVec2(ImGui::GetWindowContentRegionWidth(), 0.F)))
     {
         // TODO: Start Game
+        uiState->bShouldSetGameActive = true;
+        uiState->bEditorActive = false;
     }
-    if (ImGui::Button("Start Editor"))
+    if (ImGui::Button("Start Editor", ImVec2(ImGui::GetWindowContentRegionWidth(), 0.F)))
     {
         uiState->bShouldSetEditorActive = true;
         uiState->bEditorActive = true;
