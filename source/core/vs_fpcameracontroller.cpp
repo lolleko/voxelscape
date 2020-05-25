@@ -22,9 +22,22 @@ void VSFPCameraController::processMouseButton(GLFWwindow* window, int button, in
 
     if (button == GLFW_MOUSE_BUTTON_RIGHT && action == GLFW_PRESS)
     {
+        glm::ivec3 worldSize = world->getChunkManager()->getWorldSize();
         glm::ivec3 position = world->intersectRayWithBlock(cam->getPosition(), cam->getFront());
+        // Check if block is placed in bounds
+        position += glm::ivec3(worldSize / 2);
+        if (position.x < 0 || position.z < 0)
+        {
+            // do nothing
+            return;
+        }
+        if (position.x >= worldSize.x || position.y >= worldSize.y || position.z >= worldSize.z)
+        {
+            // do nothing
+            return;
+        }
         world->getChunkManager()->setBlock(
-            position + glm::ivec3(world->getChunkManager()->getWorldSize() / 2), 2);
+            position, 2);
     }
 }
 
