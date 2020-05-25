@@ -4,9 +4,10 @@
 #include "core/vs_cameracontroller.h"
 #include "core/vs_camera.h"
 
-VSCameraController::VSCameraController(VSCamera* camera)
+VSCameraController::VSCameraController(VSCamera* camera, VSWorld* world)
     : mouseSensitivity(SENSITIVITY)
     , movementSpeed(SPEED)
 {
     cam = camera;
+    this->world = world;
 }

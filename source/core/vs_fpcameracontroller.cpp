@@ -1,15 +1,16 @@
 #include "core/vs_fpcameracontroller.h"
 #include "core/vs_camera.h"
+#include "world/vs_world.h"
+#include "world/vs_chunk_manager.h"
 
-VSFPCameraController::VSFPCameraController(VSCamera* camera)
-    : VSCameraController(camera)
+VSFPCameraController::VSFPCameraController(VSCamera* camera, VSWorld* world)
+    : VSCameraController(camera, world)
 {
-
 }
 
 void VSFPCameraController::processMouseButton(GLFWwindow* window, int button, int action, int mods)
 {
-    (void) mods;
+    (void)mods;
     if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_PRESS)
     {
         double xpos;
@@ -17,6 +18,13 @@ void VSFPCameraController::processMouseButton(GLFWwindow* window, int button, in
         glfwGetCursorPos(window, &xpos, &ypos);
         lastX = xpos;
         lastY = ypos;
+    }
+
+    if (button == GLFW_MOUSE_BUTTON_RIGHT && action == GLFW_PRESS)
+    {
+        glm::ivec3 position = world->intersectRayWithBlock(cam->getPosition(), cam->getFront());
+        world->getChunkManager()->setBlock(
+            position + glm::ivec3(world->getChunkManager()->getWorldSize() / 2), 2);
     }
 }
 
@@ -73,8 +81,8 @@ void VSFPCameraController::processMouseMovement(
 void VSFPCameraController::processMouseScroll(GLFWwindow* window, double xoffset, double yoffset)
     const
 {
-    (void) window;
-    (void) xoffset;
+    (void)window;
+    (void)xoffset;
 
     float zoom = cam->getZoom();
     if (zoom >= 1.0F && zoom <= 45.0F)
@@ -136,7 +144,7 @@ void VSFPCameraController::processKeyboardInput(GLFWwindow* window, float deltaT
 
 void VSFPCameraController::processFramebufferResize(GLFWwindow* window, int width, int height)
 {
-    (void) window;
+    (void)window;
 
     float aspectRatio = (float)width / height;
     cam->setAspectRatio(aspectRatio);

@@ -1,6 +1,7 @@
 #pragma once
 
 #include "core/vs_cameracontroller.h"
+#include "world/vs_world.h"
 
 // Forward declarations
 class VSCamera;
@@ -9,7 +10,7 @@ class VSCamera;
 class VSFPCameraController : public VSCameraController
 {
 public:
-    VSFPCameraController(VSCamera* camera);
+    VSFPCameraController(VSCamera* camera, VSWorld* world);
 
     // Processes mouse click
     void processMouseButton(GLFWwindow* window, int button, int action, int mods) override;

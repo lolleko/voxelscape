@@ -5,6 +5,7 @@
 // Include glfw3.h after our OpenGL definitions
 #include <GLFW/glfw3.h>
 #include <memory>
+#include "world/vs_world.h"
 
 // Forward declarations
 class VSCamera;
@@ -18,7 +19,7 @@ const float SENSITIVITY = 0.1F;
 class VSCameraController
 {
 public:
-    VSCameraController(VSCamera* camera);
+    VSCameraController(VSCamera* camera, VSWorld* world);
     virtual ~VSCameraController() = default;
 
     // Processes mouse click
@@ -42,6 +43,7 @@ public:
 
 protected:
     VSCamera* cam;
+    VSWorld* world;
 
     bool firstMouse = true;
     float lastX = 0.F;

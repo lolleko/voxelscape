@@ -90,9 +90,9 @@ int VSApp::initialize()
     }
     editorWorld->getCamera()->setPosition(glm::vec3(-50.F, -5.F, -50.F));
     editorWorld->getCamera()->setPitchYaw(-10.F, 45.F);
-    VSRTSCameraController* rtsCameraController =
-        new VSRTSCameraController(editorWorld->getCamera());
-    editorWorld->setCameraController(rtsCameraController);
+    // VSRTSCameraController* rtsCameraController =
+    //     new VSRTSCameraController(editorWorld->getCamera(), editorWorld);
+    // editorWorld->setCameraController(rtsCameraController);
 
     // Set game world active initially
     activeWorld = world;
@@ -170,6 +170,8 @@ int VSApp::initializeGLFW()
         app->getActiveWorld()->getCameraController()->processMouseScroll(window, xoffset, yoffset);
     });
     glfwSwapInterval(1);
+    // Capture cursor for FPS Camera
+    // glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
     return 0;
 }
