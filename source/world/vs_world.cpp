@@ -54,7 +54,7 @@ VSCameraController* VSWorld::getCameraController() const
 
 glm::vec3 VSWorld::getDirectLightPos() const
 {
-    return {10000.F, 10000.F, 20000.F};
+    return {500.F, 500.F, 500.F};
 }
 
 glm::vec3 VSWorld::getDirectLightColor() const

@@ -30,13 +30,13 @@ class VSChunkManager : public IVSDrawable
 
         std::vector<VSBlockID> blocks;
 
-        std::vector<bool> blockVisibility;
-
         std::atomic<bool> bIsDirty;
+
+        std::atomic<bool> bShouldRebuildShadows;
 
         std::array<std::vector<VSVisibleBlockInfo>, 64> visibleBlockInfos;
 
-        glm::mat4 modelMatrix = glm::mat4(1.F);
+        glm::vec3 chunkLocation = glm::vec3(0.F);
     };
 
 public:
@@ -91,11 +91,15 @@ private:
 
     std::uint32_t drawnBlockCount;
 
+    GLuint shadowTexture;
+
     void initializeChunks();
 
     VSChunk* createChunk() const;
 
     void deleteChunk(VSChunk* chunk);
+
+    bool updateShadows(std::size_t chunkIndex);
 
     bool updateVisibleBlocks(std::size_t chunkIndex);
 
