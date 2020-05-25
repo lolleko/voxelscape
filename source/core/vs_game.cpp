@@ -13,13 +13,10 @@
 
 #include "world/generator/vs_heightmap.h"
 
-<<<<<<< HEAD
 // TODO: Remove debugging includes
 #include <iostream>
 #include "core/vs_camera.h"
 
-=======
->>>>>>> master
 void VSGame::initialize(VSApp* inApp)
 {
     app = inApp;
