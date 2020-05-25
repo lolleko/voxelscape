@@ -133,6 +133,7 @@ void VSUI::renderEditorGUI()
     ImGui::Checkbox("draw chunk border", (bool*)&uiState->bShouldDrawChunkBorder);
     ImGui::InputInt3("chunk size", (int*)&uiState->chunkSize);
     ImGui::InputInt2("world size", (int*)&uiState->chunkCount);
+    ImGui::InputInt("Build block ID", (int*)&uiState->bSetBlockID);
     if (ImGui::Button("Refresh chunk settings"))
     {
         uiState->bShouldUpdateChunks = true;
@@ -169,7 +170,7 @@ void VSUI::renderMainMenu()
         "Voxelscape",
         0,
         ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoCollapse);
-    ImGui::Dummy(ImVec2(ImGui::GetIO().DisplaySize.x * 0.5F, ImGui::GetIO().DisplaySize.y * 0.05F));
+    ImGui::Dummy(ImVec2(ImGui::GetIO().DisplaySize.x * 0.75F, ImGui::GetIO().DisplaySize.y * 0.05F));
     if (ImGui::Button("Start Game", ImVec2(ImGui::GetWindowContentRegionWidth(), 0.F)))
     {
         // TODO: Start Game
@@ -178,6 +179,8 @@ void VSUI::renderMainMenu()
     }
     if (ImGui::Button("Start Editor", ImVec2(ImGui::GetWindowContentRegionWidth(), 0.F)))
     {
+        uiState->bShouldUpdateChunks = true;
+        uiState->bShouldResetEditor = true;
         uiState->bShouldSetEditorActive = true;
         uiState->bEditorActive = true;
     }

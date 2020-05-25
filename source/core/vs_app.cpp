@@ -11,6 +11,7 @@
 #include "core/vs_cameracontroller.h"
 // TODO: Remove and find better position to set camera cantroller
 #include "core/vs_rtscameracontroller.h"
+#include "core/vs_dummycameracontroller.h"
 #include "core/vs_camera.h"
 #include "core/vs_game.h"
 
@@ -75,6 +76,8 @@ int VSApp::initialize()
     world = new VSWorld();
     editorWorld = new VSWorld();
     menuWorld = new VSWorld();
+    auto dummyController = new VSDummyCameraController();
+    menuWorld->setCameraController(dummyController);
 
     auto skybox = new VSSkybox();
     world->addDrawable(skybox);

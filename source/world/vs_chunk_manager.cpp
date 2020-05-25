@@ -1,6 +1,7 @@
 #include "world/vs_chunk_manager.h"
 
 #include <algorithm>
+#include <atomic>
 #include <cstddef>
 #include <cstdint>
 #include <numeric>
@@ -259,6 +260,11 @@ std::size_t VSChunkManager::getTotalChunkCount() const
 std::size_t VSChunkManager::getDrawCallCount() const
 {
     return drawCallCount;
+}
+
+bool VSChunkManager::shouldReinitializeChunks() const
+{
+    return bShouldReinitializeChunks.load();
 }
 
 void VSChunkManager::initializeChunks()

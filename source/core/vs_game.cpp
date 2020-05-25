@@ -78,11 +78,14 @@ void VSGame::gameLoop()
             UI->getMutableState()->bShouldGenerateHeightMap = false;
         }
 
-        if (UI->getState()->bShouldResetEditor)
+        if (UI->getState()->bShouldResetEditor &&
+            !world->getChunkManager()->shouldReinitializeChunks())
         {
             std::cout << "Camera pitch " << world->getCamera()->getPitch() << std::endl;
             std::cout << "Camera yaw " << world->getCamera()->getYaw() << std::endl;
-            std::cout << "Camera Position " << (world->getCamera()->getPosition()).x << ", " << (world->getCamera()->getPosition()).y << ", " << (world->getCamera()->getPosition()).z << std::endl;
+            std::cout << "Camera Position " << (world->getCamera()->getPosition()).x << ", "
+                      << (world->getCamera()->getPosition()).y << ", "
+                      << (world->getCamera()->getPosition()).z << std::endl;
             // TODO: Clear world
             // world->getChunkManager()->clearBlocks();
             const auto worldSize = world->getChunkManager()->getWorldSize();

@@ -8,6 +8,6 @@ VSCameraController::VSCameraController(VSCamera* camera, VSWorld* world)
     : mouseSensitivity(SENSITIVITY)
     , movementSpeed(SPEED)
 {
-    cam = camera;
+    this->cam = camera;
     this->world = world;
 }

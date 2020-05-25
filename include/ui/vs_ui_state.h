@@ -26,6 +26,7 @@ struct VSUIState
     bool bShouldSetEditorActive = false;
     bool bShouldResetEditor = false;
     bool bEditorActive = false;
+    int bSetBlockID = 1;
 
     // Menu Control flow
     bool bMenuActive = true;
