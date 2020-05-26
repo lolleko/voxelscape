@@ -29,31 +29,42 @@ float sdBox(vec3 p)
 }
 
 float map(vec3 pos) {
-    //sdBox(fract(pos)) + 
-    //return texture(shadowTexture, (pos + worldSizeHalf) / worldSize).r;
-    return texelFetch(shadowTexture, ivec3(pos + worldSizeHalf), 0).r;
+    // WIP
+    vec3 absPos = abs(pos - ivec3(pos) + 0.5);
+    vec3 d = absPos - vec3(1.0);
+
+    ivec3 shadowTexCoord = clamp(ivec3(pos + worldSizeHalf), ivec3(0.0), ivec3(worldSize) - ivec3(1.0));
+
+    // TODO for dist = 1 find actual closest surface
+    return float(texelFetch(shadowTexture, shadowTexCoord, 0).r) -1.0 - min(sdBox(pos - ivec3(pos) + 0.5), -0.999);
+    //return sdBox(fract(pos)) + float(texelFetch(shadowTexture, min(ivec3(pos + worldSizeHalf), ivec3(worldSize) - ivec3(1.0)), 0).r) + 1.0;
 }
 
 float raymarch(vec3 ro, vec3 rd) {
-    const float maxDist = 256;
     float res = 1.0;
-    for (float t = 0.01; t < maxDist;) {
-        vec3 p = ro + rd * t; // World space position of sample
-        float d = map(p);       // Sample of distance field (see map())
+    float ph = 1e20;
 
-        // If the sample <= 0, we have hit something (see map()).
-        if (d == 0.0) {
-            return 0.0;
+    const float mint = 0.1;
+    const float maxt = 255.0;
+
+    const float k = 8.0;
+
+    for( float t = mint; t<maxt; )
+    {
+        float h = map(ro + rd * t);
+
+        float y = h*h/(2.0*ph);
+        float d = sqrt(h*h-y*y);
+        res = min( res, k*d/max(0.0,t-y) );
+        ph = h;
+        t += h;
+
+        if( h <= 0.001 ) {
+            break;
         }
-
-        res = min(res, 4.0*d/t);
-        // If the sample > 0, we haven't hit anything yet so we should march forward
-        // We step forward by distance d, because d is the minimum distance possible to intersect
-        // an object (see map()).
-        t += (d * d) / 64.0;
     }
-    return 1.0;
-    //return clamp(res, 0.0, 1.0);
+    //return 1.0;
+    return res;
 }
 
 void main() {
@@ -70,17 +81,19 @@ void main() {
     vec3 diffuse = diff * lightColor;
 
     float specularStrength = 0.5;
-    vec3 viewDir = normalize((viewPos - i.worldPosition));
-    vec3 reflectDir = reflect(-lightDir, norm); 
-
+    vec3 viewDir = normalize(viewPos - i.worldPosition);
+    vec3 reflectDir = reflect(-lightDir, norm);
     float spec = pow(max(dot(viewDir, reflectDir), 0.0), 32);
+
     vec3 specular = specularStrength * spec * lightColor;  
 
-    vec3 result = (ambient + diffuse + specular) * i.color;
+    vec3 result = (ambient + diffuse + specular) * i.color * shadowFactor;
 
-    outColor = vec4(result, 1.0) * shadowFactor;
+    outColor = vec4(result, 1.0);
 
-    //outColor = vec4((i.worldPosition + worldSize / 2u) / worldSize, 1);    
+    //outColor = vec4(vec3(i.worldPosition.x + worldSizeHalf.x, i.worldPosition.y + worldSizeHalf.y, i.worldPosition.z + worldSizeHalf.z) / worldSize, 1.0);
 
-    //outColor = vec4(map(i.worldPosition), 0, 0, 1);
+    //outColor = vec4((i.worldPosition + worldSize / 2u) / worldSize, 1);
+
+    //outColor = vec4(map(i.worldPosition + vec3(0, 24, 0)) / 255, 0, 0, 1);
 }

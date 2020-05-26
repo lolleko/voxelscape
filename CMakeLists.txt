@@ -6,13 +6,14 @@ set(CMAKE_CXX_VISIBILITY_PRESET hidden)
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS 1)
 
-set(CMAKE_CXX_FLAGS_RELEASE "-O3")
 
 if (UNIX)
   set(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} -Wall -Wextra -Werror")
+  set(CMAKE_CXX_FLAGS_RELEASE "-O3")
 endif()
 if ( MSVC )
   #set(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} /Wall /WX")
+  set(CMAKE_CXX_FLAGS_RELEASE "/O3 /MD")
 endif()
 
 if(DEFINED ENV{VCPKG_INSTALLATION_ROOT} AND NOT DEFINED CMAKE_TOOLCHAIN_FILE)
@@ -74,8 +75,8 @@ find_package(Stb REQUIRED)
 target_include_directories("${CMAKE_PROJECT_NAME}" PRIVATE ${Stb_INCLUDE_DIR})
 
 # Resources
-add_custom_command(TARGET "${CMAKE_PROJECT_NAME}" PRE_BUILD COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_SOURCE_DIR}/shaders/ ${CMAKE_BINARY_DIR}/shaders)
+add_custom_command(TARGET "${CMAKE_PROJECT_NAME}" PRE_BUILD COMMAND ${CMAKE_COMMAND} -E create_symlink  ${CMAKE_SOURCE_DIR}/shaders/ ${CMAKE_BINARY_DIR}/shaders)
 
-add_custom_command(TARGET "${CMAKE_PROJECT_NAME}" PRE_BUILD COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_SOURCE_DIR}/textures/ ${CMAKE_BINARY_DIR}/textures)
+add_custom_command(TARGET "${CMAKE_PROJECT_NAME}" PRE_BUILD COMMAND ${CMAKE_COMMAND} -E create_symlink  ${CMAKE_SOURCE_DIR}/textures/ ${CMAKE_BINARY_DIR}/textures)
 
-add_custom_command(TARGET "${CMAKE_PROJECT_NAME}" PRE_BUILD COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_SOURCE_DIR}/models/ ${CMAKE_BINARY_DIR}/models)
+add_custom_command(TARGET "${CMAKE_PROJECT_NAME}" PRE_BUILD COMMAND ${CMAKE_COMMAND} -E create_symlink  ${CMAKE_SOURCE_DIR}/models/ ${CMAKE_BINARY_DIR}/models)

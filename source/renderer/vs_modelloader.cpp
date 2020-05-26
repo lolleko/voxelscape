@@ -91,7 +91,7 @@ VSVertexContext* processMeshVertices(aiMesh*& mesh)
         }
         else
         {
-            currentVertex.color = {0.0F, 0.0F, 0.0F};
+            currentVertex.color = {1.0F, 1.0F, 1.0F};
         }
 
         vertexDataList.emplace_back(currentVertex);

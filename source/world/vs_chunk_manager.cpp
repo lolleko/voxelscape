@@ -68,7 +68,6 @@ VSChunkManager::VSChunkManager()
 
     std::vector<glm::vec3> blockColors = {
         {0.F, 0.F, 0.F}, {0.3F, 0.3F, 0.3F}, {0.01F, 0.5F, 0.15F}};
-    blockColors.reserve(256);
 
     chunkShader.uniforms().setVec3Array("blockColors", blockColors);
 }
@@ -308,6 +307,7 @@ void VSChunkManager::initializeChunks()
         glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_BASE_LEVEL, 0);
         glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
         glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+        glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
         glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
         glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
         glTexImage3D(
@@ -401,7 +401,7 @@ bool VSChunkManager::updateShadows(std::size_t chunkIndex)
                             }
                         }
 
-                        distance = glm::round(glm::sqrt(distanceSquared));
+                        distance = glm::floor(glm::sqrt(distanceSquared));
                     }
 
                     const auto blockLocationGlobalSpace =

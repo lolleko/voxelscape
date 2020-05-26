@@ -107,9 +107,9 @@ int VSApp::initializeGLFW()
 #else
     // GL 3.0 + GLSL 130
     glslVersion = "#version 130";
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 0);
-    // glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);  // 3.2+ only
+    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);  // 3.2+ only
     glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);  // 3.0+ only
 #endif
 
@@ -196,6 +196,11 @@ int VSApp::mainLoop()
         UI->getMutableState()->visibleBlockCount = world->getChunkManager()->getVisibleBlockCount();
         UI->getMutableState()->drawnBlockCount = world->getChunkManager()->getDrawnBlockCount();
         UI->getMutableState()->drawCallCount = world->getChunkManager()->getDrawCallCount();
+
+        world->setDirectLightPos(UI->getState()->directLightPos);
+
+        // TODO add option for day night
+        //world->setDirectLightPos({1000.f *  cos(glfwGetTime() / 10.f), 1000.f *  sin(glfwGetTime() / 10.f), 0.f});
 
         auto display_w = 0;
         auto display_h = 0;

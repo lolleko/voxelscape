@@ -45,6 +45,7 @@ void VSUI::render()
     // named window.
     {
         ImGui::ColorEdit3("clear color", (float*)&uiState->clearColor);
+        ImGui::DragFloat3("sun position", (float*)&uiState->directLightPos);
         ImGui::Checkbox("wireframe", (bool*)&uiState->isWireframeModeEnabled);
         ImGui::Checkbox("draw chunk border", (bool*)&uiState->bShouldDrawChunkBorder);
         ImGui::Checkbox("freeze frustum", (bool*)&uiState->bShouldFreezeFrustum);

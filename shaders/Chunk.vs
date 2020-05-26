@@ -11,7 +11,7 @@ layout (location = 6) in vec3 blockLocation;
 
 layout (location = 7) in uint blockID;
 
-uniform vec3[256] blockColors;
+uniform vec3[3] blockColors;
 
 out VertexData {
     vec3 worldPosition;

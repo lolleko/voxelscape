@@ -1,4 +1,5 @@
 #include <glm/ext/vector_float4.hpp>
+#include <glm/ext/vector_float3.hpp>
 #include <glm/ext/vector_int3.hpp>
 #include <glm/ext/vector_int2.hpp>
 #include <sstream>
@@ -18,4 +19,5 @@ struct VSUIState
     int drawnBlockCount = 0;
     int drawCallCount = 0;
     std::ostringstream logStream;
+    glm::vec3 directLightPos = {500.f, 1000.f, 500.f};
 };
