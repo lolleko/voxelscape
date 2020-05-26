@@ -11,6 +11,7 @@
 #include "core/vs_cameracontroller.h"
 #include "core/vs_camera.h"
 #include "core/vs_game.h"
+#include "core/vs_debug_draw.h"
 
 #include "world/vs_chunk_manager.h"
 
@@ -113,6 +114,9 @@ int VSApp::initializeGLFW()
     glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);  // 3.0+ only
 #endif
 
+    // anti Aliasing
+    glfwWindowHint(GLFW_SAMPLES, 4);
+
     // Create window with graphics context
     const auto width = 1280;
     const auto height = 720;
@@ -200,7 +204,9 @@ int VSApp::mainLoop()
         world->setDirectLightPos(UI->getState()->directLightPos);
 
         // TODO add option for day night
-        //world->setDirectLightPos({1000.f *  cos(glfwGetTime() / 10.f), 1000.f *  sin(glfwGetTime() / 10.f), 0.f});
+        world->setDirectLightPos(glm::vec3(world->getChunkManager()->getWorldSize() * 2) * glm::vec3(cos(glfwGetTime() / 10.f),  sin(glfwGetTime() / 10.f), 0.f));
+
+        world->getDebugDraw()->drawSphere(world->getDirectLightPos(), 10.f, {255, 255, 255});
 
         auto display_w = 0;
         auto display_h = 0;
