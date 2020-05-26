@@ -21,17 +21,10 @@ uniform sampler3D shadowTexture;
 
 vec3 worldSizeHalf = worldSize / 2u;
 
-float sdBox(vec3 p)
-{
-    vec3 d = abs(p) - vec3(1.0);
-    return min(max(d.x, max(d.y, d.z)), 0.0) +
-        length(max(d, 0.0));
-}
-
 float map(vec3 pos) {
     // WIP
 
-    vec3 shadowTexCoord = (pos + worldSizeHalf) / vec3(worldSize - 1u);
+    vec3 shadowTexCoord = (pos + worldSizeHalf) / vec3(worldSize);
     float distance = texture(shadowTexture, shadowTexCoord).r;
 
     return distance;
@@ -73,17 +66,19 @@ float raymarch(vec3 ro, vec3 rd) {
 void main() {
     vec3 norm = normalize(i.normal);
 
+    vec3 viewDir = normalize(viewPos - i.worldPosition);
+
+    // dont calculate light if behind face
+    if (dot(norm, viewDir) < 0) {
+       outColor = vec4(0.0);
+       return;
+    }
 
     vec3 rayStart = i.worldPosition;
 
     vec3 lightDir = normalize(lightPos - i.worldPosition);
 
-    float shadowFactor = 0.0;
-
-    // dont calculate shadows if light is behind face
-    if (dot(norm, lightDir) >= 0) {
-       shadowFactor = raymarch(rayStart, lightDir);
-    }
+    float shadowFactor = raymarch(rayStart, lightDir);
 
     // ambient
     float ambientStrength = 0.1;
@@ -93,7 +88,6 @@ void main() {
     vec3 diffuse = diff * lightColor;
 
     float specularStrength = 0.5;
-    vec3 viewDir = normalize(viewPos - i.worldPosition);
     vec3 reflectDir = reflect(-lightDir, norm);
     float spec = pow(max(dot(viewDir, reflectDir), 0.0), 32);
 

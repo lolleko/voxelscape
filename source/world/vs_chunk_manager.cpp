@@ -9,7 +9,6 @@
 
 #include "renderer/vs_modelloader.h"
 
-#include "world/vs_block.h"
 #include "world/vs_world.h"
 #include "core/vs_camera.h"
 #include "core/vs_app.h"
@@ -366,64 +365,65 @@ bool VSChunkManager::updateShadows(std::size_t chunkIndex)
             }
         }
 
-        for (int x = 0; x < chunkSize.x; x++)
+        const auto chunkBlockCount = getChunkBlockCount();
+
+        std::vector<float> chunkDistanceField;
+        chunkDistanceField.resize(chunkBlockCount);
+
+#pragma omp parallel for
+        for (int blockIndex = 0; blockIndex < chunkBlockCount; blockIndex++)
         {
-            for (int y = 0; y < chunkSize.y; y++)
+            glm::ivec3 blockCordinates = blockIndexToBlockCoordinates(blockIndex);
+
+            glm::vec blockLocationWorldSpace = chunk->chunkLocation +
+                                               glm::vec3(blockCordinates) +
+                                               glm::vec3(0.5F) - glm::vec3(chunkSize) / 2.F;
+
+            float distance = std::numeric_limits<float>::max();
+            if (chunk->blocks[blockIndex] !=
+                VS_DEFAULT_BLOCK_ID)
             {
-                for (int z = 0; z < chunkSize.z; z++)
+                distance = 0.F;
+            }
+            else
+            {
+                float distanceSquared = std::numeric_limits<float>::max();
+                for (auto* neighbourChunk : chunksToCheck)
                 {
-                    glm::ivec3 blockCordinates(x, y, z);
-
-                    glm::vec blockLocationWorldSpace = chunk->chunkLocation +
-                                                       glm::vec3(blockCordinates) +
-                                                       glm::vec3(0.5F) - glm::vec3(chunkSize) / 2.F;
-
-                    float distance = std::numeric_limits<float>::max();
-                    if (chunk->blocks[blockCoordinatesToBlockIndex(blockCordinates)] !=
-                        VS_DEFAULT_BLOCK_ID)
+                    for (const auto& visibleBlockInfo : neighbourChunk->visibleBlockInfos)
                     {
-                        distance = 0.F;
-                    }
-                    else
-                    {
-                        float distanceSquared = std::numeric_limits<float>::max();
-                        for (auto* neighbourChunk : chunksToCheck)
+                        for (const auto& visibleBlock : visibleBlockInfo)
                         {
-                            for (const auto& visibleBlockInfo : neighbourChunk->visibleBlockInfos)
+                            const auto newDistanceSquared = glm::length2(
+                                visibleBlock.locationWorldSpace - blockLocationWorldSpace);
+                            if (newDistanceSquared < distanceSquared)
                             {
-                                for (const auto& visibleBlock : visibleBlockInfo)
-                                {
-                                    const auto newDistanceSquared = glm::length2(
-                                        visibleBlock.locationWorldSpace - blockLocationWorldSpace);
-                                    if (newDistanceSquared < distanceSquared)
-                                    {
-                                        distanceSquared = newDistanceSquared;
-                                    }
-                                }
+                                distanceSquared = newDistanceSquared;
                             }
                         }
-
-                        distance = glm::sqrt(distanceSquared);
                     }
-
-                    const auto blockLocationGlobalSpace =
-                        blockCoordinatesToWorldCoordinates(chunkIndex, blockCordinates);
-
-                    glTexSubImage3D(
-                        GL_TEXTURE_3D,
-                        0,
-                        blockLocationGlobalSpace.x,
-                        blockLocationGlobalSpace.y,
-                        blockLocationGlobalSpace.z,
-                        1,
-                        1,
-                        1,
-                        GL_RED,
-                        GL_FLOAT,
-                        &distance);
                 }
+
+                distance = glm::sqrt(distanceSquared);
             }
+
+            chunkDistanceField[blockIndex] = distance;
         }
+
+        const auto textureBlockLocation = chunk->chunkLocation + (glm::vec3(worldSize.x, 0.F, worldSize.z) / 2.F) - (glm::vec3(chunkSize.x, 0.F, chunkSize.z) / 2.F);
+
+        glTexSubImage3D(
+            GL_TEXTURE_3D,
+            0,
+            textureBlockLocation.x,
+            textureBlockLocation.y,
+            textureBlockLocation.z,
+            chunkSize.x,
+            chunkSize.y,
+            chunkSize.z,
+            GL_RED,
+            GL_FLOAT,
+            chunkDistanceField.data());
         return true;
     }
     return false;
@@ -439,7 +439,9 @@ bool VSChunkManager::updateVisibleBlocks(std::size_t chunkIndex)
         {
             info.clear();
         }
-        for (std::size_t blockIndex = 0; blockIndex < getChunkBlockCount(); blockIndex++)
+
+#pragma omp parallel for
+        for (int blockIndex = 0; blockIndex < getChunkBlockCount(); blockIndex++)
         {
             if (chunk->blocks[blockIndex] != VS_DEFAULT_BLOCK_ID)
             {
@@ -449,8 +451,11 @@ bool VSChunkManager::updateVisibleBlocks(std::size_t chunkIndex)
                     const auto offset = chunk->chunkLocation +
                                         glm::vec3(blockIndexToBlockCoordinates(blockIndex)) +
                                         glm::vec3(0.5F) - glm::vec3(chunkSize) / 2.F;
-                    chunk->visibleBlockInfos[blockType].emplace_back(
-                        VSChunk::VSVisibleBlockInfo{offset, chunk->blocks[blockIndex]});
+
+                    const auto blockInfo = VSChunk::VSVisibleBlockInfo{offset, chunk->blocks[blockIndex]};
+
+#pragma omp critical
+                    chunk->visibleBlockInfos[blockType].emplace_back(blockInfo);
                 }
             }
         }

@@ -115,7 +115,7 @@ int VSApp::initializeGLFW()
 #endif
 
     // anti Aliasing
-    glfwWindowHint(GLFW_SAMPLES, 4);
+    glfwWindowHint(GLFW_SAMPLES, 8);
 
     // Create window with graphics context
     const auto width = 1280;
@@ -204,7 +204,7 @@ int VSApp::mainLoop()
         world->setDirectLightPos(UI->getState()->directLightPos);
 
         // TODO add option for day night
-        world->setDirectLightPos(glm::vec3(world->getChunkManager()->getWorldSize() * 2) * glm::vec3(cos(glfwGetTime() / 10.f),  sin(glfwGetTime() / 10.f), 0.f));
+        //world->setDirectLightPos(glm::vec3(world->getChunkManager()->getWorldSize() * 2) * glm::vec3(cos(glfwGetTime() / 10.f),  sin(glfwGetTime() / 10.f), 0.f));
 
         world->getDebugDraw()->drawSphere(world->getDirectLightPos(), 10.f, {255, 255, 255});
 
