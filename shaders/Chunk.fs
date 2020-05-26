@@ -66,22 +66,29 @@ float raymarch(vec3 ro, vec3 rd) {
             break;
         }
     }
-    if (res > 0.3) {
-        return 1;
-    }
+
     return clamp(res, 0.0, 1.0);
 }
 
 void main() {
+    vec3 norm = normalize(i.normal);
+
+
     vec3 rayStart = i.worldPosition;
-    float shadowFactor = raymarch(rayStart, normalize(lightPos - i.worldPosition));
+
+    vec3 lightDir = normalize(lightPos - i.worldPosition);
+
+    float shadowFactor = 0.0;
+
+    // dont calculate shadows if light is behind face
+    if (dot(norm, lightDir) >= 0) {
+       shadowFactor = raymarch(rayStart, lightDir);
+    }
 
     // ambient
     float ambientStrength = 0.1;
     vec3 ambient = ambientStrength * lightColor;
 
-    vec3 lightDir = normalize(lightPos - i.worldPosition);
-    vec3 norm = normalize(i.normal);
     float diff = max(dot(norm, lightDir), 0.0);
     vec3 diffuse = diff * lightColor;
 
