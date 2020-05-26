@@ -134,9 +134,11 @@ void VSChunkManager::draw(VSWorld* world)
         const auto horizontalRadius =
             glm::sqrt(chunkSize.x * chunkSize.x + chunkSize.z * chunkSize.z);
 
-        if ((chunkCenterInP.z - horizontalRadius) < world->getCamera()->getZFar() * 1.F &&
-            (chunkCenterInP.z + horizontalRadius) > world->getCamera()->getZNear() * 1.F &&
-            (glm::abs(chunkCenterInP.x) - horizontalRadius) < (chunkCenterInP.w * 1.F) &&
+        // (chunkCenterInP.z - horizontalRadius) < world->getCamera()->getZFar() * 1.F &&
+        //            (chunkCenterInP.z + horizontalRadius) > world->getCamera()->getZNear() * 1.F
+        //            &&
+
+        if ((glm::abs(chunkCenterInP.x) - horizontalRadius) < (chunkCenterInP.w * 1.F) &&
             (glm::abs(chunkCenterInP.y) - chunkSize.y) < (chunkCenterInP.w * 1.F))
         {
             for (std::size_t i = 0; i < chunk->visibleBlockInfos.size(); i++)
@@ -371,17 +373,15 @@ bool VSChunkManager::updateShadows(std::size_t chunkIndex)
         chunkDistanceField.resize(chunkBlockCount);
 
 #pragma omp parallel for
-        for (int blockIndex = 0; blockIndex < chunkBlockCount; blockIndex++)
+        for (int blockIndex = 0; blockIndex < static_cast<int>(chunkBlockCount); blockIndex++)
         {
             glm::ivec3 blockCordinates = blockIndexToBlockCoordinates(blockIndex);
 
-            glm::vec blockLocationWorldSpace = chunk->chunkLocation +
-                                               glm::vec3(blockCordinates) +
+            glm::vec blockLocationWorldSpace = chunk->chunkLocation + glm::vec3(blockCordinates) +
                                                glm::vec3(0.5F) - glm::vec3(chunkSize) / 2.F;
 
             float distance = std::numeric_limits<float>::max();
-            if (chunk->blocks[blockIndex] !=
-                VS_DEFAULT_BLOCK_ID)
+            if (chunk->blocks[blockIndex] != VS_DEFAULT_BLOCK_ID)
             {
                 distance = 0.F;
             }
@@ -410,7 +410,9 @@ bool VSChunkManager::updateShadows(std::size_t chunkIndex)
             chunkDistanceField[blockIndex] = distance;
         }
 
-        const auto textureBlockLocation = chunk->chunkLocation + (glm::vec3(worldSize.x, 0.F, worldSize.z) / 2.F) - (glm::vec3(chunkSize.x, 0.F, chunkSize.z) / 2.F);
+        const auto textureBlockLocation = chunk->chunkLocation +
+                                          (glm::vec3(worldSize.x, 0.F, worldSize.z) / 2.F) -
+                                          (glm::vec3(chunkSize.x, 0.F, chunkSize.z) / 2.F);
 
         glTexSubImage3D(
             GL_TEXTURE_3D,
@@ -440,8 +442,10 @@ bool VSChunkManager::updateVisibleBlocks(std::size_t chunkIndex)
             info.clear();
         }
 
+        const auto chunkBlockCount = getChunkBlockCount();
+
 #pragma omp parallel for
-        for (int blockIndex = 0; blockIndex < getChunkBlockCount(); blockIndex++)
+        for (int blockIndex = 0; blockIndex < static_cast<int>(chunkBlockCount); blockIndex++)
         {
             if (chunk->blocks[blockIndex] != VS_DEFAULT_BLOCK_ID)
             {
@@ -452,7 +456,8 @@ bool VSChunkManager::updateVisibleBlocks(std::size_t chunkIndex)
                                         glm::vec3(blockIndexToBlockCoordinates(blockIndex)) +
                                         glm::vec3(0.5F) - glm::vec3(chunkSize) / 2.F;
 
-                    const auto blockInfo = VSChunk::VSVisibleBlockInfo{offset, chunk->blocks[blockIndex]};
+                    const auto blockInfo =
+                        VSChunk::VSVisibleBlockInfo{offset, chunk->blocks[blockIndex]};
 
 #pragma omp critical
                     chunk->visibleBlockInfos[blockType].emplace_back(blockInfo);
