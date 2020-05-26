@@ -313,13 +313,13 @@ void VSChunkManager::initializeChunks()
         glTexImage3D(
             GL_TEXTURE_3D,
             0,
-            GL_R8,
+            GL_R16F,
             worldSize.x,
             worldSize.y,
             worldSize.z,
             0,
             GL_RED,
-            GL_UNSIGNED_BYTE,
+            GL_FLOAT,
             nullptr);
     }
 }
@@ -376,15 +376,15 @@ bool VSChunkManager::updateShadows(std::size_t chunkIndex)
                                                        glm::vec3(blockCordinates) +
                                                        glm::vec3(0.5F) - glm::vec3(chunkSize) / 2.F;
 
-                    std::uint8_t distance = 255;
+                    float distance = std::numeric_limits<float>::max();
                     if (chunk->blocks[blockCoordinatesToBlockIndex(blockCordinates)] !=
                         VS_DEFAULT_BLOCK_ID)
                     {
-                        distance = 0;
+                        distance = 0.F;
                     }
                     else
                     {
-                        float distanceSquared = distance * distance;
+                        float distanceSquared = std::numeric_limits<float>::max();
                         for (auto* neighbourChunk : chunksToCheck)
                         {
                             for (const auto& visibleBlockInfo : neighbourChunk->visibleBlockInfos)
@@ -397,14 +397,11 @@ bool VSChunkManager::updateShadows(std::size_t chunkIndex)
                                     {
                                         distanceSquared = newDistanceSquared;
                                     }
-                                    if (distanceSquared == 1) {
-                                        break;
-                                    }
                                 }
                             }
                         }
 
-                        distance = glm::floor(glm::sqrt(distanceSquared));
+                        distance = glm::sqrt(distanceSquared);
                     }
 
                     const auto blockLocationGlobalSpace =
@@ -420,7 +417,7 @@ bool VSChunkManager::updateShadows(std::size_t chunkIndex)
                         1,
                         1,
                         GL_RED,
-                        GL_BYTE,
+                        GL_FLOAT,
                         &distance);
                 }
             }

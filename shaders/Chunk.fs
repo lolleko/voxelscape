@@ -32,7 +32,7 @@ float map(vec3 pos) {
     // WIP
 
     vec3 shadowTexCoord = (pos + worldSizeHalf) / vec3(worldSize - 1u);
-    float distance = texture(shadowTexture, shadowTexCoord).r * 255.0 - 1;
+    float distance = texture(shadowTexture, shadowTexCoord).r;
 
     return distance;
 
@@ -44,14 +44,15 @@ float map(vec3 pos) {
 
 float raymarch(vec3 ro, vec3 rd) {
     float res = 1.0;
-    float ph = 1e20;
+    float ph = 1e30;
 
-    const float mint = 0.1;
-    const float maxt = 64.0;
+    const float mint = 0.001;
+    float t = mint;
+    const float maxt = 256.0;
 
-    const float k = 8.0;
+    const float k = 4.0;
 
-    for( float t = mint; t<maxt; )
+    for( int i=0; i<64; i++ )
     {
         float h = map(ro + rd * t);
 
@@ -61,12 +62,14 @@ float raymarch(vec3 ro, vec3 rd) {
         ph = h;
         t += h;
 
-        if( h <= 0.001 ) {
+        if( res <= 0.1 || t > maxt) {
             break;
         }
     }
-    //return 1.0;
-    return res;
+    if (res > 0.3) {
+        return 1;
+    }
+    return clamp(res, 0.0, 1.0);
 }
 
 void main() {
@@ -89,7 +92,7 @@ void main() {
 
     vec3 specular = specularStrength * spec * lightColor;  
 
-    vec3 result = (ambient + diffuse + specular) * i.color * shadowFactor;
+    vec3 result = (ambient + shadowFactor * (diffuse + specular)) * i.color;
 
     outColor = vec4(result, 1.0);
 
