@@ -17,7 +17,7 @@ uniform vec3 viewPos;
 
 uniform uvec3 worldSize;
 
-uniform usampler3D shadowTexture;
+uniform sampler3D shadowTexture;
 
 vec3 worldSizeHalf = worldSize / 2u;
 
@@ -30,14 +30,16 @@ float sdBox(vec3 p)
 
 float map(vec3 pos) {
     // WIP
-    vec3 absPos = abs(pos - ivec3(pos) + 0.5);
-    vec3 d = absPos - vec3(1.0);
 
-    ivec3 shadowTexCoord = clamp(ivec3(pos + worldSizeHalf), ivec3(0.0), ivec3(worldSize) - ivec3(1.0));
+    vec3 shadowTexCoord = (pos + worldSizeHalf) / vec3(worldSize - 1u);
+    float distance = texture(shadowTexture, shadowTexCoord).r * 255.0 - 1;
 
-    // TODO for dist = 1 find actual closest surface
-    return float(texelFetch(shadowTexture, shadowTexCoord, 0).r) -1.0 - min(sdBox(pos - ivec3(pos) + 0.5), -0.999);
-    //return sdBox(fract(pos)) + float(texelFetch(shadowTexture, min(ivec3(pos + worldSizeHalf), ivec3(worldSize) - ivec3(1.0)), 0).r) + 1.0;
+    return distance;
+
+
+    // ivec3 shadowTexCoord = clamp(ivec3(pos + worldSizeHalf), ivec3(0.0), ivec3(worldSize) - ivec3(1.0));
+    //float distance = texelFetch(shadowTexture, shadowTexCoord, 0).r);
+    //return float(distance -1.0 - min(sdBox(pos - ivec3(pos) + 0.5), -0.999);
 }
 
 float raymarch(vec3 ro, vec3 rd) {
@@ -45,7 +47,7 @@ float raymarch(vec3 ro, vec3 rd) {
     float ph = 1e20;
 
     const float mint = 0.1;
-    const float maxt = 255.0;
+    const float maxt = 64.0;
 
     const float k = 8.0;
 
@@ -96,4 +98,6 @@ void main() {
     //outColor = vec4((i.worldPosition + worldSize / 2u) / worldSize, 1);
 
     //outColor = vec4(map(i.worldPosition + vec3(0, 24, 0)) / 255, 0, 0, 1);
+
+    //outColor = vec4(map(i.worldPosition) / 255, 0, 0, 1);
 }
