@@ -1,6 +1,7 @@
 #pragma once
 
 #include <imgui.h>
+#include "ui/imgui_impl/imfilebrowser.h"
 
 struct VSUIState;
 struct GLFWwindow;
@@ -29,4 +30,7 @@ private:
 
     ImFont* menuFont;
     ImFont* debugFont;
+
+    ImGui::FileBrowser* loadFileDialog;
+    ImGui::FileBrowser* saveFileDialog;
 };

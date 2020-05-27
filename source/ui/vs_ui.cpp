@@ -1,6 +1,8 @@
 #include "ui/vs_ui.h"
+#include <bits/types/FILE.h>
 #include <imgui.h>
 
+#include "core/vs_log.h"
 #include "ui/imgui_impl/imgui_impl_glfw.h"
 #include "ui/imgui_impl/imgui_impl_opengl3.h"
 
@@ -36,6 +38,14 @@ void VSUI::setup(const char* glsl_version, GLFWwindow* window)
     style->GrabMinSize = 5.0f;
     style->GrabRounding = 3.0f;
     style->WindowTitleAlign = ImVec2(0.5F, 0.5F);
+
+    // Init file browsers
+    loadFileDialog = new ImGui::FileBrowser();
+    loadFileDialog->SetTitle("Load scene file");
+    // TODO: Define file ending
+    loadFileDialog->SetTypeFilters({".h", ".cpp"});
+    saveFileDialog = new ImGui::FileBrowser(ImGuiFileBrowserFlags_EnterNewFilename);
+    saveFileDialog->SetTitle("Save scene file");
 
     // Setup Platform/Renderer bindings
     ImGui_ImplGlfw_InitForOpenGL(window, true);
@@ -120,10 +130,12 @@ void VSUI::renderEditorGUI()
             if (ImGui::MenuItem("Load model...", "Ctrl+O"))
             {
                 // TODO: Open File dialog
+                loadFileDialog->Open();
             }
             if (ImGui::MenuItem("Save model...", "Ctrl+S"))
             {
                 // TODO: Open File dialog
+                saveFileDialog->Open();
             }
             ImGui::EndMenu();
         }
@@ -156,6 +168,20 @@ void VSUI::renderEditorGUI()
     ImGui::BeginChild("Scrolling");
     ImGui::Text("%s", uiState->logStream.str().c_str());
     ImGui::EndChild();
+
+    // Handle file browsers
+    loadFileDialog->Display();
+    if (loadFileDialog->HasSelected())
+    {
+        // TODO: Do something with filename: load scene
+        loadFileDialog->ClearSelected();
+    }
+    saveFileDialog->Display();
+    if (saveFileDialog->HasSelected())
+    {
+        // TODO: Save world to file
+        saveFileDialog->ClearSelected();
+    }
 }
 
 void VSUI::renderMainMenu()
@@ -170,7 +196,8 @@ void VSUI::renderMainMenu()
         "Voxelscape",
         0,
         ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoCollapse);
-    ImGui::Dummy(ImVec2(ImGui::GetIO().DisplaySize.x * 0.75F, ImGui::GetIO().DisplaySize.y * 0.05F));
+    ImGui::Dummy(
+        ImVec2(ImGui::GetIO().DisplaySize.x * 0.75F, ImGui::GetIO().DisplaySize.y * 0.05F));
     if (ImGui::Button("Start Game", ImVec2(ImGui::GetWindowContentRegionWidth(), 0.F)))
     {
         // TODO: Start Game
