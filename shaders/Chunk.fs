@@ -97,7 +97,7 @@ void main() {
     float shadowFactor = enableShadows ? raymarch(rayStart, lightDir) : 1.0;
 
     // ambient
-    float ambientStrength = 0.3;
+    float ambientStrength = 0.2;
     float occ = 1.0; // TODO enableAO ? calcAO(i.worldPosition, norm) : 1.0;
     vec3 ambient = occ * ambientStrength * lightColor;
 
