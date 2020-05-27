@@ -1,5 +1,4 @@
 #include "ui/vs_ui.h"
-#include <bits/types/FILE.h>
 #include <imgui.h>
 
 #include "core/vs_log.h"
