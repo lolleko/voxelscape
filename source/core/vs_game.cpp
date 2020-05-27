@@ -7,15 +7,12 @@
 
 #include "ui/vs_ui.h"
 #include "ui/vs_ui_state.h"
+#include "ui/vs_parser.h"
 
 #include "world/vs_world.h"
 #include "world/vs_chunk_manager.h"
 
 #include "world/generator/vs_heightmap.h"
-
-// TODO: Remove debugging includes
-#include <iostream>
-#include "core/vs_camera.h"
 
 void VSGame::initialize(VSApp* inApp)
 {
@@ -30,6 +27,7 @@ void VSGame::gameLoop()
         frameTimeTracker.startFrame();
 
         auto* UI = app->getUI();
+
         if (UI->getState()->bShouldSetEditorActive)
         {
             app->setEditorWorldActive();
@@ -48,6 +46,13 @@ void VSGame::gameLoop()
             world->getChunkManager()->setChunkDimensions(
                 UI->getState()->chunkSize, UI->getState()->chunkCount);
             UI->getMutableState()->bShouldUpdateChunks = false;
+        }
+
+        if (UI->getState()->bShouldSaveToFile)
+        {   
+            VSChunkManager::WorldData worldData = world->getChunkManager()->getData();
+            VSParser::writeToFile(worldData, UI->getState()->saveFilePath);
+            UI->getMutableState()->bShouldSaveToFile = false;
         }
 
         if (UI->getState()->bShouldGenerateHeightMap)
@@ -77,11 +82,6 @@ void VSGame::gameLoop()
         if (UI->getState()->bShouldResetEditor &&
             !world->getChunkManager()->shouldReinitializeChunks())
         {
-            std::cout << "Camera pitch " << world->getCamera()->getPitch() << std::endl;
-            std::cout << "Camera yaw " << world->getCamera()->getYaw() << std::endl;
-            std::cout << "Camera Position " << (world->getCamera()->getPosition()).x << ", "
-                      << (world->getCamera()->getPosition()).y << ", "
-                      << (world->getCamera()->getPosition()).z << std::endl;
             // TODO: Clear world
             // world->getChunkManager()->clearBlocks();
             const auto worldSize = world->getChunkManager()->getWorldSize();

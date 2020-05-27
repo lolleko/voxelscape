@@ -1,4 +1,5 @@
 #include "world/vs_chunk_manager.h"
+#include <bits/stdint-uintn.h>
 
 #include <algorithm>
 #include <atomic>
@@ -7,9 +8,11 @@
 #include <numeric>
 #include <array>
 #include <glm/gtx/norm.hpp>
+#include <vector>
 
 #include "renderer/vs_modelloader.h"
 
+#include "world/vs_block.h"
 #include "world/vs_world.h"
 #include "core/vs_camera.h"
 #include "core/vs_app.h"
@@ -103,6 +106,11 @@ void VSChunkManager::setBlock(glm::ivec3 location, VSBlockID blockID)
 glm::ivec3 VSChunkManager::getWorldSize() const
 {
     return worldSize;
+}
+
+glm::ivec2 VSChunkManager::getChunkCount() const 
+{
+    return chunkCount;
 }
 
 void VSChunkManager::draw(VSWorld* world)
@@ -281,6 +289,38 @@ std::size_t VSChunkManager::getDrawCallCount() const
 bool VSChunkManager::shouldReinitializeChunks() const
 {
     return bShouldReinitializeChunks.load();
+}
+
+VSChunkManager::WorldData VSChunkManager::getData() const 
+{
+    VSChunkManager::WorldData worldData{};
+
+    worldData.chunkSize = this->getWorldSize();
+    worldData.chunkCount = this->getChunkCount();
+
+    // Write BlockIDs to vector
+    worldData.blocks.reserve(this->getChunkBlockCount() * this->getTotalChunkCount());
+    for (const auto chunk : this->chunks)
+    {
+        worldData.blocks.insert(worldData.blocks.end(), chunk->blocks.begin(), chunk->blocks.end());
+    }
+
+    return worldData;
+}
+
+void VSChunkManager::initFromData(const WorldData& data)
+{
+    this->setChunkDimensions(data.chunkSize, data.chunkCount);
+    this->initializeChunks();
+
+    // Set block data to chunks, TODO: add checks, this is potentially dangerous
+    uint32_t chunkSize = this->getChunkBlockCount();
+    auto iter = data.blocks.begin();
+    for (const auto chunk : this->chunks)
+    {
+        chunk->blocks = std::vector<VSBlockID>(iter, iter + chunkSize);
+        iter += chunkSize;
+    }
 }
 
 void VSChunkManager::initializeChunks()

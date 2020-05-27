@@ -1,3 +1,4 @@
+#include <filesystem>
 #include <glm/ext/vector_float4.hpp>
 #include <glm/ext/vector_float3.hpp>
 #include <glm/ext/vector_int3.hpp>
@@ -30,6 +31,10 @@ struct VSUIState
     bool bShouldSetEditorActive = false;
     bool bShouldResetEditor = false;
     bool bEditorActive = false;
+    bool bShouldLoadFromFile = false;
+    std::filesystem::path loadFilePath = "";
+    bool bShouldSaveToFile = false;
+    std::filesystem::path saveFilePath = "";
     int bSetBlockID = 1;
 
     // Menu Control flow

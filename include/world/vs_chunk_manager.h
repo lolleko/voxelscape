@@ -41,6 +41,14 @@ class VSChunkManager : public IVSDrawable
     };
 
 public:
+    // This struct is used for serialization (load/save)
+    struct WorldData
+    {
+        glm::vec3 chunkSize;
+        glm::vec2 chunkCount;
+        std::vector<VSBlockID> blocks;
+    };
+    
     VSChunkManager();
 
     VSBlockID getBlock(glm::ivec3 location) const;
@@ -68,6 +76,11 @@ public:
     std::size_t getDrawCallCount() const;
 
     bool shouldReinitializeChunks() const;
+
+    // This method is used to retrieve the data to save a scene.
+    [[nodiscard]] WorldData getData() const;
+
+    void initFromData(const WorldData& data);
 
 private:
     std::vector<VSChunk*> chunks;
@@ -97,6 +110,8 @@ private:
     GLuint shadowTexture;
 
     void initializeChunks();
+
+    glm::ivec2 getChunkCount() const;
 
     VSChunk* createChunk() const;
 

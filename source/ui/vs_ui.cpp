@@ -7,6 +7,8 @@
 
 #include "ui/vs_ui_state.h"
 
+#include <iostream>
+
 VSUI::VSUI()
     : uiState(new VSUIState){};
 
@@ -42,7 +44,7 @@ void VSUI::setup(const char* glsl_version, GLFWwindow* window)
     loadFileDialog = new ImGui::FileBrowser();
     loadFileDialog->SetTitle("Load scene file");
     // TODO: Define file ending
-    loadFileDialog->SetTypeFilters({".h", ".cpp"});
+    loadFileDialog->SetTypeFilters({".json", ".h", ".cpp"});
     saveFileDialog = new ImGui::FileBrowser(ImGuiFileBrowserFlags_EnterNewFilename);
     saveFileDialog->SetTitle("Save scene file");
 
@@ -176,12 +178,18 @@ void VSUI::renderEditorGUI()
     if (loadFileDialog->HasSelected())
     {
         // TODO: Do something with filename: load scene
+        std::cout << loadFileDialog->GetSelected().c_str() << std::endl;
+        uiState->loadFilePath = loadFileDialog->GetSelected();
+        uiState->bShouldLoadFromFile = true;
         loadFileDialog->ClearSelected();
     }
     saveFileDialog->Display();
     if (saveFileDialog->HasSelected())
     {
         // TODO: Save world to file
+        std::cout << saveFileDialog->GetSelected().c_str() << std::endl;
+        uiState->saveFilePath = saveFileDialog->GetSelected();
+        uiState->bShouldSaveToFile = true;
         saveFileDialog->ClearSelected();
     }
 }
