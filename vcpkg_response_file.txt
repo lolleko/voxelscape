@@ -5,3 +5,4 @@ imgui
 spdlog
 assimp
 stb
+nlohmann-json
