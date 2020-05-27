@@ -205,6 +205,7 @@ void VSUI::renderMainMenu()
         // TODO: Start Game
         uiState->bShouldSetGameActive = true;
         uiState->bEditorActive = false;
+        uiState->bMenuActive = false;
     }
     if (ImGui::Button("Start Editor", ImVec2(ImGui::GetWindowContentRegionWidth(), 0.F)))
     {
@@ -212,6 +213,7 @@ void VSUI::renderMainMenu()
         uiState->bShouldResetEditor = true;
         uiState->bShouldSetEditorActive = true;
         uiState->bEditorActive = true;
+        uiState->bMenuActive = false;
     }
     ImGui::End();
     ImGui::PopFont();
