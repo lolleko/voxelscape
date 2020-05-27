@@ -42,6 +42,8 @@ public:
 
     [[nodiscard]] glm::vec3 getDirectLightPos() const;
 
+    void setDirectLightPos(const glm::vec3& newDirectLightPos);
+
     [[nodiscard]] glm::vec3 getDirectLightColor() const;
 
     [[nodiscard]] VSChunkManager* getChunkManager() const;
@@ -57,4 +59,6 @@ private:
     VSDebugDraw* debugDraw;
 
     std::set<IVSDrawable*> drawables;
+
+    glm::vec3 directLightPos{500.f, 1000.f, 500.f};
 };

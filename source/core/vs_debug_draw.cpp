@@ -207,7 +207,7 @@ void VSDebugDraw::draw(VSWorld* world)
     glBufferData(
         GL_ARRAY_BUFFER,
         vertexData.size() * sizeof(VSDebugVertexData),
-        &vertexData[0],
+        vertexData.data(),
         GL_STATIC_DRAW);
 
     for (const auto& primitive : primitives)

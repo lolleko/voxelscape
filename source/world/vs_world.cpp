@@ -153,12 +153,17 @@ glm::ivec3 VSWorld::intersectRayWithBlock(glm::vec3 rayOrigin, glm::vec3 rayDire
 
 glm::vec3 VSWorld::getDirectLightPos() const
 {
-    return {10000.F, 10000.F, 20000.F};
+    return directLightPos;
+}
+
+void VSWorld::setDirectLightPos(const glm::vec3& newDirectLightPos)
+{
+    directLightPos = newDirectLightPos;
 }
 
 glm::vec3 VSWorld::getDirectLightColor() const
 {
-    return glm::vec3(1.F, 1.F, 1.F);
+    return {1.F, 1.F, 1.F};
 }
 
 VSChunkManager* VSWorld::getChunkManager() const

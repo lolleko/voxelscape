@@ -6,10 +6,10 @@
 #include <cstdint>
 #include <numeric>
 #include <array>
+#include <glm/gtx/norm.hpp>
 
 #include "renderer/vs_modelloader.h"
 
-#include "world/vs_block.h"
 #include "world/vs_world.h"
 #include "core/vs_camera.h"
 #include "core/vs_app.h"
@@ -68,7 +68,6 @@ VSChunkManager::VSChunkManager()
 
     std::vector<glm::vec3> blockColors = {
         {0.F, 0.F, 0.F}, {0.3F, 0.3F, 0.3F}, {0.01F, 0.5F, 0.15F}};
-    blockColors.reserve(256);
 
     chunkShader.uniforms().setVec3Array("blockColors", blockColors);
 }
@@ -117,7 +116,7 @@ void VSChunkManager::draw(VSWorld* world)
     {
         if (VSApp::getInstance()->getUI()->getState()->bShouldDrawChunkBorder)
         {
-            const auto chunkPos = glm::vec3(chunk->modelMatrix[3]);
+            const auto chunkPos = chunk->chunkLocation;
             world->getDebugDraw()->drawBox(
                 {chunkPos - glm::vec3(chunkSize / 2), chunkPos + glm::vec3(chunkSize / 2)},
                 {255, 0, 0});
@@ -131,14 +130,16 @@ void VSChunkManager::draw(VSWorld* world)
         }
         frozenVPMatrix = VP;
 
-        const auto chunkCenterInP = VP * glm::vec4(chunk->modelMatrix[3]);
+        const auto chunkCenterInP = VP * glm::vec4(chunk->chunkLocation, 1.f);
 
         const auto horizontalRadius =
             glm::sqrt(chunkSize.x * chunkSize.x + chunkSize.z * chunkSize.z);
 
-        if ((chunkCenterInP.z - horizontalRadius) < world->getCamera()->getZFar() * 1.F &&
-            (chunkCenterInP.z + horizontalRadius) > world->getCamera()->getZNear() * 1.F &&
-            (glm::abs(chunkCenterInP.x) - horizontalRadius) < (chunkCenterInP.w * 1.F) &&
+        // (chunkCenterInP.z - horizontalRadius) < world->getCamera()->getZFar() * 1.F &&
+        //            (chunkCenterInP.z + horizontalRadius) > world->getCamera()->getZNear() * 1.F
+        //            &&
+
+        if ((glm::abs(chunkCenterInP.x) - horizontalRadius) < (chunkCenterInP.w * 1.F) &&
             (glm::abs(chunkCenterInP.y) - chunkSize.y) < (chunkCenterInP.w * 1.F))
         {
             for (std::size_t i = 0; i < chunk->visibleBlockInfos.size(); i++)
@@ -149,12 +150,18 @@ void VSChunkManager::draw(VSWorld* world)
             visibleChunks.push_back(chunk);
         }
     }
+    glActiveTexture(GL_TEXTURE0);
+    glBindTexture(GL_TEXTURE_3D, shadowTexture);
 
     chunkShader.uniforms()
         .setVec3("lightPos", world->getDirectLightPos())
         .setVec3("lightColor", world->getDirectLightColor())
         .setVec3("viewPos", world->getCamera()->getPosition())
-        .setMat4("VP", world->getCamera()->getVPMatrix());
+        .setMat4("VP", world->getCamera()->getVPMatrix())
+        .setUVec3("worldSize", getWorldSize())
+        .setInt("shadowTexture", 0)
+        .setBool("enableShadows", VSApp::getInstance()->getUI()->getState()->bAreShadowsEnabled)
+        .setBool("enableAO", VSApp::getInstance()->getUI()->getState()->bIsAmbientOcclusionEnabled);
 
     drawCallCount = 0;
 
@@ -206,6 +213,15 @@ void VSChunkManager::updateChunks()
     {
         // to avoid stutter we only update one chunk per frame
         if (updateVisibleBlocks(chunkIndex))
+        {
+            return;
+        }
+    }
+    for (std::size_t chunkIndex = 0; chunkIndex < getTotalChunkCount(); ++chunkIndex)
+    {
+        // if we have no more chunk updates
+        // start updating shadwos
+        if (updateShadows(chunkIndex))
         {
             return;
         }
@@ -284,17 +300,38 @@ void VSChunkManager::initializeChunks()
             for (int x = 0; x < chunkCount.x; x++)
             {
                 VSChunk* newChunk = createChunk();
-                newChunk->modelMatrix = glm::translate(
-                    newChunk->modelMatrix,
+                newChunk->chunkLocation =
                     glm::vec3(
                         chunkSize.x * (static_cast<float>(x) + 0.5F),
                         0.F,
                         chunkSize.z * (static_cast<float>(y) + 0.5F)) -
-                        (glm::vec3(chunkSize.x * chunkCount.x, 0.F, chunkSize.z * chunkCount.y) /
-                         2.F));
+                    glm::vec3(chunkSize.x * chunkCount.x, 0.F, chunkSize.z * chunkCount.y) / 2.F;
                 chunks[y * chunkCount.x + x] = newChunk;
             }
         }
+
+        glGenTextures(1, &shadowTexture);
+        glBindTexture(GL_TEXTURE_3D, shadowTexture);
+        glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MAX_LEVEL, 0);
+        glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_BASE_LEVEL, 0);
+        glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
+        glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
+        glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_BORDER);
+        glm::vec3 borderColor(std::numeric_limits<float>::max());
+        glTexParameterfv(GL_TEXTURE_3D, GL_TEXTURE_BORDER_COLOR, &borderColor[0]);
+        glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+        glTexParameteri(GL_TEXTURE_3D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+        glTexImage3D(
+            GL_TEXTURE_3D,
+            0,
+            GL_R16F,
+            worldSize.x,
+            worldSize.y,
+            worldSize.z,
+            0,
+            GL_RED,
+            GL_FLOAT,
+            nullptr);
     }
 }
 
@@ -312,6 +349,96 @@ void VSChunkManager::deleteChunk(VSChunk* chunk)
     delete chunk;
 }
 
+bool VSChunkManager::updateShadows(std::size_t chunkIndex)
+{
+    auto* const chunk = chunks[chunkIndex];
+    bool expectedShadows = true;
+    bool expectedDirty = false;
+    // check if dirty after checking for shadows to avoid race conditions
+    if (chunk->bShouldRebuildShadows.compare_exchange_weak(expectedShadows, false) &&
+        chunk->bIsDirty.compare_exchange_weak(expectedDirty, false))
+    {
+        glBindTexture(GL_TEXTURE_3D, shadowTexture);
+
+        const auto chunkCoords = chunkIndexToChunkCoordinates(chunkIndex);
+
+        std::set<VSChunk*> chunksToCheck;
+
+        for (int x = glm::max(chunkCoords.x - 2, 0); x < glm::min(chunkCoords.x + 2, chunkCount.x);
+             x++)
+        {
+            for (int y = glm::max(chunkCoords.y - 2, 0);
+                 y < glm::min(chunkCoords.y + 2, chunkCount.y);
+                 y++)
+            {
+                chunksToCheck.insert(chunks[chunkCoordinatesToChunkIndex({x, y})]);
+            }
+        }
+
+        const auto chunkBlockCount = getChunkBlockCount();
+
+        std::vector<float> chunkDistanceField;
+        chunkDistanceField.resize(chunkBlockCount);
+
+#pragma omp parallel for
+        for (int blockIndex = 0; blockIndex < static_cast<int>(chunkBlockCount); blockIndex++)
+        {
+            glm::ivec3 blockCordinates = blockIndexToBlockCoordinates(blockIndex);
+
+            glm::vec blockLocationWorldSpace = chunk->chunkLocation + glm::vec3(blockCordinates) +
+                                               glm::vec3(0.5F) - glm::vec3(chunkSize) / 2.F;
+
+            float distance = std::numeric_limits<float>::max();
+            if (chunk->blocks[blockIndex] != VS_DEFAULT_BLOCK_ID)
+            {
+                distance = 0.F;
+            }
+            else
+            {
+                float distanceSquared = std::numeric_limits<float>::max();
+                for (auto* neighbourChunk : chunksToCheck)
+                {
+                    for (const auto& visibleBlockInfo : neighbourChunk->visibleBlockInfos)
+                    {
+                        for (const auto& visibleBlock : visibleBlockInfo)
+                        {
+                            const auto newDistanceSquared = glm::length2(
+                                visibleBlock.locationWorldSpace - blockLocationWorldSpace);
+                            if (newDistanceSquared < distanceSquared)
+                            {
+                                distanceSquared = newDistanceSquared;
+                            }
+                        }
+                    }
+                }
+
+                distance = glm::sqrt(distanceSquared);
+            }
+
+            chunkDistanceField[blockIndex] = distance;
+        }
+
+        const auto textureBlockLocation = chunk->chunkLocation +
+                                          (glm::vec3(worldSize.x, 0.F, worldSize.z) / 2.F) -
+                                          (glm::vec3(chunkSize.x, 0.F, chunkSize.z) / 2.F);
+
+        glTexSubImage3D(
+            GL_TEXTURE_3D,
+            0,
+            textureBlockLocation.x,
+            textureBlockLocation.y,
+            textureBlockLocation.z,
+            chunkSize.x,
+            chunkSize.y,
+            chunkSize.z,
+            GL_RED,
+            GL_FLOAT,
+            chunkDistanceField.data());
+        return true;
+    }
+    return false;
+}
+
 bool VSChunkManager::updateVisibleBlocks(std::size_t chunkIndex)
 {
     auto* const chunk = chunks[chunkIndex];
@@ -322,23 +449,30 @@ bool VSChunkManager::updateVisibleBlocks(std::size_t chunkIndex)
         {
             info.clear();
         }
-        for (std::size_t blockIndex = 0; blockIndex < getChunkBlockCount(); blockIndex++)
+
+        const auto chunkBlockCount = getChunkBlockCount();
+
+#pragma omp parallel for
+        for (int blockIndex = 0; blockIndex < static_cast<int>(chunkBlockCount); blockIndex++)
         {
             if (chunk->blocks[blockIndex] != VS_DEFAULT_BLOCK_ID)
             {
                 const auto blockType = isBlockVisible(chunkIndex, blockIndex);
                 if (blockType != 0)
                 {
-                    const auto offset = chunk->modelMatrix *
-                                        (glm::vec4(
-                                            glm::vec3(blockIndexToBlockCoordinates(blockIndex)) +
-                                                glm::vec3(0.5F) - glm::vec3(chunkSize) / 2.F,
-                                            1.F));
-                    chunk->visibleBlockInfos[blockType].emplace_back(
-                        VSChunk::VSVisibleBlockInfo{offset, chunk->blocks[blockIndex]});
+                    const auto offset = chunk->chunkLocation +
+                                        glm::vec3(blockIndexToBlockCoordinates(blockIndex)) +
+                                        glm::vec3(0.5F) - glm::vec3(chunkSize) / 2.F;
+
+                    const auto blockInfo =
+                        VSChunk::VSVisibleBlockInfo{offset, chunk->blocks[blockIndex]};
+
+#pragma omp critical
+                    chunk->visibleBlockInfos[blockType].emplace_back(blockInfo);
                 }
             }
         }
+        chunk->bShouldRebuildShadows = true;
         return true;
     }
     return false;

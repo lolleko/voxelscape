@@ -14,6 +14,7 @@
 #include "core/vs_dummycameracontroller.h"
 #include "core/vs_camera.h"
 #include "core/vs_game.h"
+#include "core/vs_debug_draw.h"
 
 #include "world/vs_chunk_manager.h"
 
@@ -135,11 +136,14 @@ int VSApp::initializeGLFW()
 #else
     // GL 3.0 + GLSL 130
     glslVersion = "#version 130";
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 0);
-    // glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);  // 3.2+ only
+    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);  // 3.2+ only
     glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);  // 3.0+ only
 #endif
+
+    // anti Aliasing
+    glfwWindowHint(GLFW_SAMPLES, 8);
 
     // Create window with graphics context
     const auto width = 1280;
@@ -248,6 +252,13 @@ int VSApp::mainLoop()
         UI->getMutableState()->visibleBlockCount = activeWorld->getChunkManager()->getVisibleBlockCount();
         UI->getMutableState()->drawnBlockCount = activeWorld->getChunkManager()->getDrawnBlockCount();
         UI->getMutableState()->drawCallCount = activeWorld->getChunkManager()->getDrawCallCount();
+
+        world->setDirectLightPos(UI->getState()->directLightPos);
+
+        // TODO add option for day night
+        //world->setDirectLightPos(glm::vec3(world->getChunkManager()->getWorldSize() * 2) * glm::vec3(cos(glfwGetTime() / 10.f),  sin(glfwGetTime() / 10.f), 0.f));
+
+        world->getDebugDraw()->drawSphere(world->getDirectLightPos(), 10.f, {255, 255, 255});
 
         auto display_w = 0;
         auto display_h = 0;

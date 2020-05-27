@@ -50,6 +50,12 @@ public:
             return *this;
         }
 
+        VSShaderUniformProxy& setUVec3(const std::string& name, glm::uvec3 value)
+        {
+            glUniform3uiv(glGetUniformLocation(ID, name.c_str()), 1, &value[0]);
+            return *this;
+        }
+
         VSShaderUniformProxy& setMat4(const std::string& name, glm::mat4 value)
         {
             glUniformMatrix4fv(glGetUniformLocation(ID, name.c_str()), 1, GL_FALSE, &value[0][0]);
@@ -59,7 +65,7 @@ public:
         VSShaderUniformProxy&
         setVec3Array(const std::string& name, const std::vector<glm::vec3>& values)
         {
-            glUniform3fv(glGetUniformLocation(ID, name.c_str()), 256, &values[0][0]);
+            glUniform3fv(glGetUniformLocation(ID, name.c_str()), values.size(), &values[0][0]);
             return *this;
         }
 

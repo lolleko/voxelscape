@@ -1,4 +1,5 @@
 #include <glm/ext/vector_float4.hpp>
+#include <glm/ext/vector_float3.hpp>
 #include <glm/ext/vector_int3.hpp>
 #include <glm/ext/vector_int2.hpp>
 #include <sstream>
@@ -16,11 +17,14 @@ struct VSUIState
     
     int activeBlockCount = 0;
     bool bShouldFreezeFrustum = false;
+    bool bAreShadowsEnabled = true;
+    bool bIsAmbientOcclusionEnabled = true;
     int totalBlockCount = 0;
     int visibleBlockCount = 0;
     int drawnBlockCount = 0;
     int drawCallCount = 0;
     std::ostringstream logStream;
+    glm::vec3 directLightPos = {500.f, 1000.f, 500.f};
 
     // Editor Control flow
     bool bShouldSetEditorActive = false;

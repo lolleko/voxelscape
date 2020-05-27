@@ -6,13 +6,13 @@ set(CMAKE_CXX_VISIBILITY_PRESET hidden)
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS 1)
 
-set(CMAKE_CXX_FLAGS_RELEASE "-O3")
-
 if (UNIX)
   set(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} -Wall -Wextra -Werror")
+  set(CMAKE_CXX_FLAGS_RELEASE "-O3")
 endif()
 if ( MSVC )
   #set(CMAKE_CXX_FLAGS  "${CMAKE_CXX_FLAGS} /Wall /WX")
+  set(CMAKE_CXX_FLAGS_RELEASE "/O3 /MD")
 endif()
 
 if(DEFINED ENV{VCPKG_INSTALLATION_ROOT} AND NOT DEFINED CMAKE_TOOLCHAIN_FILE)
@@ -34,6 +34,11 @@ set_target_properties("${CMAKE_PROJECT_NAME}" PROPERTIES
   CXX_STANDARD 17 
   OUTPUT_NAME "${CMAKE_PROJECT_NAME}"
 )
+
+find_package(OpenMP REQUIRED)
+if(OpenMP_CXX_FOUND)
+    target_link_libraries("${CMAKE_PROJECT_NAME}" PRIVATE ${OpenMP_CXX_LIBRARIES})
+endif()
 
 find_package(glad REQUIRED)
 target_link_libraries("${CMAKE_PROJECT_NAME}" PRIVATE glad::glad)
@@ -77,10 +82,10 @@ find_package(nlohmann_json 3.2.0 REQUIRED)
 target_link_libraries("${CMAKE_PROJECT_NAME}" PRIVATE nlohmann_json::nlohmann_json)
 
 # Resources
-add_custom_command(TARGET "${CMAKE_PROJECT_NAME}" PRE_BUILD COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_SOURCE_DIR}/shaders/ ${CMAKE_BINARY_DIR}/shaders)
+add_custom_command(TARGET "${CMAKE_PROJECT_NAME}" PRE_BUILD COMMAND ${CMAKE_COMMAND} -E create_symlink  ${CMAKE_SOURCE_DIR}/shaders/ ${CMAKE_BINARY_DIR}/shaders)
 
-add_custom_command(TARGET "${CMAKE_PROJECT_NAME}" PRE_BUILD COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_SOURCE_DIR}/resources/ ${CMAKE_BINARY_DIR}/resources)
+add_custom_command(TARGET "${CMAKE_PROJECT_NAME}" PRE_BUILD COMMAND ${CMAKE_COMMAND} -E create_symlink  ${CMAKE_SOURCE_DIR}/textures/ ${CMAKE_BINARY_DIR}/textures)
 
-add_custom_command(TARGET "${CMAKE_PROJECT_NAME}" PRE_BUILD COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_SOURCE_DIR}/textures/ ${CMAKE_BINARY_DIR}/textures)
+add_custom_command(TARGET "${CMAKE_PROJECT_NAME}" PRE_BUILD COMMAND ${CMAKE_COMMAND} -E create_symlink ${CMAKE_SOURCE_DIR}/resources/ ${CMAKE_BINARY_DIR}/resources)
 
-add_custom_command(TARGET "${CMAKE_PROJECT_NAME}" PRE_BUILD COMMAND ${CMAKE_COMMAND} -E copy_directory ${CMAKE_SOURCE_DIR}/models/ ${CMAKE_BINARY_DIR}/models)
+add_custom_command(TARGET "${CMAKE_PROJECT_NAME}" PRE_BUILD COMMAND ${CMAKE_COMMAND} -E create_symlink  ${CMAKE_SOURCE_DIR}/models/ ${CMAKE_BINARY_DIR}/models)
