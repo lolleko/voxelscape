@@ -158,7 +158,9 @@ void VSChunkManager::draw(VSWorld* world)
         .setVec3("viewPos", world->getCamera()->getPosition())
         .setMat4("VP", world->getCamera()->getVPMatrix())
         .setUVec3("worldSize", getWorldSize())
-        .setInt("shadowTexture", 0);
+        .setInt("shadowTexture", 0)
+        .setBool("enableShadows", VSApp::getInstance()->getUI()->getState()->bAreShadowsEnabled)
+        .setBool("enableAO", VSApp::getInstance()->getUI()->getState()->bIsAmbientOcclusionEnabled);
 
     drawCallCount = 0;
 

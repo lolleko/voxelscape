@@ -14,6 +14,8 @@ struct VSUIState
     bool bShouldUpdateChunks = false;
     bool bShouldGenerateHeightMap = false;
     bool bShouldFreezeFrustum = false;
+    bool bAreShadowsEnabled = true;
+    bool bIsAmbientOcclusionEnabled = true;
     int totalBlockCount = 0;
     int visibleBlockCount = 0;
     int drawnBlockCount = 0;

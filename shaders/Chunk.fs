@@ -19,11 +19,12 @@ uniform uvec3 worldSize;
 
 uniform sampler3D shadowTexture;
 
+uniform bool enableShadows;
+uniform bool enableAO;
+
 vec3 worldSizeHalf = worldSize / 2u;
 
-float map(vec3 pos) {
-    // WIP
-
+float map(in vec3 pos) {
     vec3 shadowTexCoord = (pos + worldSizeHalf) / vec3(worldSize);
     float distance = texture(shadowTexture, shadowTexCoord).r;
 
@@ -35,9 +36,10 @@ float map(vec3 pos) {
     //return float(distance -1.0 - min(sdBox(pos - ivec3(pos) + 0.5), -0.999);
 }
 
-float raymarch(vec3 ro, vec3 rd) {
+// https://www.shadertoy.com/view/lsKcDD
+float raymarch(in vec3 ro, in vec3 rd) {
     float res = 1.0;
-    float ph = 1e30;
+    float ph = 1e20;
 
     const float mint = 0.001;
     float t = mint;
@@ -63,6 +65,20 @@ float raymarch(vec3 ro, vec3 rd) {
     return clamp(res, 0.0, 1.0);
 }
 
+float calcAO( in vec3 pos, in vec3 nor )
+{
+	float occ = 0.0;
+    float sca = 1.0;
+    for( int i=0; i<5; i++ )
+    {
+        float h = 0.3 + 0.3*float(i);
+        float d = map( pos + h*nor );
+        occ += (h-d)*sca;
+        sca *= 0.5;
+    }
+    return clamp( 1.0 - 1.5 * occ, 0.0, 1.0 );    
+}
+
 void main() {
     vec3 norm = normalize(i.normal);
 
@@ -78,11 +94,12 @@ void main() {
 
     vec3 lightDir = normalize(lightPos - i.worldPosition);
 
-    float shadowFactor = raymarch(rayStart, lightDir);
+    float shadowFactor = enableShadows ? raymarch(rayStart, lightDir) : 1.0;
 
     // ambient
-    float ambientStrength = 0.1;
-    vec3 ambient = ambientStrength * lightColor;
+    float ambientStrength = 0.3;
+    float occ = 1.0; // TODO enableAO ? calcAO(i.worldPosition, norm) : 1.0;
+    vec3 ambient = occ * ambientStrength * lightColor;
 
     float diff = max(dot(norm, lightDir), 0.0);
     vec3 diffuse = diff * lightColor;
@@ -96,6 +113,8 @@ void main() {
     vec3 result = (ambient + shadowFactor * (diffuse + specular)) * i.color;
 
     outColor = vec4(result, 1.0);
+
+    //outColor = vec4(occ);
 
     //outColor = vec4(vec3(i.worldPosition.x + worldSizeHalf.x, i.worldPosition.y + worldSizeHalf.y, i.worldPosition.z + worldSizeHalf.z) / worldSize, 1.0);
 
