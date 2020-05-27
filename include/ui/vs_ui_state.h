@@ -12,10 +12,22 @@ struct VSUIState
     glm::ivec2 chunkCount = {2, 2};
     bool bShouldUpdateChunks = false;
     bool bShouldGenerateHeightMap = false;
+    bool bShouldSetGameActive = false;
+    
+    int activeBlockCount = 0;
     bool bShouldFreezeFrustum = false;
     int totalBlockCount = 0;
     int visibleBlockCount = 0;
     int drawnBlockCount = 0;
     int drawCallCount = 0;
     std::ostringstream logStream;
+
+    // Editor Control flow
+    bool bShouldSetEditorActive = false;
+    bool bShouldResetEditor = false;
+    bool bEditorActive = false;
+    int bSetBlockID = 1;
+
+    // Menu Control flow
+    bool bMenuActive = true;
 };

@@ -13,6 +13,7 @@ public:
     void initialize(VSApp* inApp);
 
     void gameLoop();
+    void handleEditor();
 
     void quit();
 
