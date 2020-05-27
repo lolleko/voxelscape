@@ -20,18 +20,14 @@
 void VSGame::initialize(VSApp* inApp)
 {
     app = inApp;
+    frameTimeTracker.limitFps(120);
 }
 
 void VSGame::gameLoop()
 {
     while (!bShouldQuit)
     {
-        auto frameStartTime = std::chrono::high_resolution_clock::now();
-        const std::chrono::duration<float> deltaDurationSeconds =
-            frameStartTime - lastFrameStartTime;
-
-        deltaTime = deltaDurationSeconds.count();
-        lastFrameStartTime = frameStartTime;
+        frameTimeTracker.startFrame();
 
         auto* UI = app->getUI();
         if (UI->getState()->bShouldSetEditorActive)
@@ -101,17 +97,10 @@ void VSGame::gameLoop()
 
         // TODO dont pass window as param make abstract input more
         // to make thread separation clearer
-        world->getCameraController()->processKeyboardInput(app->getWindow(), deltaTime);
+        world->getCameraController()->processKeyboardInput(
+            app->getWindow(), frameTimeTracker.getDeltaSeconds());
 
-        // Limit game update rate to around 120 fps
-        const auto frameEndTime = std::chrono::high_resolution_clock::now();
-        constexpr auto minimumFrameDuration = std::chrono::nanoseconds(1000000000 / 120);
-        const auto actualFrameDuration = frameEndTime - frameStartTime;
-        if (actualFrameDuration < minimumFrameDuration)
-        {
-            const auto sleepDuration = minimumFrameDuration - actualFrameDuration;
-            std::this_thread::sleep_for(sleepDuration);
-        }
+        frameTimeTracker.endFrame();
     }
 }
 

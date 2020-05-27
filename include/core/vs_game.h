@@ -3,6 +3,8 @@
 #include <atomic>
 #include <chrono>
 
+#include "core/vs_frame_time_tracker.h"
+
 class VSApp;
 
 class VSGame
@@ -18,11 +20,7 @@ public:
 private:
     VSApp* app;
 
-    std::chrono::time_point<std::chrono::high_resolution_clock, std::chrono::nanoseconds>
-        lastFrameStartTime;
-
-    /** Delta time in seconds */
-    float deltaTime;
+    VSFrameTimeTracker frameTimeTracker;
 
     std::atomic<bool> bShouldQuit;
 };
