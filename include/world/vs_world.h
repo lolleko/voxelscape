@@ -38,7 +38,7 @@ public:
      * coordinates before returning the intersection. For now we return the block coordinates before
      * the intersection to place a new block in the editor.
      */
-    [[nodiscard]] glm::ivec3 intersectRayWithBlock(glm::vec3 ray_o, glm::vec3 ray_d);
+    [[nodiscard]] glm::ivec3 intersectRayWithBlock(glm::vec3 rayOrigin, glm::vec3 rayDirection);
 
     [[nodiscard]] glm::vec3 getDirectLightPos() const;
 

@@ -63,44 +63,44 @@ void VSWorld::setCameraController(VSCameraController* newCameraController)
     cameraController = newCameraController;
 }
 
-glm::ivec3 VSWorld::intersectRayWithBlock(glm::vec3 ray_o, glm::vec3 ray_d)
+glm::ivec3 VSWorld::intersectRayWithBlock(glm::vec3 rayOrigin, glm::vec3 rayDirection)
 {
     // Map to block coordinates
-    ray_o += this->getChunkManager()->getWorldSize() / 2;
+    rayOrigin += this->getChunkManager()->getWorldSize() / 2;
 
-    ray_d = glm::normalize(ray_d);
+    rayDirection = glm::normalize(rayDirection);
     int i = 0;
     glm::ivec3 size = this->getChunkManager()->getWorldSize();
-    glm::ivec3 location(std::floor(ray_o.x), std::floor(ray_o.y), std::floor(ray_o.z));
+    glm::ivec3 location(std::floor(rayOrigin.x), std::floor(rayOrigin.y), std::floor(rayOrigin.z));
     glm::ivec3 previous(location);
 
     // Voxel traversal algorithm
     // Direction of increments
-    float stepX = (ray_d.x >= 0) ? 1 : -1;
-    float stepY = (ray_d.y >= 0) ? 1 : -1;
-    float stepZ = (ray_d.z >= 0) ? 1 : -1;
+    float stepX = (rayDirection.x >= 0) ? 1 : -1;
+    float stepY = (rayDirection.y >= 0) ? 1 : -1;
+    float stepZ = (rayDirection.z >= 0) ? 1 : -1;
 
     // Distance to nearest voxel boundaries
-    float next_voxel_x =
+    float nextVoxelX =
         location.x + stepX;  // times bin size if we ever decide to have different size than one
-    float next_voxel_y = location.y + stepY;
-    float next_voxel_z = location.z + stepZ;
+    float nextVoxelY = location.y + stepY;
+    float nextVoxelZ = location.z + stepZ;
 
     // The value of t at which the ray crosses the first vertical voxel boundary
     float tMaxX =
-        (ray_d.x != 0) ? (next_voxel_x - ray_o.x) / ray_d.x : std::numeric_limits<float>::max();
+        (rayDirection.x != 0) ? (nextVoxelX - rayOrigin.x) / rayDirection.x : std::numeric_limits<float>::max();
     float tMaxY =
-        (ray_d.y != 0) ? (next_voxel_y - ray_o.y) / ray_d.y : std::numeric_limits<float>::max();
+        (rayDirection.y != 0) ? (nextVoxelY - rayOrigin.y) / rayDirection.y : std::numeric_limits<float>::max();
     float tMaxZ =
-        (ray_d.z != 0) ? (next_voxel_z - ray_o.z) / ray_d.z : std::numeric_limits<float>::max();
+        (rayDirection.z != 0) ? (nextVoxelZ - rayOrigin.z) / rayDirection.z : std::numeric_limits<float>::max();
 
-    float tDeltaX = (ray_d.x != 0) ? stepX / ray_d.x : std::numeric_limits<float>::max();
-    float tDeltaY = (ray_d.y != 0) ? stepY / ray_d.y : std::numeric_limits<float>::max();
-    float tDeltaZ = (ray_d.z != 0) ? stepZ / ray_d.z : std::numeric_limits<float>::max();
+    float tDeltaX = (rayDirection.x != 0) ? stepX / rayDirection.x : std::numeric_limits<float>::max();
+    float tDeltaY = (rayDirection.y != 0) ? stepY / rayDirection.y : std::numeric_limits<float>::max();
+    float tDeltaZ = (rayDirection.z != 0) ? stepZ / rayDirection.z : std::numeric_limits<float>::max();
 
     while (i++ < 100)
     {
-        location = glm::ivec3(std::floor(ray_o.x), std::floor(ray_o.y), std::floor(ray_o.z));
+        location = glm::ivec3(std::floor(rayOrigin.x), std::floor(rayOrigin.y), std::floor(rayOrigin.z));
         if (location.x >= size.x || location.y >= size.y || location.z >= size.z)
         {
             // do nothing
@@ -124,12 +124,12 @@ glm::ivec3 VSWorld::intersectRayWithBlock(glm::vec3 ray_o, glm::vec3 ray_d)
         {
             if (tMaxX < tMaxZ)
             {
-                ray_o.x += stepX;
+                rayOrigin.x += stepX;
                 tMaxX += tDeltaX;
             }
             else
             {
-                ray_o.z += stepZ;
+                rayOrigin.z += stepZ;
                 tMaxZ += tDeltaZ;
             }
         }
@@ -137,12 +137,12 @@ glm::ivec3 VSWorld::intersectRayWithBlock(glm::vec3 ray_o, glm::vec3 ray_d)
         {
             if (tMaxY < tMaxZ)
             {
-                ray_o.y += stepY;
+                rayOrigin.y += stepY;
                 tMaxY += tDeltaY;
             }
             else
             {
-                ray_o.z += stepZ;
+                rayOrigin.z += stepZ;
                 tMaxZ += tDeltaZ;
             }
         }
