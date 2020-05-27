@@ -362,7 +362,7 @@ bool VSChunkManager::updateShadows(std::size_t chunkIndex)
 
         const auto chunkCoords = chunkIndexToChunkCoordinates(chunkIndex);
 
-        std::vector<VSChunk::VSVisibleBlockInfo> potentialShadowSourceBlocks;
+        std::set<VSChunk*> chunksToCheck;
 
         for (int x = glm::max(chunkCoords.x - 2, 0); x < glm::min(chunkCoords.x + 2, chunkCount.x);
              x++)
@@ -371,14 +371,7 @@ bool VSChunkManager::updateShadows(std::size_t chunkIndex)
                  y < glm::min(chunkCoords.y + 2, chunkCount.y);
                  y++)
             {
-                for (const auto& visibleBlockInfo :
-                     chunks[chunkCoordinatesToChunkIndex({x, y})]->visibleBlockInfos)
-                {
-                    potentialShadowSourceBlocks.insert(
-                        potentialShadowSourceBlocks.end(),
-                        visibleBlockInfo.begin(),
-                        visibleBlockInfo.end());
-                }
+                chunksToCheck.insert(chunks[chunkCoordinatesToChunkIndex({x, y})]);
             }
         }
 
@@ -390,30 +383,36 @@ bool VSChunkManager::updateShadows(std::size_t chunkIndex)
 #pragma omp parallel for
         for (int blockIndex = 0; blockIndex < static_cast<int>(chunkBlockCount); blockIndex++)
         {
-            float distance = std::numeric_limits<float>::max();
+            glm::ivec3 blockCordinates = blockIndexToBlockCoordinates(blockIndex);
 
-            glm::ivec3 blockCoordinates = blockIndexToBlockCoordinates(blockIndex);
-
-            glm::vec blockLocationWorldSpace = chunk->chunkLocation + glm::vec3(blockCoordinates) +
+            glm::vec blockLocationWorldSpace = chunk->chunkLocation + glm::vec3(blockCordinates) +
                                                glm::vec3(0.5F) - glm::vec3(chunkSize) / 2.F;
 
-            for (const auto& potentialShadowSourceBlock : potentialShadowSourceBlocks)
-            {
-                // https://iquilezles.org/www/articles/distfunctions/distfunctions.htm
-                constexpr auto bounds = glm::vec3(0.5f);
-                const auto direction =
-                    abs(blockLocationWorldSpace - potentialShadowSourceBlock.locationWorldSpace) -
-                        bounds;
-                const auto candidateDistance =
-                    glm::min(glm::max(direction.x, glm::max(direction.y, direction.z)), 0.F) +
-                    length(glm::max(direction, 0.F));
-
-                distance = glm::min(distance, candidateDistance);
-            }
-
+            float distance = std::numeric_limits<float>::max();
             if (chunk->blocks[blockIndex] != VS_DEFAULT_BLOCK_ID)
             {
-                distance = distance * -1.f;
+                distance = 0.F;
+            }
+            else
+            {
+                float distanceSquared = std::numeric_limits<float>::max();
+                for (auto* neighbourChunk : chunksToCheck)
+                {
+                    for (const auto& visibleBlockInfo : neighbourChunk->visibleBlockInfos)
+                    {
+                        for (const auto& visibleBlock : visibleBlockInfo)
+                        {
+                            const auto newDistanceSquared = glm::length2(
+                                visibleBlock.locationWorldSpace - blockLocationWorldSpace);
+                            if (newDistanceSquared < distanceSquared)
+                            {
+                                distanceSquared = newDistanceSquared;
+                            }
+                        }
+                    }
+                }
+
+                distance = glm::sqrt(distanceSquared);
             }
 
             chunkDistanceField[blockIndex] = distance;
