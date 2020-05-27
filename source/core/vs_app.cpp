@@ -9,6 +9,9 @@
 #include "core/vs_core.h"
 #include "core/vs_log.h"
 #include "core/vs_cameracontroller.h"
+// TODO: Remove and find better position to set camera cantroller
+#include "core/vs_rtscameracontroller.h"
+#include "core/vs_dummycameracontroller.h"
 #include "core/vs_camera.h"
 #include "core/vs_game.h"
 #include "core/vs_debug_draw.h"
@@ -17,6 +20,7 @@
 
 #include "ui/vs_ui.h"
 #include "ui/vs_ui_state.h"
+#include "world/vs_chunk_manager.h"
 #include "world/vs_world.h"
 #include "world/vs_skybox.h"
 
@@ -71,9 +75,33 @@ int VSApp::initialize()
     // auto monkeyModel = std::make_shared<VSModel>("monkey.obj");
 
     world = new VSWorld();
+    editorWorld = new VSWorld();
+    menuWorld = new VSWorld();
+    auto dummyController = new VSDummyCameraController();
+    menuWorld->setCameraController(dummyController);
 
     auto skybox = new VSSkybox();
     world->addDrawable(skybox);
+    editorWorld->addDrawable(skybox);
+    menuWorld->addDrawable(skybox);
+
+    // TODO: initialize editor world method, maybe in VSWorld?
+    const auto worldSize = editorWorld->getChunkManager()->getWorldSize();
+    for (int x = 0; x < worldSize.x; x++)
+    {
+        for (int z = 0; z < worldSize.z; z++)
+        {
+            editorWorld->getChunkManager()->setBlock({x, 0, z}, 1);
+        }
+    }
+    editorWorld->getCamera()->setPosition(glm::vec3(-50.F, -5.F, -50.F));
+    editorWorld->getCamera()->setPitchYaw(-10.F, 45.F);
+
+    // TODO: initialize menu world somewhere else, maybe in VSWorld?
+    // TODO: initiialize menu world
+
+    // Set menu world active initially
+    activeWorld = menuWorld;
 
     VSLog::Log(VSLog::Category::Core, VSLog::Level::info, "Successfully initialized logger");
 
@@ -134,21 +162,25 @@ int VSApp::initializeGLFW()
     glfwSetFramebufferSizeCallback(window, [](GLFWwindow* window, int width, int height) {
         glViewport(0, 0, width, height);
         auto* app = static_cast<VSApp*>(glfwGetWindowUserPointer(window));
-        app->getWorld()->getCameraController()->processFramebufferResize(window, width, height);
+        app->getActiveWorld()->getCameraController()->processFramebufferResize(
+            window, width, height);
     });
     glfwSetCursorPosCallback(window, [](GLFWwindow* window, double xpos, double ypos) {
         auto* app = static_cast<VSApp*>(glfwGetWindowUserPointer(window));
-        app->getWorld()->getCameraController()->processMouseMovement(window, xpos, ypos);
+        app->getActiveWorld()->getCameraController()->processMouseMovement(window, xpos, ypos);
     });
     glfwSetMouseButtonCallback(window, [](GLFWwindow* window, int button, int action, int mods) {
         auto* app = static_cast<VSApp*>(glfwGetWindowUserPointer(window));
-        app->getWorld()->getCameraController()->processMouseButton(window, button, action, mods);
+        app->getActiveWorld()->getCameraController()->processMouseButton(
+            window, button, action, mods);
     });
     glfwSetScrollCallback(window, [](GLFWwindow* window, double xoffset, double yoffset) {
         auto* app = static_cast<VSApp*>(glfwGetWindowUserPointer(window));
-        app->getWorld()->getCameraController()->processMouseScroll(window, xoffset, yoffset);
+        app->getActiveWorld()->getCameraController()->processMouseScroll(window, xoffset, yoffset);
     });
     glfwSwapInterval(1);
+    // Capture cursor for FPS Camera
+    // glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
     return 0;
 }
@@ -156,6 +188,26 @@ int VSApp::initializeGLFW()
 VSWorld* VSApp::getWorld() const
 {
     return world;
+}
+
+VSWorld* VSApp::getEditorWorld()
+{
+    return editorWorld;
+}
+
+void VSApp::setEditorWorldActive()
+{
+    activeWorld = editorWorld;
+}
+
+void VSApp::setGameWorldActive()
+{
+    activeWorld = world;
+}
+
+VSWorld* VSApp::getActiveWorld()
+{
+    return activeWorld;
 }
 
 VSUI* VSApp::getUI() const
@@ -196,10 +248,10 @@ int VSApp::mainLoop()
             glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
         }
 
-        UI->getMutableState()->totalBlockCount = world->getChunkManager()->getTotalBlockCount();
-        UI->getMutableState()->visibleBlockCount = world->getChunkManager()->getVisibleBlockCount();
-        UI->getMutableState()->drawnBlockCount = world->getChunkManager()->getDrawnBlockCount();
-        UI->getMutableState()->drawCallCount = world->getChunkManager()->getDrawCallCount();
+        UI->getMutableState()->totalBlockCount = activeWorld->getChunkManager()->getTotalBlockCount();
+        UI->getMutableState()->visibleBlockCount = activeWorld->getChunkManager()->getVisibleBlockCount();
+        UI->getMutableState()->drawnBlockCount = activeWorld->getChunkManager()->getDrawnBlockCount();
+        UI->getMutableState()->drawCallCount = activeWorld->getChunkManager()->getDrawCallCount();
 
         world->setDirectLightPos(UI->getState()->directLightPos);
 
@@ -221,10 +273,10 @@ int VSApp::mainLoop()
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         // update chunks
-        world->update();
+        activeWorld->update();
 
         // draw world
-        world->draw(world);
+        activeWorld->draw(activeWorld);
 
         // draw ui
         UI->draw();

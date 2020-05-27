@@ -1,5 +1,8 @@
 #pragma once
 
+#include <imgui.h>
+#include "ui/imgui_impl/imfilebrowser.h"
+
 struct VSUIState;
 struct GLFWwindow;
 
@@ -13,6 +16,8 @@ public:
     void cleanup();
 
     void render();
+    void renderEditorGUI();
+    void renderMainMenu();
 
     void draw();
 
@@ -22,4 +27,10 @@ public:
 
 private:
     VSUIState* uiState;
+
+    ImFont* menuFont;
+    ImFont* debugFont;
+
+    ImGui::FileBrowser* loadFileDialog;
+    ImGui::FileBrowser* saveFileDialog;
 };

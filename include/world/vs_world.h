@@ -1,5 +1,6 @@
 #pragma once
 
+#include <glm/fwd.hpp>
 #include <set>
 #include <memory>
 
@@ -28,6 +29,16 @@ public:
     [[nodiscard]] VSCamera* getCamera() const;
 
     [[nodiscard]] VSCameraController* getCameraController() const;
+
+    void setCameraController(VSCameraController* newCameraController);
+
+    /*
+     * Intersect ray with world to find the block coordinates where the ray first hits a block.
+     * Transforms input to block data to calculate intersections ans transforms back to world
+     * coordinates before returning the intersection. For now we return the block coordinates before
+     * the intersection to place a new block in the editor.
+     */
+    [[nodiscard]] glm::ivec3 intersectRayWithBlock(glm::vec3 rayOrigin, glm::vec3 rayDirection);
 
     [[nodiscard]] glm::vec3 getDirectLightPos() const;
 

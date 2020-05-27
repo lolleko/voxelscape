@@ -20,6 +20,11 @@ public:
 
     [[nodiscard]] VSWorld* getWorld() const;
 
+    VSWorld* getEditorWorld();
+    void setEditorWorldActive();
+    void setGameWorldActive();
+    VSWorld* getActiveWorld();
+
     [[nodiscard]] VSUI* getUI() const;
 
     [[nodiscard]] GLFWwindow* getWindow() const;
@@ -30,6 +35,9 @@ private:
     VSUI* UI;
 
     VSWorld* world;
+    VSWorld* editorWorld;
+    VSWorld* menuWorld;
+    VSWorld* activeWorld;
 
     VSGame* game;
 

@@ -1,6 +1,7 @@
 #pragma once
 
 #include <glad/glad.h>
+#include <atomic>
 #include <glm/gtx/component_wise.hpp>
 #include <glm/ext/matrix_transform.hpp>
 #include <vector>
@@ -65,6 +66,8 @@ public:
     std::size_t getTotalChunkCount() const;
 
     std::size_t getDrawCallCount() const;
+
+    bool shouldReinitializeChunks() const;
 
 private:
     std::vector<VSChunk*> chunks;
