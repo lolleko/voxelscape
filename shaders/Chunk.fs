@@ -43,15 +43,16 @@ float raymarch(in vec3 ro, in vec3 rd) {
 
     const float mint = 0.001;
     float t = mint;
-    const float maxt = 256.0;
+    const float maxt = 512.0;
 
-    const float k = 8.0;
+    const float k = 10.0;
 
-    for( int i=0; i<64; i++ )
+    for( int i=0; i<96; i++ )
     {
         float h = map(ro + rd * t);
 
-        float y = h*h/(2.0*ph);
+        //float y = h*h/(2.0*ph);
+        float y = (i==0) ? 0.0 : h*h/(2.0*ph);
         float d = sqrt(h*h-y*y);
         res = min( res, k*d/max(0.0,t-y) );
         ph = h;

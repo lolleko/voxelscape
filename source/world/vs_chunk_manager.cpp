@@ -134,7 +134,7 @@ void VSChunkManager::draw(VSWorld* world)
 
         const auto horizontalRadius =
             glm::sqrt(chunkSize.x * chunkSize.x + chunkSize.z * chunkSize.z);
-        
+
         if ((chunkCenterInP.z - horizontalRadius) < world->getCamera()->getZFar() * 1.F &&
             (chunkCenterInP.z + horizontalRadius) > world->getCamera()->getZNear() * 1.F &&
             (glm::abs(chunkCenterInP.x) - horizontalRadius) < (chunkCenterInP.w * 1.F) &&
@@ -360,17 +360,17 @@ bool VSChunkManager::updateShadows(std::size_t chunkIndex)
     if (chunk->bShouldRebuildShadows.compare_exchange_weak(expectedShadows, false) &&
         chunk->bIsDirty.compare_exchange_weak(expectedDirty, false))
     {
-        glBindTexture(GL_TEXTURE_3D, shadowTexture);
-
         const auto chunkCoords = chunkIndexToChunkCoordinates(chunkIndex);
 
         std::vector<VSChunk::VSVisibleBlockInfo> relevantVisibleBlocks;
 
-        for (int x = glm::max(chunkCoords.x - 2, 0); x < glm::min(chunkCoords.x + 2, chunkCount.x);
+        const std::int32_t chunkRadius = glm::min(1, 128 / static_cast<int>(glm::sqrt(chunkSize.x * chunkSize.x + chunkSize.z * chunkSize.z)));
+
+        for (int x = glm::max(chunkCoords.x - chunkRadius, 0); x <= glm::min(chunkCoords.x + chunkRadius, chunkCount.x - 1);
              x++)
         {
-            for (int y = glm::max(chunkCoords.y - 2, 0);
-                 y < glm::min(chunkCoords.y + 2, chunkCount.y);
+            for (int y = glm::max(chunkCoords.y - chunkRadius, 0);
+                 y <= glm::min(chunkCoords.y + chunkRadius, chunkCount.y - 1);
                  y++)
             {
                 const auto* neighbourChunk = chunks[chunkCoordinatesToChunkIndex({x, y})];
@@ -406,15 +406,13 @@ bool VSChunkManager::updateShadows(std::size_t chunkIndex)
             {
                 auto distanceMaxComponent = std::numeric_limits<float>::max();
 
-                for (int blockCandidateIndex = 0;
-                     blockCandidateIndex < relevantVisibleBlocks.size();
-                     blockCandidateIndex++)
+                for (const auto& blockCandidate: relevantVisibleBlocks)
                 {
                     // https://iquilezles.org/www/articles/distfunctions/distfunctions.htm
                     constexpr auto bounds = glm::vec3(0.5f);
                     const auto direction =
                         abs(blockLocationWorldSpace -
-                            relevantVisibleBlocks[blockCandidateIndex].locationWorldSpace) -
+                            blockCandidate.locationWorldSpace) -
                         bounds;
                     auto candidateMaxComponent =
                         glm::min(glm::max(direction.x, glm::max(direction.y, direction.z)), 0.F);
@@ -489,6 +487,8 @@ bool VSChunkManager::updateShadows(std::size_t chunkIndex)
         const auto textureBlockLocation = chunk->chunkLocation +
                                           (glm::vec3(worldSize.x, 0.F, worldSize.z) / 2.F) -
                                           (glm::vec3(chunkSize.x, 0.F, chunkSize.z) / 2.F);
+
+        glBindTexture(GL_TEXTURE_3D, shadowTexture);
 
         glTexSubImage3D(
             GL_TEXTURE_3D,
