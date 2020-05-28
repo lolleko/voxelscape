@@ -1,40 +1,52 @@
 #include "renderer/vs_shader.h"
 
-VSShader::VSShader(const char* name)
+VSShader::VSShader(const char* name, bool bIsComputeShader)
 {
     const auto vertexShaderPath = (shaderDirectory / name).replace_extension(".vs");
 
     ID = glCreateProgram();
 
-    GLuint vertexShaderID = compileShader(vertexShaderPath, GL_VERTEX_SHADER);
-    glAttachShader(ID, vertexShaderID);
+    if (bIsComputeShader) {
+        GLuint computeShaderID = compileShader(vertexShaderPath, GL_COMPUTE_SHADER);
+        glAttachShader(ID, computeShaderID);
 
-    const auto fragmentShaderPath = (shaderDirectory / name).replace_extension(".fs");
+        glLinkProgram(ID);
 
-    GLuint fragmentShaderID = -1;
-    if (!std::filesystem::exists(fragmentShaderPath))
-    {
-        VSLog::Log(
-            VSLog::Category::Shader,
-            VSLog::Level::warn,
-            "Vertex shader: {} is present, but corresponding fragment shader: % is missing",
-            vertexShaderPath.string(),
-            fragmentShaderPath.string());
+        checkProgramLinkErrors(ID);
+
+        glDetachShader(ID, computeShaderID);
+        glDeleteShader(computeShaderID);
+    } else {
+        GLuint vertexShaderID = compileShader(vertexShaderPath, GL_VERTEX_SHADER);
+        glAttachShader(ID, vertexShaderID);
+
+        const auto fragmentShaderPath = (shaderDirectory / name).replace_extension(".fs");
+
+        GLuint fragmentShaderID = -1;
+        if (!std::filesystem::exists(fragmentShaderPath))
+        {
+            VSLog::Log(
+                VSLog::Category::Shader,
+                VSLog::Level::warn,
+                "Vertex shader: {} is present, but corresponding fragment shader: % is missing",
+                vertexShaderPath.string(),
+                fragmentShaderPath.string());
+        }
+        else
+        {
+            fragmentShaderID = compileShader(fragmentShaderPath, GL_FRAGMENT_SHADER);
+            glAttachShader(ID, fragmentShaderID);
+        }
+        glLinkProgram(ID);
+
+        checkProgramLinkErrors(ID);
+
+        glDetachShader(ID, vertexShaderID);
+        glDetachShader(ID, fragmentShaderID);
+
+        glDeleteShader(vertexShaderID);
+        glDeleteShader(fragmentShaderID);
     }
-    else
-    {
-        fragmentShaderID = compileShader(fragmentShaderPath, GL_FRAGMENT_SHADER);
-        glAttachShader(ID, fragmentShaderID);
-    }
-    glLinkProgram(ID);
-
-    checkProgramLinkErrors(ID);
-
-    glDetachShader(ID, vertexShaderID);
-    glDetachShader(ID, fragmentShaderID);
-
-    glDeleteShader(vertexShaderID);
-    glDeleteShader(fragmentShaderID);
 }
 
 GLuint VSShader::getID() const

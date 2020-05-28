@@ -31,6 +31,8 @@ class VSChunkManager : public IVSDrawable
 
         std::vector<VSBlockID> blocks;
 
+        std::vector<bool> bIsBlockVisible;
+
         std::atomic<bool> bIsDirty;
 
         std::atomic<bool> bShouldRebuildShadows;

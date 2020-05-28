@@ -340,6 +340,7 @@ VSChunkManager::VSChunk* VSChunkManager::createChunk() const
     auto* chunk = new VSChunk();
 
     chunk->blocks.resize(getChunkBlockCount(), VS_DEFAULT_BLOCK_ID);
+    chunk->bIsBlockVisible.resize(getChunkBlockCount(), false);
 
     return chunk;
 }
@@ -362,7 +363,7 @@ bool VSChunkManager::updateShadows(std::size_t chunkIndex)
 
         const auto chunkCoords = chunkIndexToChunkCoordinates(chunkIndex);
 
-        std::set<VSChunk*> chunksToCheck;
+        std::vector<VSChunk::VSVisibleBlockInfo> relevantVisibleBlocks;
 
         for (int x = glm::max(chunkCoords.x - 2, 0); x < glm::min(chunkCoords.x + 2, chunkCount.x);
              x++)
@@ -371,7 +372,11 @@ bool VSChunkManager::updateShadows(std::size_t chunkIndex)
                  y < glm::min(chunkCoords.y + 2, chunkCount.y);
                  y++)
             {
-                chunksToCheck.insert(chunks[chunkCoordinatesToChunkIndex({x, y})]);
+                const auto* neighbourChunk = chunks[chunkCoordinatesToChunkIndex({x, y})];
+                for (const auto& visibleBlockInfos : neighbourChunk->visibleBlockInfos) {
+                    relevantVisibleBlocks.insert(
+                        relevantVisibleBlocks.end(), visibleBlockInfos.begin(), visibleBlockInfos.end());
+                }
             }
         }
 
@@ -396,19 +401,16 @@ bool VSChunkManager::updateShadows(std::size_t chunkIndex)
             else
             {
                 float distanceSquared = std::numeric_limits<float>::max();
-                for (auto* neighbourChunk : chunksToCheck)
-                {
-                    for (const auto& visibleBlockInfo : neighbourChunk->visibleBlockInfos)
+#pragma omp parallel for
+                for (int blockCandidateIndex = 0; blockCandidateIndex < relevantVisibleBlocks.size(); blockCandidateIndex++) {
+                    const auto newDistanceSquared = glm::length2(
+                        relevantVisibleBlocks[blockCandidateIndex].locationWorldSpace - blockLocationWorldSpace);
+                    if (newDistanceSquared < distanceSquared)
                     {
-                        for (const auto& visibleBlock : visibleBlockInfo)
-                        {
-                            const auto newDistanceSquared = glm::length2(
-                                visibleBlock.locationWorldSpace - blockLocationWorldSpace);
-                            if (newDistanceSquared < distanceSquared)
-                            {
-                                distanceSquared = newDistanceSquared;
-                            }
-                        }
+                        distanceSquared = newDistanceSquared;
+                    }
+                    if (distanceSquared == 1.0) {
+                        break;
                     }
                 }
 
@@ -416,6 +418,42 @@ bool VSChunkManager::updateShadows(std::size_t chunkIndex)
             }
 
             chunkDistanceField[blockIndex] = distance;
+        }
+
+        std::vector<float> chunkDistanceFieldFiltered;
+        chunkDistanceFieldFiltered.resize(chunkBlockCount);
+
+        // Filter
+#pragma omp parallel for
+        for (int x = 0; x < chunkSize.x; x++) {
+            for (int y = 0; y < chunkSize.y; y++) {
+                for (int z = 0; z < chunkSize.z; z++) {
+                    const auto CenterIndex = blockCoordinatesToBlockIndex({x, y, z});
+
+                    const auto minusOne = glm::clamp(glm::ivec3(x - 1, y - 1, z - 1), glm::ivec3(0), glm::ivec3(chunkSize - 1));
+                    const auto plusOne = glm::clamp(glm::ivec3(x + 1, y + 1, z + 1), glm::ivec3(0), glm::ivec3(chunkSize - 1));
+
+                    const auto diag0 = blockCoordinatesToBlockIndex({plusOne.x, plusOne.y, plusOne.z});
+                    const auto diag1 = blockCoordinatesToBlockIndex({minusOne.x, plusOne.y, plusOne.z});
+                    const auto diag2 = blockCoordinatesToBlockIndex({plusOne.x, minusOne.y, plusOne.z});
+                    const auto diag3 = blockCoordinatesToBlockIndex({minusOne.x, plusOne.y, plusOne.z});
+
+                    const auto diag4 = blockCoordinatesToBlockIndex({plusOne.x, plusOne.y, minusOne.z});
+                    const auto diag5 = blockCoordinatesToBlockIndex({minusOne.x, plusOne.y, minusOne.z});
+                    const auto diag6 = blockCoordinatesToBlockIndex({plusOne.x, minusOne.y, minusOne.z});
+                    const auto diag7 = blockCoordinatesToBlockIndex({minusOne.x, minusOne.y, minusOne.z});
+
+                    constexpr auto weight = 1.F/9.F;
+
+                    const auto filteredDistance = chunkDistanceField[CenterIndex] * weight +
+                                                  chunkDistanceField[diag0] * weight + chunkDistanceField[diag1] * weight +
+                                                  chunkDistanceField[diag2] * weight + chunkDistanceField[diag3] * weight +
+                                                  chunkDistanceField[diag4] * weight + chunkDistanceField[diag5] * weight +
+                                                  chunkDistanceField[diag6] * weight + chunkDistanceField[diag7] * weight;
+
+                    chunkDistanceFieldFiltered[CenterIndex] = filteredDistance;
+                }
+            }
         }
 
         const auto textureBlockLocation = chunk->chunkLocation +
@@ -433,7 +471,7 @@ bool VSChunkManager::updateShadows(std::size_t chunkIndex)
             chunkSize.z,
             GL_RED,
             GL_FLOAT,
-            chunkDistanceField.data());
+            chunkDistanceFieldFiltered.data());
         return true;
     }
     return false;
@@ -469,7 +507,12 @@ bool VSChunkManager::updateVisibleBlocks(std::size_t chunkIndex)
 
 #pragma omp critical
                     chunk->visibleBlockInfos[blockType].emplace_back(blockInfo);
+                    chunk->bIsBlockVisible[blockIndex] = true;
+                } else {
+                    chunk->bIsBlockVisible[blockIndex] = false;
                 }
+            } else {
+                chunk->bIsBlockVisible[blockIndex] = false;
             }
         }
         chunk->bShouldRebuildShadows = true;

@@ -45,7 +45,7 @@ float raymarch(in vec3 ro, in vec3 rd) {
     float t = mint;
     const float maxt = 256.0;
 
-    const float k = 4.0;
+    const float k = 8.0;
 
     for( int i=0; i<64; i++ )
     {
@@ -57,11 +57,10 @@ float raymarch(in vec3 ro, in vec3 rd) {
         ph = h;
         t += h;
 
-        if( res <= 0.1 || t > maxt) {
+        if( h <= 0 || res <= 0.01 || t > maxt) {
             break;
         }
     }
-
     return clamp(res, 0.0, 1.0);
 }
 
