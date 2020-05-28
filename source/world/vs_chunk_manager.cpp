@@ -135,12 +135,12 @@ void VSChunkManager::draw(VSWorld* world)
         const auto horizontalRadius =
             glm::sqrt(chunkSize.x * chunkSize.x + chunkSize.z * chunkSize.z);
 
-        // (chunkCenterInP.z - horizontalRadius) < world->getCamera()->getZFar() * 1.F &&
-        //            (chunkCenterInP.z + horizontalRadius) > world->getCamera()->getZNear() * 1.F
-        //            &&
+        const auto diagonalRadius = glm::length(glm::vec3(chunkSize));
 
-        if ((glm::abs(chunkCenterInP.x) - horizontalRadius) < (chunkCenterInP.w * 1.F) &&
-            (glm::abs(chunkCenterInP.y) - chunkSize.y) < (chunkCenterInP.w * 1.F))
+        if ((chunkCenterInP.z - horizontalRadius) < world->getCamera()->getZFar() * 1.F &&
+            (chunkCenterInP.z + horizontalRadius) > world->getCamera()->getZNear() * 1.F &&
+            (glm::abs(chunkCenterInP.x) - horizontalRadius) < (chunkCenterInP.w * 1.F) &&
+            (glm::abs(chunkCenterInP.y) - chunkSize.y * 2.f) < (chunkCenterInP.w * 1.F))
         {
             for (std::size_t i = 0; i < chunk->visibleBlockInfos.size(); i++)
             {
@@ -217,13 +217,16 @@ void VSChunkManager::updateChunks()
             return;
         }
     }
-    for (std::size_t chunkIndex = 0; chunkIndex < getTotalChunkCount(); ++chunkIndex)
+    if (VSApp::getInstance()->getUI()->getState()->bAreShadowsEnabled)
     {
-        // if we have no more chunk updates
-        // start updating shadwos
-        if (updateShadows(chunkIndex))
+        for (std::size_t chunkIndex = 0; chunkIndex < getTotalChunkCount(); ++chunkIndex)
         {
-            return;
+            // if we have no more chunk updates
+            // start updating shadwos
+            if (updateShadows(chunkIndex))
+            {
+                return;
+            }
         }
     }
 }
@@ -417,28 +420,25 @@ bool VSChunkManager::updateShadows(std::size_t chunkIndex)
                         bounds;
                     auto candidateMaxComponent =
                         glm::min(glm::max(direction.x, glm::max(direction.y, direction.z)), 0.F);
+                    const auto directionClamped = glm::max(direction, 0.F);
+                    // dot product is equal to lengthSquared
                     const auto candidateDistance =
-                        candidateMaxComponent +
-                        glm::length2(glm::max(direction, 0.F));
+                        candidateMaxComponent + glm::dot(directionClamped, directionClamped);
 
-                    if (candidateDistance < distance) {
+                    if (candidateDistance < distance)
+                    {
                         distance = candidateDistance;
                         distanceMaxComponent = candidateMaxComponent;
                     }
                 }
 
-                distance =  glm::sqrt(distance - distanceMaxComponent) + distanceMaxComponent;
-
-                if (chunk->blocks[blockIndex] != VS_DEFAULT_BLOCK_ID && !chunk->bIsBlockVisible[blockIndex])
-                {
-                    distance = distance * -1.f;
-                }
+                distance = glm::sqrt(distance - distanceMaxComponent) + distanceMaxComponent;
             }
 
             chunkDistanceField[blockIndex] = distance;
         }
 
-// Diagonal filtering
+        // Diagonal filtering
         std::vector<float> chunkDistanceFieldFiltered;
         chunkDistanceFieldFiltered.resize(chunkBlockCount);
 
@@ -482,7 +482,6 @@ bool VSChunkManager::updateShadows(std::size_t chunkIndex)
                         chunkDistanceField[diag2] * weight + chunkDistanceField[diag3] * weight +
                         chunkDistanceField[diag4] * weight + chunkDistanceField[diag5] * weight +
                         chunkDistanceField[diag6] * weight + chunkDistanceField[diag7] * weight;
-
 
                     chunkDistanceFieldFiltered[CenterIndex] = filteredDistance;
                 }
