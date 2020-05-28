@@ -50,9 +50,16 @@ void VSGame::gameLoop()
 
         if (UI->getState()->bShouldSaveToFile)
         {   
-            VSChunkManager::WorldData worldData = world->getChunkManager()->getData();
+            VSChunkManager::VSWorldData worldData = world->getChunkManager()->getData();
             VSParser::writeToFile(worldData, UI->getState()->saveFilePath);
             UI->getMutableState()->bShouldSaveToFile = false;
+        }
+
+        if (UI->getState()->bShouldLoadFromFile)
+        {
+            VSChunkManager::VSWorldData worldData = VSParser::readFromFile(UI->getState()->loadFilePath);
+            world->getChunkManager()->setWorldData(worldData);
+            UI->getMutableState()->bShouldLoadFromFile = false;
         }
 
         if (UI->getState()->bShouldGenerateHeightMap)

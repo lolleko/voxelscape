@@ -7,7 +7,7 @@
 namespace VSParser
 {
     // Writes the world data to a json file using the nlohmann json library. Returns true if successful.
-    bool writeToFile(VSChunkManager::WorldData& worldData, std::filesystem::path path);
+    bool writeToFile(VSChunkManager::VSWorldData& worldData, std::filesystem::path path);
 
-    VSChunkManager::WorldData readFromFile(std::filesystem::path path);
+    VSChunkManager::VSWorldData readFromFile(std::filesystem::path path);
 }

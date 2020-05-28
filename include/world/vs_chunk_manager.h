@@ -42,13 +42,13 @@ class VSChunkManager : public IVSDrawable
 
 public:
     // This struct is used for serialization (load/save)
-    struct WorldData
+    struct VSWorldData
     {
         glm::vec3 chunkSize;
         glm::vec2 chunkCount;
         std::vector<VSBlockID> blocks;
     };
-    
+
     VSChunkManager();
 
     VSBlockID getBlock(glm::ivec3 location) const;
@@ -62,6 +62,8 @@ public:
     void updateChunks();
 
     void setChunkDimensions(const glm::ivec3& inChunkSize, const glm::ivec2& inChunkCount);
+
+    void setWorldData(const VSWorldData& worldData);
 
     std::size_t getChunkBlockCount() const;
 
@@ -78,9 +80,9 @@ public:
     bool shouldReinitializeChunks() const;
 
     // This method is used to retrieve the data to save a scene.
-    [[nodiscard]] WorldData getData() const;
+    [[nodiscard]] VSWorldData getData() const;
 
-    void initFromData(const WorldData& data);
+    void initFromData(const VSWorldData& data);
 
 private:
     std::vector<VSChunk*> chunks;
@@ -94,6 +96,10 @@ private:
     VSShader chunkShader = VSShader("Chunk");
 
     std::atomic<bool> bShouldReinitializeChunks = false;
+
+    std::atomic<bool> bShouldInitializeFromData = false;
+
+    VSWorldData worldDataFromFile;
 
     static constexpr auto faceCombinationCount = 64;
 
