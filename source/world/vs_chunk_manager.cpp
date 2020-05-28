@@ -364,7 +364,9 @@ bool VSChunkManager::updateShadows(std::size_t chunkIndex)
 
         std::vector<VSChunk::VSVisibleBlockInfo> relevantVisibleBlocks;
 
-        const std::int32_t chunkRadius = glm::min(1, 128 / static_cast<int>(glm::sqrt(chunkSize.x * chunkSize.x + chunkSize.z * chunkSize.z)));
+        // TODO this wont work anymore if the terrain becomes more complex
+        // overhangs or floating stuff will cause issues
+        const std::int32_t chunkRadius = 1;//glm::min(1, 128 / static_cast<int>(glm::sqrt(chunkSize.x * chunkSize.x + chunkSize.z * chunkSize.z)));
 
         for (int x = glm::max(chunkCoords.x - chunkRadius, 0); x <= glm::min(chunkCoords.x + chunkRadius, chunkCount.x - 1);
              x++)
