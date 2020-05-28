@@ -134,9 +134,7 @@ void VSChunkManager::draw(VSWorld* world)
 
         const auto horizontalRadius =
             glm::sqrt(chunkSize.x * chunkSize.x + chunkSize.z * chunkSize.z);
-
-        const auto diagonalRadius = glm::length(glm::vec3(chunkSize));
-
+        
         if ((chunkCenterInP.z - horizontalRadius) < world->getCamera()->getZFar() * 1.F &&
             (chunkCenterInP.z + horizontalRadius) > world->getCamera()->getZNear() * 1.F &&
             (glm::abs(chunkCenterInP.x) - horizontalRadius) < (chunkCenterInP.w * 1.F) &&
