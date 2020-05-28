@@ -373,9 +373,12 @@ bool VSChunkManager::updateShadows(std::size_t chunkIndex)
                  y++)
             {
                 const auto* neighbourChunk = chunks[chunkCoordinatesToChunkIndex({x, y})];
-                for (const auto& visibleBlockInfos : neighbourChunk->visibleBlockInfos) {
+                for (const auto& visibleBlockInfos : neighbourChunk->visibleBlockInfos)
+                {
                     relevantVisibleBlocks.insert(
-                        relevantVisibleBlocks.end(), visibleBlockInfos.begin(), visibleBlockInfos.end());
+                        relevantVisibleBlocks.end(),
+                        visibleBlockInfos.begin(),
+                        visibleBlockInfos.end());
                 }
             }
         }
@@ -400,56 +403,86 @@ bool VSChunkManager::updateShadows(std::size_t chunkIndex)
             }
             else
             {
-                float distanceSquared = std::numeric_limits<float>::max();
-#pragma omp parallel for
-                for (int blockCandidateIndex = 0; blockCandidateIndex < relevantVisibleBlocks.size(); blockCandidateIndex++) {
-                    const auto newDistanceSquared = glm::length2(
-                        relevantVisibleBlocks[blockCandidateIndex].locationWorldSpace - blockLocationWorldSpace);
-                    if (newDistanceSquared < distanceSquared)
-                    {
-                        distanceSquared = newDistanceSquared;
-                    }
-                    if (distanceSquared == 1.0) {
-                        break;
+                auto distanceMaxComponent = std::numeric_limits<float>::max();
+
+                for (int blockCandidateIndex = 0;
+                     blockCandidateIndex < relevantVisibleBlocks.size();
+                     blockCandidateIndex++)
+                {
+                    // https://iquilezles.org/www/articles/distfunctions/distfunctions.htm
+                    constexpr auto bounds = glm::vec3(0.5f);
+                    const auto direction =
+                        abs(blockLocationWorldSpace -
+                            relevantVisibleBlocks[blockCandidateIndex].locationWorldSpace) -
+                        bounds;
+                    auto candidateMaxComponent =
+                        glm::min(glm::max(direction.x, glm::max(direction.y, direction.z)), 0.F);
+                    const auto candidateDistance =
+                        candidateMaxComponent +
+                        glm::length2(glm::max(direction, 0.F));
+
+                    if (candidateDistance < distance) {
+                        distance = candidateDistance;
+                        distanceMaxComponent = candidateMaxComponent;
                     }
                 }
 
-                distance = glm::sqrt(distanceSquared);
+                distance =  glm::sqrt(distance - distanceMaxComponent) + distanceMaxComponent;
+
+                if (chunk->blocks[blockIndex] != VS_DEFAULT_BLOCK_ID && !chunk->bIsBlockVisible[blockIndex])
+                {
+                    distance = distance * -1.f;
+                }
             }
 
             chunkDistanceField[blockIndex] = distance;
         }
 
+// Diagonal filtering
         std::vector<float> chunkDistanceFieldFiltered;
         chunkDistanceFieldFiltered.resize(chunkBlockCount);
 
-        // Filter
 #pragma omp parallel for
-        for (int x = 0; x < chunkSize.x; x++) {
-            for (int y = 0; y < chunkSize.y; y++) {
-                for (int z = 0; z < chunkSize.z; z++) {
+        for (int x = 0; x < chunkSize.x; x++)
+        {
+            for (int y = 0; y < chunkSize.y; y++)
+            {
+                for (int z = 0; z < chunkSize.z; z++)
+                {
                     const auto CenterIndex = blockCoordinatesToBlockIndex({x, y, z});
 
-                    const auto minusOne = glm::clamp(glm::ivec3(x - 1, y - 1, z - 1), glm::ivec3(0), glm::ivec3(chunkSize - 1));
-                    const auto plusOne = glm::clamp(glm::ivec3(x + 1, y + 1, z + 1), glm::ivec3(0), glm::ivec3(chunkSize - 1));
+                    const auto minusOne = glm::clamp(
+                        glm::ivec3(x - 1, y - 1, z - 1), glm::ivec3(0), glm::ivec3(chunkSize - 1));
+                    const auto plusOne = glm::clamp(
+                        glm::ivec3(x + 1, y + 1, z + 1), glm::ivec3(0), glm::ivec3(chunkSize - 1));
 
-                    const auto diag0 = blockCoordinatesToBlockIndex({plusOne.x, plusOne.y, plusOne.z});
-                    const auto diag1 = blockCoordinatesToBlockIndex({minusOne.x, plusOne.y, plusOne.z});
-                    const auto diag2 = blockCoordinatesToBlockIndex({plusOne.x, minusOne.y, plusOne.z});
-                    const auto diag3 = blockCoordinatesToBlockIndex({minusOne.x, plusOne.y, plusOne.z});
+                    const auto diag0 =
+                        blockCoordinatesToBlockIndex({plusOne.x, plusOne.y, plusOne.z});
+                    const auto diag1 =
+                        blockCoordinatesToBlockIndex({minusOne.x, plusOne.y, plusOne.z});
+                    const auto diag2 =
+                        blockCoordinatesToBlockIndex({plusOne.x, minusOne.y, plusOne.z});
+                    const auto diag3 =
+                        blockCoordinatesToBlockIndex({minusOne.x, plusOne.y, plusOne.z});
 
-                    const auto diag4 = blockCoordinatesToBlockIndex({plusOne.x, plusOne.y, minusOne.z});
-                    const auto diag5 = blockCoordinatesToBlockIndex({minusOne.x, plusOne.y, minusOne.z});
-                    const auto diag6 = blockCoordinatesToBlockIndex({plusOne.x, minusOne.y, minusOne.z});
-                    const auto diag7 = blockCoordinatesToBlockIndex({minusOne.x, minusOne.y, minusOne.z});
+                    const auto diag4 =
+                        blockCoordinatesToBlockIndex({plusOne.x, plusOne.y, minusOne.z});
+                    const auto diag5 =
+                        blockCoordinatesToBlockIndex({minusOne.x, plusOne.y, minusOne.z});
+                    const auto diag6 =
+                        blockCoordinatesToBlockIndex({plusOne.x, minusOne.y, minusOne.z});
+                    const auto diag7 =
+                        blockCoordinatesToBlockIndex({minusOne.x, minusOne.y, minusOne.z});
 
-                    constexpr auto weight = 1.F/9.F;
+                    constexpr auto weight = 1.F / 9.F;
 
-                    const auto filteredDistance = chunkDistanceField[CenterIndex] * weight +
-                                                  chunkDistanceField[diag0] * weight + chunkDistanceField[diag1] * weight +
-                                                  chunkDistanceField[diag2] * weight + chunkDistanceField[diag3] * weight +
-                                                  chunkDistanceField[diag4] * weight + chunkDistanceField[diag5] * weight +
-                                                  chunkDistanceField[diag6] * weight + chunkDistanceField[diag7] * weight;
+                    const auto filteredDistance =
+                        chunkDistanceField[CenterIndex] * weight +
+                        chunkDistanceField[diag0] * weight + chunkDistanceField[diag1] * weight +
+                        chunkDistanceField[diag2] * weight + chunkDistanceField[diag3] * weight +
+                        chunkDistanceField[diag4] * weight + chunkDistanceField[diag5] * weight +
+                        chunkDistanceField[diag6] * weight + chunkDistanceField[diag7] * weight;
+
 
                     chunkDistanceFieldFiltered[CenterIndex] = filteredDistance;
                 }
@@ -508,10 +541,14 @@ bool VSChunkManager::updateVisibleBlocks(std::size_t chunkIndex)
 #pragma omp critical
                     chunk->visibleBlockInfos[blockType].emplace_back(blockInfo);
                     chunk->bIsBlockVisible[blockIndex] = true;
-                } else {
+                }
+                else
+                {
                     chunk->bIsBlockVisible[blockIndex] = false;
                 }
-            } else {
+            }
+            else
+            {
                 chunk->bIsBlockVisible[blockIndex] = false;
             }
         }
