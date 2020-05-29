@@ -1,5 +1,4 @@
 #include "world/vs_chunk_manager.h"
-#include <bits/stdint-uintn.h>
 
 #include <algorithm>
 #include <atomic>
