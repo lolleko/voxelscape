@@ -7,8 +7,6 @@
 
 #include "ui/vs_ui_state.h"
 
-#include <iostream>
-
 VSUI::VSUI()
     : uiState(new VSUIState){};
 
@@ -44,7 +42,7 @@ void VSUI::setup(const char* glsl_version, GLFWwindow* window)
     loadFileDialog = new ImGui::FileBrowser();
     loadFileDialog->SetTitle("Load scene file");
     // TODO: Define file ending
-    loadFileDialog->SetTypeFilters({".json", ".h", ".cpp"});
+    loadFileDialog->SetTypeFilters({".json"});
     saveFileDialog = new ImGui::FileBrowser(ImGuiFileBrowserFlags_EnterNewFilename);
     saveFileDialog->SetTitle("Save scene file");
 
@@ -131,14 +129,16 @@ void VSUI::renderEditorGUI()
     {
         if (ImGui::BeginMenu("File..."))
         {
-            if (ImGui::MenuItem("Load model...", "Ctrl+O"))
+            if (ImGui::MenuItem("Load model..."))
             {
-                // TODO: Open File dialog
+                // Open File dialog
+                uiState->bFileBrowserActive = true;
                 loadFileDialog->Open();
             }
-            if (ImGui::MenuItem("Save model...", "Ctrl+S"))
+            if (ImGui::MenuItem("Save model..."))
             {
-                // TODO: Open File dialog
+                // Open File dialog
+                uiState->bFileBrowserActive = true;
                 saveFileDialog->Open();
             }
             ImGui::EndMenu();
@@ -177,19 +177,19 @@ void VSUI::renderEditorGUI()
     loadFileDialog->Display();
     if (loadFileDialog->HasSelected())
     {
-        // TODO: Do something with filename: load scene
-        std::cout << loadFileDialog->GetSelected().c_str() << std::endl;
+        // Load scene
         uiState->loadFilePath = loadFileDialog->GetSelected();
         uiState->bShouldLoadFromFile = true;
+        uiState->bFileBrowserActive = false;
         loadFileDialog->ClearSelected();
     }
     saveFileDialog->Display();
     if (saveFileDialog->HasSelected())
     {
-        // TODO: Save world to file
-        std::cout << saveFileDialog->GetSelected().c_str() << std::endl;
+        // Save scene
         uiState->saveFilePath = saveFileDialog->GetSelected();
         uiState->bShouldSaveToFile = true;
+        uiState->bFileBrowserActive = false;
         saveFileDialog->ClearSelected();
     }
 }

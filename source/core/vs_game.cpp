@@ -49,7 +49,7 @@ void VSGame::gameLoop()
         }
 
         if (UI->getState()->bShouldSaveToFile)
-        {   
+        {
             VSChunkManager::VSWorldData worldData = world->getChunkManager()->getData();
             VSParser::writeToFile(worldData, UI->getState()->saveFilePath);
             UI->getMutableState()->bShouldSaveToFile = false;
@@ -57,7 +57,8 @@ void VSGame::gameLoop()
 
         if (UI->getState()->bShouldLoadFromFile)
         {
-            VSChunkManager::VSWorldData worldData = VSParser::readFromFile(UI->getState()->loadFilePath);
+            VSChunkManager::VSWorldData worldData =
+                VSParser::readFromFile(UI->getState()->loadFilePath);
             world->getChunkManager()->setWorldData(worldData);
             UI->getMutableState()->bShouldLoadFromFile = false;
         }
@@ -104,8 +105,11 @@ void VSGame::gameLoop()
 
         // TODO dont pass window as param make abstract input more
         // to make thread separation clearer
-        world->getCameraController()->processKeyboardInput(
-            app->getWindow(), frameTimeTracker.getDeltaSeconds());
+        if (!UI->getState()->bFileBrowserActive)
+        {
+            world->getCameraController()->processKeyboardInput(
+                app->getWindow(), frameTimeTracker.getDeltaSeconds());
+        }
 
         frameTimeTracker.endFrame();
     }

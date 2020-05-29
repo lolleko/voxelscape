@@ -32,6 +32,8 @@ struct VSUIState
     bool bShouldResetEditor = false;
     bool bEditorActive = false;
     bool bShouldLoadFromFile = false;
+    // This is so the keyboard input does not get processed if there is a file browser active
+    bool bFileBrowserActive = false;
     std::filesystem::path loadFilePath = "";
     bool bShouldSaveToFile = false;
     std::filesystem::path saveFilePath = "";
