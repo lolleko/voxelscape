@@ -73,7 +73,7 @@ public:
         GLuint ID;
     };
 
-    VSShader(const char* name);
+    VSShader(const char* name, bool bIsComputeShader = false);
 
     [[nodiscard]] GLuint getID() const;
 
