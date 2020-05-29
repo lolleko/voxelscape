@@ -286,6 +286,11 @@ void VSChunkManager::initializeChunks()
     bool expected = true;
     if (bShouldReinitializeChunks.compare_exchange_weak(expected, false))
     {
+        for (const auto& [chunk, shadowBuildUpdate] : activeShadowBuildTasks)
+        {
+            shadowBuildUpdate->cancel();
+        }
+        activeShadowBuildTasks.clear();
         for (auto* chunk : chunks)
         {
             deleteChunk(chunk);

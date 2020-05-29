@@ -39,28 +39,27 @@ float map(in vec3 pos) {
 // https://www.shadertoy.com/view/lsKcDD
 float raymarch(in vec3 ro, in vec3 rd) {
     float res = 1.0;
-    float ph = 1e20;
+    float ph = 1e10;
 
     const int maxSteps = 32;
 
     const float mint = 1.0f / (4 * maxSteps);
     float t = mint;
-    const float maxt = 256.0;
+    const float maxt = 512.0;
 
-    const float k = 16.0;
+    const float k = 10.0;
 
-    for( int i=0; i<maxSteps; i++ )
+    for(int i=0; i < maxSteps; i++)
     {
         float h = map(ro + rd * t);
 
-        //float y = h*h/(2.0*ph);
-        float y = (i==0) ? 0.0 : h*h/(2.0*ph);
+        float y = h*h/(2.0*ph);
         float d = sqrt(h*h-y*y);
         res = min( res, k*d/max(0.0,t-y) );
         ph = h;
         t += h;
 
-        if( h <= 0 || res <= 0.01 || t > maxt) {
+        if(h <= 0 || res <= 0.1 || t > maxt) {
             break;
         }
     }
@@ -85,12 +84,6 @@ void main() {
     vec3 norm = normalize(i.normal);
 
     vec3 viewDir = normalize(viewPos - i.worldPosition);
-
-    // dont calculate light if behind face
-    if (dot(norm, viewDir) < 0) {
-       outColor = vec4(0.0);
-       return;
-    }
 
     vec3 rayStart = i.worldPosition;
 
