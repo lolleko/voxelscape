@@ -4,24 +4,21 @@
 #include <functional>
 #include <future>
 
-template <typename Data, typename Result>
+template <typename Result>
 class VSChunkUpdate
 {
 public:
-    static std::shared_ptr<VSChunkUpdate<Data, Result>> create(
+    static std::shared_ptr<VSChunkUpdate<Result>> create(
         std::function<Result(
-            const Data&,
             const std::atomic<bool>&,
             std::atomic<bool>&,
             std::size_t chunkIndex)> updateFunction,
-        const Data& data,
         std::size_t chunkIndex)
     {
         const auto chunkUpdate = std::shared_ptr<VSChunkUpdate>(new VSChunkUpdate);
         chunkUpdate->result = std::async(
             std::launch::async,
             updateFunction,
-            data,
             std::ref(chunkUpdate->bShouldCancel),
             std::ref(chunkUpdate->bIsReady),
             chunkIndex);

@@ -6,12 +6,12 @@ in VertexData {
     vec2 texCoord;
     vec3 tangent;
     vec3 biTangent;
-    vec3 color;
+    vec3 material;
 } i;
 
 out vec4 outColor;
 
-uniform vec3 lightPos; 
+uniform vec3 lightDir;
 uniform vec3 lightColor; 
 uniform vec3 viewPos;
 
@@ -41,23 +41,22 @@ float raymarch(in vec3 ro, in vec3 rd) {
     float res = 1.0;
     float ph = 1e10;
 
-    const int maxSteps = 32;
+    const int maxSteps = 128;
 
     const float mint = 0.001;
     float t = mint;
-    const float maxt = 512.0;
+    const float maxt = 400.0;
 
     for(int i=0; i < maxSteps; i++)
     {
         float h = map(ro + rd * t);
-        float y = h*h/(2.0*ph);
-        float d = sqrt(h*h-y*y);
-        res = min( res, 10.0*d/max(0.0,t-y) );
+        float s = clamp(8.0*h/t,0.0,1.0);
+        res = min( res, s*s*(3.0-2.0*s) );
         ph = h;
 
         t += h;
 
-        if(h <= 0 || res <= 0.1 || t > maxt) {
+        if(res <= 0.005 || t > maxt) {
             break;
         }
     }
@@ -81,31 +80,24 @@ float calcAO( in vec3 pos, in vec3 nor )
 void main() {
     vec3 norm = normalize(i.normal);
 
-    vec3 viewDir = normalize(viewPos - i.worldPosition);
-
     vec3 rayStart = i.worldPosition;
 
-    vec3 lightDir = normalize(lightPos - i.worldPosition);
+    vec3 directLightDir = normalize(lightDir);
 
-    float shadowFactor = enableShadows ? raymarch(rayStart, lightDir) : 1.0;
+    float shadowFactor = enableShadows ? raymarch(rayStart, directLightDir) : 1.0;
 
-    // ambient
-    float ambientStrength = 0.2;
-    float occ = 1.0; // TODO enableAO ? calcAO(i.worldPosition, norm) : 1.0;
-    vec3 ambient = occ * ambientStrength * lightColor;
+    float sun = clamp(dot(norm, directLightDir), 0.0, 1.0 );
 
-    float diff = max(dot(norm, lightDir), 0.0);
-    vec3 diffuse = diff * lightColor;
+    vec3 lin  = sun * vec3(1.00,0.80,0.55) * pow(vec3(shadowFactor), vec3(1.0,1.2,1.5));
+    // TODO sky light and indirect light
 
-    float specularStrength = 0.5;
-    vec3 reflectDir = reflect(-lightDir, norm);
-    float spec = pow(max(dot(viewDir, reflectDir), 0.0), 32);
+    // block material
+    vec3 color = i.material * lin;
 
-    vec3 specular = specularStrength * spec * lightColor;  
+    // gamma correction
+    color = pow(color, vec3(1.0/2.2));
 
-    vec3 result = (ambient + shadowFactor * (diffuse + specular)) * i.color;
-
-    outColor = vec4(result, 1.0);
+    outColor = vec4(color, 1.0);
 
     //outColor = vec4(occ);
 

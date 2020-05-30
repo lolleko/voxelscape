@@ -24,7 +24,7 @@ struct VSUIState
     int drawnBlockCount = 0;
     int drawCallCount = 0;
     std::ostringstream logStream;
-    glm::vec3 directLightPos = {500.f, 1000.f, 500.f};
+    glm::vec3 directLightDir = {-0.4F, 0.7F, -0.6F};
 
     // Editor Control flow
     bool bShouldSetEditorActive = false;

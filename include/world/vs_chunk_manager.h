@@ -102,7 +102,7 @@ private:
     GLuint shadowTexture;
 
     using VSShadwoChunkUpdate =
-        VSChunkUpdate<std::vector<VSChunk::VSVisibleBlockInfo>, std::vector<float>>;
+        VSChunkUpdate<std::vector<float>>;
 
     std::map<VSChunk*, std::shared_ptr<VSShadwoChunkUpdate>> activeShadowBuildTasks;
 
@@ -117,7 +117,6 @@ private:
     void updateShadows(std::size_t chunkIndex);
 
     std::vector<float> chunkUpdateShadow(
-        const std::vector<VSChunk::VSVisibleBlockInfo>& relevantVisibleBlocks,
         const std::atomic<bool>& bShouldCancel,
         std::atomic<bool>& bIsReady,
         std::size_t chunkIndex) const;

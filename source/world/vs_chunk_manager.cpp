@@ -154,7 +154,7 @@ void VSChunkManager::draw(VSWorld* world)
     glBindTexture(GL_TEXTURE_3D, shadowTexture);
 
     chunkShader.uniforms()
-        .setVec3("lightPos", world->getDirectLightPos())
+        .setVec3("lightDir", world->getDirectLightDir())
         .setVec3("lightColor", world->getDirectLightColor())
         .setVec3("viewPos", world->getCamera()->getPosition())
         .setMat4("VP", world->getCamera()->getVPMatrix())
@@ -375,45 +375,13 @@ void VSChunkManager::updateShadows(std::size_t chunkIndex)
             activeShadowBuildTasks[chunk]->cancel();
         }
 
-        const auto chunkCoords = chunkIndexToChunkCoordinates(chunkIndex);
-
-        std::vector<VSChunk::VSVisibleBlockInfo> relevantVisibleBlocks;
-
-        // TODO this wont work anymore if the terrain becomes more complex
-        // overhangs or floating stuff will cause issues
-        const std::int32_t chunkRadius =
-            1;  // glm::min(1, 128 / static_cast<int>(glm::sqrt(chunkSize.x * chunkSize.x +
-                // chunkSize.z * chunkSize.z)));
-
-        for (int x = glm::max(chunkCoords.x - chunkRadius, 0);
-             x <= glm::min(chunkCoords.x + chunkRadius, chunkCount.x - 1);
-             x++)
-        {
-            for (int y = glm::max(chunkCoords.y - chunkRadius, 0);
-                 y <= glm::min(chunkCoords.y + chunkRadius, chunkCount.y - 1);
-                 y++)
-            {
-                const auto* neighbourChunk = chunks[chunkCoordinatesToChunkIndex({x, y})];
-                for (const auto& visibleBlockInfos : neighbourChunk->visibleBlockInfos)
-                {
-                    relevantVisibleBlocks.insert(
-                        relevantVisibleBlocks.end(),
-                        visibleBlockInfos.begin(),
-                        visibleBlockInfos.end());
-                }
-            }
-        }
-
         const auto shadowUpdate = VSShadwoChunkUpdate::create(
             [this](
-                const std::vector<VSChunk::VSVisibleBlockInfo>& relevantVisibleBlocks,
                 const std::atomic<bool>& bShouldCancel,
                 std::atomic<bool>& bIsReady,
                 std::size_t chunkIndex) {
-                return this->chunkUpdateShadow(
-                    relevantVisibleBlocks, bShouldCancel, bIsReady, chunkIndex);
+                return this->chunkUpdateShadow(bShouldCancel, bIsReady, chunkIndex);
             },
-            relevantVisibleBlocks,
             chunkIndex);
 
         activeShadowBuildTasks.emplace(chunk, shadowUpdate);
@@ -450,16 +418,46 @@ void VSChunkManager::updateShadows(std::size_t chunkIndex)
 }
 
 std::vector<float> VSChunkManager::chunkUpdateShadow(
-    const std::vector<VSChunk::VSVisibleBlockInfo>& relevantVisibleBlocks,
     const std::atomic<bool>& bShouldCancel,
     std::atomic<bool>& bIsReady,
     std::size_t chunkIndex) const
 {
-    auto* const chunk = chunks[chunkIndex];
 
+    const auto chunkCoords = chunkIndexToChunkCoordinates(chunkIndex);
+
+    std::vector<VSChunk::VSVisibleBlockInfo> relevantVisibleBlocks;
+
+    // TODO this wont work anymore if the terrain becomes more complex
+    // overhangs or floating stuff will cause issues
+    const std::int32_t chunkRadius =
+        1;  // glm::min(1, 128 / static_cast<int>(glm::sqrt(chunkSize.x * chunkSize.x +
+    // chunkSize.z * chunkSize.z)));
+
+    for (int x = glm::max(chunkCoords.x - chunkRadius, 0);
+         x <= glm::min(chunkCoords.x + chunkRadius, chunkCount.x - 1);
+         x++)
+    {
+        for (int y = glm::max(chunkCoords.y - chunkRadius, 0);
+             y <= glm::min(chunkCoords.y + chunkRadius, chunkCount.y - 1);
+             y++)
+        {
+            const auto* neighbourChunk = chunks[chunkCoordinatesToChunkIndex({x, y})];
+            for (const auto& visibleBlockInfos : neighbourChunk->visibleBlockInfos)
+            {
+                relevantVisibleBlocks.insert(
+                    relevantVisibleBlocks.end(),
+                    visibleBlockInfos.begin(),
+                    visibleBlockInfos.end());
+            }
+        }
+    }
+
+    auto* const chunk = chunks[chunkIndex];
 
     std::vector<float> chunkDistanceField;
     chunkDistanceField.resize(getChunkBlockCount());
+
+    const auto chunkToWorld = chunk->chunkLocation + glm::vec3(0.5F) - glm::vec3(chunkSize) / 2.F;
 
     for (int blockIndex = 0; blockIndex < getChunkBlockCount(); blockIndex++)
     {
@@ -468,12 +466,16 @@ std::vector<float> VSChunkManager::chunkUpdateShadow(
             {
                 return {};
             }
-            glm::vec3 samplePos = chunk->chunkLocation + glm::vec3(blockIndexToBlockCoordinates(blockIndex)) + glm::vec3(0.5F) - glm::vec3(chunkSize) / 2.F;
+            glm::vec3 samplePos = chunkToWorld + glm::vec3(blockIndexToBlockCoordinates(blockIndex));
 
             float distance = std::numeric_limits<float>::max();
 
             if (chunk->blocks[blockIndex] != VS_DEFAULT_BLOCK_ID) {
-                distance = 0.F;
+                if (chunk->bIsBlockVisible[blockIndex]) {
+                    distance = 0.F;
+                } else {
+                    distance = -0.5F;
+                }
             } else {
                 for (const auto& blockCandidate : relevantVisibleBlocks)
                 {
