@@ -4,19 +4,22 @@
 #include <functional>
 #include <future>
 
-template <typename Data>
+template <typename Data, typename Result>
 class VSChunkUpdate
 {
 public:
-    static std::shared_ptr<VSChunkUpdate<Data>> create(
-        std::function<
-            void(const Data&, const std::atomic<bool>&, std::atomic<bool>&, std::size_t chunkIndex)>
-            updateFunction,
+    static std::shared_ptr<VSChunkUpdate<Data, Result>> create(
+        std::function<Result(
+            const Data&,
+            const std::atomic<bool>&,
+            std::atomic<bool>&,
+            std::size_t chunkIndex)> updateFunction,
         const Data& data,
         std::size_t chunkIndex)
     {
         const auto chunkUpdate = std::shared_ptr<VSChunkUpdate>(new VSChunkUpdate);
-        chunkUpdate->worker = std::thread(
+        chunkUpdate->result = std::async(
+            std::launch::async,
             updateFunction,
             data,
             std::ref(chunkUpdate->bShouldCancel),
@@ -29,7 +32,7 @@ public:
     void cancel()
     {
         bShouldCancel = true;
-        worker.join();
+        result.wait();
     };
 
     bool isReady()
@@ -37,9 +40,9 @@ public:
         return bIsReady;
     };
 
-    void finish()
+    Result getResult()
     {
-        return worker.join();
+        return result.get();
     };
 
 private:
@@ -47,5 +50,5 @@ private:
 
     std::atomic<bool> bShouldCancel = false;
     std::atomic<bool> bIsReady = false;
-    std::thread worker;
+    std::future<Result> result;
 };

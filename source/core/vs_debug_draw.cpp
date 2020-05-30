@@ -196,20 +196,6 @@ void VSDebugDraw::drawSphere(
     primitives.push_back(sphere);
 }
 
-void VSDebugDraw::drawPoint(
-    const glm::vec3& center,
-    const glm::vec<3, std::byte>& color,
-    float thickness)
-{
-    VSDebugPrimitive point;
-    point.startIndex = vertexData.size();
-    addPrimitiveVertices(point, {{center, color}});
-    point.thickness = thickness;
-    point.primitiveMode = GL_POINTS;
-
-    primitives.push_back(point);
-}
-
 void VSDebugDraw::draw(VSWorld* world)
 {
     (void)world;
@@ -237,14 +223,7 @@ void VSDebugDraw::draw(VSWorld* world)
 
 void VSDebugDraw::drawPrimitive(const VSDebugDraw::VSDebugPrimitive& primitive) const
 {
-    if (primitive.primitiveMode == GL_POINTS)
-    {
-        glPointSize(primitive.thickness);
-    }
-    else
-    {
-        glLineWidth(primitive.thickness);
-    }
+    glLineWidth(primitive.thickness);
     glDrawArrays(primitive.primitiveMode, primitive.startIndex, primitive.vertexCount);
 }
 

@@ -36,8 +36,6 @@ class VSChunkManager : public IVSDrawable
 
         std::vector<bool> bIsBlockVisible;
 
-        std::vector<float> distance;
-
         std::atomic<bool> bIsDirty;
 
         std::atomic<bool> bShouldRebuildShadows;
@@ -103,7 +101,8 @@ private:
 
     GLuint shadowTexture;
 
-    using VSShadwoChunkUpdate = VSChunkUpdate<std::vector<VSChunk::VSVisibleBlockInfo>>;
+    using VSShadwoChunkUpdate =
+        VSChunkUpdate<std::vector<VSChunk::VSVisibleBlockInfo>, std::vector<float>>;
 
     std::map<VSChunk*, std::shared_ptr<VSShadwoChunkUpdate>> activeShadowBuildTasks;
 
@@ -117,7 +116,7 @@ private:
 
     void updateShadows(std::size_t chunkIndex);
 
-    void chunkUpdateShadow(
+    std::vector<float> chunkUpdateShadow(
         const std::vector<VSChunk::VSVisibleBlockInfo>& relevantVisibleBlocks,
         const std::atomic<bool>& bShouldCancel,
         std::atomic<bool>& bIsReady,
