@@ -220,9 +220,9 @@ void VSChunkManager::updateChunks()
     if (bShouldInitializeFromData.compare_exchange_weak(expected, false))
     {
         // Set block data to chunks, TODO: add checks, this is potentially dangerous
-        uint32_t chunkSize = this->getChunkBlockCount();
+        uint32_t chunkSize = getChunkBlockCount();
         auto iter = worldDataFromFile.blocks.begin();
-        for (const auto chunk : this->chunks)
+        for (const auto chunk : chunks)
         {
             chunk->blocks.insert(chunk->blocks.begin(), iter, iter + chunkSize);
             chunk->bIsDirty = true;
@@ -311,12 +311,12 @@ VSChunkManager::VSWorldData VSChunkManager::getData() const
 {
     VSChunkManager::VSWorldData worldData{};
 
-    worldData.chunkSize = this->getWorldSize();
-    worldData.chunkCount = this->getChunkCount();
+    worldData.chunkSize = getWorldSize();
+    worldData.chunkCount = getChunkCount();
 
     // Write BlockIDs to vector
-    worldData.blocks.reserve(this->getChunkBlockCount() * this->getTotalChunkCount());
-    for (const auto chunk : this->chunks)
+    worldData.blocks.reserve(getChunkBlockCount() * getTotalChunkCount());
+    for (const auto chunk : chunks)
     {
         worldData.blocks.insert(worldData.blocks.end(), chunk->blocks.begin(), chunk->blocks.end());
     }
@@ -326,9 +326,9 @@ VSChunkManager::VSWorldData VSChunkManager::getData() const
 
 void VSChunkManager::initFromData(const VSWorldData& data)
 {
-    this->setChunkDimensions(data.chunkSize, data.chunkCount);
-    this->worldDataFromFile = data;
-    this->bShouldInitializeFromData = true;
+    setChunkDimensions(data.chunkSize, data.chunkCount);
+    worldDataFromFile = data;
+    bShouldInitializeFromData = true;
 }
 
 void VSChunkManager::initializeChunks()
@@ -770,6 +770,6 @@ glm::ivec3 VSChunkManager::blockCoordinatesToWorldCoordinates(
 
 void VSChunkManager::setWorldData(const VSWorldData& worldData)
 {
-    this->worldDataFromFile = worldData;
-    this->bShouldInitializeFromData = true;
+    worldDataFromFile = worldData;
+    bShouldInitializeFromData = true;
 }
