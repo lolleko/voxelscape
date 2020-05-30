@@ -149,6 +149,19 @@ void VSChunkManager::draw(VSWorld* world)
             }
             visibleChunks.push_back(chunk);
         }
+
+        // for (int blockIndex = 0; blockIndex < static_cast<int>(getChunkBlockCount());
+        // blockIndex++)
+        // {
+        //     glm::ivec3 blockCordinates = blockIndexToBlockCoordinates(blockIndex);
+
+        //     glm::vec blockLocationWorldSpace = chunk->chunkLocation + glm::vec3(blockCordinates)
+        //     +
+        //                                        glm::vec3(0.5F) - glm::vec3(chunkSize) / 2.F;
+
+        //     world->getDebugDraw()->drawPoint(
+        //         blockLocationWorldSpace, glm::ivec3(chunk->distance[blockIndex] * 8), 8);
+        // }
     }
     glActiveTexture(GL_TEXTURE0);
     glBindTexture(GL_TEXTURE_3D, shadowTexture);
@@ -344,6 +357,7 @@ VSChunkManager::VSChunk* VSChunkManager::createChunk() const
 
     chunk->blocks.resize(getChunkBlockCount(), VS_DEFAULT_BLOCK_ID);
     chunk->bIsBlockVisible.resize(getChunkBlockCount(), false);
+    chunk->distance.resize(getChunkBlockCount(), 255);
 
     return chunk;
 }
@@ -416,7 +430,7 @@ void VSChunkManager::updateShadows(std::size_t chunkIndex)
         const auto shadowTask = activeShadowBuildTasks[chunk];
         if (shadowTask->isReady())
         {
-            const auto chunkDistanceField = shadowTask->getResult();
+            shadowTask->finish();
             activeShadowBuildTasks.erase(chunk);
 
             const auto textureBlockLocation = chunk->chunkLocation +
@@ -436,12 +450,12 @@ void VSChunkManager::updateShadows(std::size_t chunkIndex)
                 chunkSize.z,
                 GL_RED,
                 GL_FLOAT,
-                chunkDistanceField.data());
+                chunk->distance.data());
         }
     }
 }
 
-std::vector<float> VSChunkManager::chunkUpdateShadow(
+void VSChunkManager::chunkUpdateShadow(
     const std::vector<VSChunk::VSVisibleBlockInfo>& relevantVisibleBlocks,
     const std::atomic<bool>& bShouldCancel,
     std::atomic<bool>& bIsReady,
@@ -451,15 +465,12 @@ std::vector<float> VSChunkManager::chunkUpdateShadow(
 
     const auto chunkBlockCount = getChunkBlockCount();
 
-    std::vector<float> chunkDistanceField;
-    chunkDistanceField.resize(chunkBlockCount);
-
     for (int blockIndex = 0; blockIndex < static_cast<int>(chunkBlockCount); blockIndex++)
     {
         // abort calculations if canceled
         if (bShouldCancel)
         {
-            return {};
+            return;
         }
 
         glm::ivec3 blockCordinates = blockIndexToBlockCoordinates(blockIndex);
@@ -468,20 +479,21 @@ std::vector<float> VSChunkManager::chunkUpdateShadow(
                                            glm::vec3(0.5F) - glm::vec3(chunkSize) / 2.F;
 
         float distance = std::numeric_limits<float>::max();
+
+        auto distanceMaxComponent = std::numeric_limits<float>::max();
+
         if (chunk->blocks[blockIndex] != VS_DEFAULT_BLOCK_ID)
         {
-            distance = 0.F;
+            distance = -0.5F;
         }
         else
         {
-            auto distanceMaxComponent = std::numeric_limits<float>::max();
-
             for (const auto& blockCandidate : relevantVisibleBlocks)
             {
                 // https://iquilezles.org/www/articles/distfunctions/distfunctions.htm
                 constexpr auto bounds = glm::vec3(0.5f);
                 const auto direction =
-                    abs(blockLocationWorldSpace - blockCandidate.locationWorldSpace) - bounds;
+                    glm::abs(blockLocationWorldSpace - blockCandidate.locationWorldSpace) - bounds;
                 auto candidateMaxComponent =
                     glm::min(glm::max(direction.x, glm::max(direction.y, direction.z)), 0.F);
                 const auto directionClamped = glm::max(direction, 0.F);
@@ -495,60 +507,14 @@ std::vector<float> VSChunkManager::chunkUpdateShadow(
                     distanceMaxComponent = candidateMaxComponent;
                 }
             }
-
-            distance = glm::sqrt(distance - distanceMaxComponent) + distanceMaxComponent;
         }
 
-        chunkDistanceField[blockIndex] = distance;
-    }
+        distance = glm::sqrt(distance - distanceMaxComponent) + distanceMaxComponent;
 
-    // Diagonal filtering
-    std::vector<float> chunkDistanceFieldFiltered;
-    chunkDistanceFieldFiltered.resize(chunkBlockCount);
-
-    for (int x = 0; x < chunkSize.x; x++)
-    {
-        for (int y = 0; y < chunkSize.y; y++)
-        {
-            for (int z = 0; z < chunkSize.z; z++)
-            {
-                const auto CenterIndex = blockCoordinatesToBlockIndex({x, y, z});
-
-                const auto minusOne = glm::clamp(
-                    glm::ivec3(x - 1, y - 1, z - 1), glm::ivec3(0), glm::ivec3(chunkSize - 1));
-                const auto plusOne = glm::clamp(
-                    glm::ivec3(x + 1, y + 1, z + 1), glm::ivec3(0), glm::ivec3(chunkSize - 1));
-
-                const auto diag0 = blockCoordinatesToBlockIndex({plusOne.x, plusOne.y, plusOne.z});
-                const auto diag1 = blockCoordinatesToBlockIndex({minusOne.x, plusOne.y, plusOne.z});
-                const auto diag2 = blockCoordinatesToBlockIndex({plusOne.x, minusOne.y, plusOne.z});
-                const auto diag3 = blockCoordinatesToBlockIndex({minusOne.x, plusOne.y, plusOne.z});
-
-                const auto diag4 = blockCoordinatesToBlockIndex({plusOne.x, plusOne.y, minusOne.z});
-                const auto diag5 =
-                    blockCoordinatesToBlockIndex({minusOne.x, plusOne.y, minusOne.z});
-                const auto diag6 =
-                    blockCoordinatesToBlockIndex({plusOne.x, minusOne.y, minusOne.z});
-                const auto diag7 =
-                    blockCoordinatesToBlockIndex({minusOne.x, minusOne.y, minusOne.z});
-
-                constexpr auto weight = 1.F / 9.F;
-
-                const auto filteredDistance =
-                    chunkDistanceField[CenterIndex] * weight + chunkDistanceField[diag0] * weight +
-                    chunkDistanceField[diag1] * weight + chunkDistanceField[diag2] * weight +
-                    chunkDistanceField[diag3] * weight + chunkDistanceField[diag4] * weight +
-                    chunkDistanceField[diag5] * weight + chunkDistanceField[diag6] * weight +
-                    chunkDistanceField[diag7] * weight;
-
-                chunkDistanceFieldFiltered[CenterIndex] = filteredDistance;
-            }
-        }
+        chunk->distance[blockIndex] = distance;
     }
 
     bIsReady = true;
-
-    return chunkDistanceFieldFiltered;
 }
 
 bool VSChunkManager::updateVisibleBlocks(std::size_t chunkIndex)

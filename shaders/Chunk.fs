@@ -117,5 +117,5 @@ void main() {
 
     //outColor = vec4(map(i.worldPosition + vec3(0, 24, 0)) / 255, 0, 0, 1);
 
-    //outColor = vec4(map(i.worldPosition) / 255, 0, 0, 1);
+    //outColor = vec4(map(i.worldPosition + norm * 0.01) * 30, 0, 0, 1);
 }
