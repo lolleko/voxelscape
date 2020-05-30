@@ -1,4 +1,5 @@
 #include "core/vs_fpcameracontroller.h"
+#include <GLFW/glfw3.h>
 #include "core/vs_camera.h"
 #include "world/vs_world.h"
 #include "world/vs_chunk_manager.h"
@@ -20,10 +21,32 @@ void VSFPCameraController::processMouseButton(GLFWwindow* window, int button, in
         lastY = ypos;
     }
 
-    if (button == GLFW_MOUSE_BUTTON_RIGHT && action == GLFW_PRESS)
+    // Delete block
+    if (button == GLFW_MOUSE_BUTTON_MIDDLE && action == GLFW_PRESS)
     {
         glm::ivec3 worldSize = world->getChunkManager()->getWorldSize();
         glm::ivec3 position = world->intersectRayWithBlock(cam->getPosition(), cam->getFront());
+        // Check if block is placed in bounds
+        position += glm::ivec3(worldSize / 2);
+        if (position.x < 0 || position.z < 0)
+        {
+            // do nothing
+            return;
+        }
+        if (position.x >= worldSize.x || position.y >= worldSize.y || position.z >= worldSize.z)
+        {
+            // do nothing
+            return;
+        }
+        world->getChunkManager()->setBlock(
+            position, 0);
+    }
+
+    // Set block
+    if (button == GLFW_MOUSE_BUTTON_RIGHT && action == GLFW_PRESS)
+    {
+        glm::ivec3 worldSize = world->getChunkManager()->getWorldSize();
+        glm::ivec3 position = world->intersectRayWithBlock(cam->getPosition(), cam->getFront(), true);
         // Check if block is placed in bounds
         position += glm::ivec3(worldSize / 2);
         if (position.x < 0 || position.z < 0)

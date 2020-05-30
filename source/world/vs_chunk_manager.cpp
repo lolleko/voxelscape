@@ -69,7 +69,7 @@ VSChunkManager::VSChunkManager()
     }
 
     std::vector<glm::vec3> blockColors = {
-        {0.F, 0.F, 0.F}, {0.3F, 0.3F, 0.3F}, {0.01F, 0.5F, 0.15F}};
+        /*Air*/{0.F, 0.F, 0.F}, /*Stone*/{0.3F, 0.3F, 0.3F}, /*Water*/{0.F, 0.F, 0.55F}};
 
     chunkShader.uniforms().setVec3Array("blockColors", blockColors);
 }

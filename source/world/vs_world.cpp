@@ -63,7 +63,7 @@ void VSWorld::setCameraController(VSCameraController* newCameraController)
     cameraController = newCameraController;
 }
 
-glm::ivec3 VSWorld::intersectRayWithBlock(glm::vec3 rayOrigin, glm::vec3 rayDirection)
+glm::ivec3 VSWorld::intersectRayWithBlock(glm::vec3 rayOrigin, glm::vec3 rayDirection, bool returnPrev)
 {
     // Map to block coordinates
     rayOrigin += getChunkManager()->getWorldSize() / 2;
@@ -115,7 +115,14 @@ glm::ivec3 VSWorld::intersectRayWithBlock(glm::vec3 rayOrigin, glm::vec3 rayDire
             if (blockID != 0)
             {
                 // back to world coordinates
-                return (previous - getChunkManager()->getWorldSize() / 2);
+                if (returnPrev)
+                {
+                    return (previous - getChunkManager()->getWorldSize() / 2);
+                } 
+                else 
+                {
+                    return (location - getChunkManager()->getWorldSize() / 2);
+                }
             }
         }
 
