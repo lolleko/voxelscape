@@ -224,7 +224,7 @@ void VSChunkManager::updateChunks()
         auto iter = worldDataFromFile.blocks.begin();
         for (const auto chunk : this->chunks)
         {
-            chunk->blocks = std::vector<VSBlockID>(iter, iter + chunkSize);
+            chunk->blocks.insert(chunk->blocks.begin(), iter, iter + chunkSize);
             chunk->bIsDirty = true;
             iter += chunkSize;
         }
