@@ -27,8 +27,8 @@ vec3 worldSizeHalf = worldSize / 2u;
 float map(in vec3 pos) {
     vec3 shadowTexCoord = (pos + worldSizeHalf) / vec3(worldSize);
     float distance = texture(shadowTexture, shadowTexCoord).r;
-
-    return distance;
+    //float distance = texelFetch(shadowTexture, clamp(ivec3(pos + worldSizeHalf), ivec3(0.0), ivec3(worldSize) - ivec3(1.0)), 0).r;
+    return distance + 0.5;
 
 
     // ivec3 shadowTexCoord = clamp(ivec3(pos + worldSizeHalf), ivec3(0.0), ivec3(worldSize) - ivec3(1.0));
@@ -43,27 +43,25 @@ float raymarch(in vec3 ro, in vec3 rd) {
 
     const int maxSteps = 32;
 
-    const float mint = 1.0f / (4 * maxSteps);
+    const float mint = 0.001;
     float t = mint;
     const float maxt = 512.0;
-
-    const float k = 10.0;
 
     for(int i=0; i < maxSteps; i++)
     {
         float h = map(ro + rd * t);
-
         float y = h*h/(2.0*ph);
         float d = sqrt(h*h-y*y);
-        res = min( res, k*d/max(0.0,t-y) );
+        res = min( res, 10.0*d/max(0.0,t-y) );
         ph = h;
+
         t += h;
 
         if(h <= 0 || res <= 0.1 || t > maxt) {
             break;
         }
     }
-    return clamp(res, 0.0, 1.0);
+    return clamp(res, 0, 1);
 }
 
 float calcAO( in vec3 pos, in vec3 nor )
@@ -117,5 +115,5 @@ void main() {
 
     //outColor = vec4(map(i.worldPosition + vec3(0, 24, 0)) / 255, 0, 0, 1);
 
-    //outColor = vec4(map(i.worldPosition) / 255, 0, 0, 1);
+    //outColor = vec4(map(i.worldPosition + lightDir * 0.1), 0, 0, 1);
 }
