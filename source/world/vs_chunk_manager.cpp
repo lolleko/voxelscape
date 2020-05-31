@@ -235,8 +235,8 @@ void VSChunkManager::updateChunks()
     auto blocksUpdated = 0;
 
     // Todod add conifg option
-    constexpr auto udpateLimit = 64*256*64;
-  
+    constexpr auto udpateLimit = 128 * 256 * 128;
+
     for (std::size_t chunkIndex = 0; chunkIndex < getTotalChunkCount(); ++chunkIndex)
     {
         // to avoid stutter we only update approx. 64*256*64 blocks per frame
@@ -468,7 +468,6 @@ std::vector<float> VSChunkManager::chunkUpdateShadow(
     std::atomic<bool>& bIsReady,
     std::size_t chunkIndex) const
 {
-
     const auto chunkCoords = chunkIndexToChunkCoordinates(chunkIndex);
 
     std::vector<VSChunk::VSVisibleBlockInfo> relevantVisibleBlocks;
@@ -487,6 +486,11 @@ std::vector<float> VSChunkManager::chunkUpdateShadow(
              y <= glm::min(chunkCoords.y + chunkRadius, chunkCount.y - 1);
              y++)
         {
+            // abort calculations if canceled
+            if (bShouldCancel)
+            {
+                return {};
+            }
             const auto* neighbourChunk = chunks[chunkCoordinatesToChunkIndex({x, y})];
             for (const auto& visibleBlockInfos : neighbourChunk->visibleBlockInfos)
             {
@@ -505,32 +509,39 @@ std::vector<float> VSChunkManager::chunkUpdateShadow(
 
     const auto chunkToWorld = chunk->chunkLocation + glm::vec3(0.5F) - glm::vec3(chunkSize) / 2.F;
 
-    for (int blockIndex = 0; blockIndex < getChunkBlockCount(); blockIndex++)
+    for (std::size_t blockIndex = 0; blockIndex < getChunkBlockCount(); blockIndex++)
     {
-            // abort calculations if canceled
-            if (bShouldCancel)
+        // abort calculations if canceled
+        if (bShouldCancel)
+        {
+            return {};
+        }
+        glm::vec3 samplePos = chunkToWorld + glm::vec3(blockIndexToBlockCoordinates(blockIndex));
+
+        float distance = std::numeric_limits<float>::max();
+
+        if (chunk->blocks[blockIndex] != VS_DEFAULT_BLOCK_ID)
+        {
+            if (chunk->bIsBlockVisible[blockIndex])
             {
-                return {};
+                distance = 0.F;
             }
-            glm::vec3 samplePos = chunkToWorld + glm::vec3(blockIndexToBlockCoordinates(blockIndex));
-
-            float distance = std::numeric_limits<float>::max();
-
-            if (chunk->blocks[blockIndex] != VS_DEFAULT_BLOCK_ID) {
-                if (chunk->bIsBlockVisible[blockIndex]) {
-                    distance = 0.F;
-                } else {
-                    distance = -0.5F;
-                }
-            } else {
-                for (const auto& blockCandidate : relevantVisibleBlocks)
-                {
-                    distance = glm::min(distance, glm::length2(samplePos - blockCandidate.locationWorldSpace));
-                }
-                distance = glm::sqrt(distance);
+            else
+            {
+                distance = -0.5F;
             }
+        }
+        else
+        {
+            for (const auto& blockCandidate : relevantVisibleBlocks)
+            {
+                distance =
+                    glm::min(distance, glm::length2(samplePos - blockCandidate.locationWorldSpace));
+            }
+            distance = glm::sqrt(distance);
+        }
 
-            chunkDistanceField[blockIndex] = distance;
+        chunkDistanceField[blockIndex] = distance;
     }
 
     bIsReady = true;
@@ -741,20 +752,24 @@ VSChunkManager::worldCoordinatesToChunkAndBlockIndex(const glm::ivec3& worldCoor
 {
     const auto chunkCoordinates = worldCoordinatesToChunkCoordinates(worldCoords);
     const auto chunkIndex = chunkCoordinatesToChunkIndex(chunkCoordinates);
-    return {chunkIndex,
-            blockCoordinatesToBlockIndex({worldCoords.x - chunkCoordinates.x * chunkSize.x,
-                                          worldCoords.y,
-                                          worldCoords.z - chunkCoordinates.y * chunkSize.z})};
+    return {
+        chunkIndex,
+        blockCoordinatesToBlockIndex(
+            {worldCoords.x - chunkCoordinates.x * chunkSize.x,
+             worldCoords.y,
+             worldCoords.z - chunkCoordinates.y * chunkSize.z})};
 }
 
 std::tuple<glm::ivec2, std::size_t>
 VSChunkManager::worldCoordinatesToChunkCoordinatesAndBlockIndex(const glm::ivec3& worldCoords) const
 {
     const auto chunkCoordinates = worldCoordinatesToChunkCoordinates(worldCoords);
-    return {chunkCoordinates,
-            blockCoordinatesToBlockIndex({worldCoords.x - chunkCoordinates.x * chunkSize.x,
-                                          worldCoords.y,
-                                          worldCoords.z - chunkCoordinates.y * chunkSize.z})};
+    return {
+        chunkCoordinates,
+        blockCoordinatesToBlockIndex(
+            {worldCoords.x - chunkCoordinates.x * chunkSize.x,
+             worldCoords.y,
+             worldCoords.z - chunkCoordinates.y * chunkSize.z})};
 }
 
 glm::ivec3 VSChunkManager::blockCoordinatesToWorldCoordinates(
@@ -762,9 +777,10 @@ glm::ivec3 VSChunkManager::blockCoordinatesToWorldCoordinates(
     const glm::ivec3& blockCoords) const
 {
     const glm::ivec2 chunkCoordinates = chunkIndexToChunkCoordinates(chunkIndex);
-    return {chunkCoordinates.x * chunkSize.x + blockCoords.x,
-            blockCoords.y,
-            chunkCoordinates.y * chunkSize.z + blockCoords.z};
+    return {
+        chunkCoordinates.x * chunkSize.x + blockCoords.x,
+        blockCoords.y,
+        chunkCoordinates.y * chunkSize.z + blockCoords.z};
 }
 
 void VSChunkManager::setWorldData(const VSWorldData& worldData)

@@ -40,7 +40,7 @@ float map(in vec3 pos) {
 float raymarch(in vec3 ro, in vec3 rd) {
     float res = 1.0;
 
-    const int maxSteps = 64;
+    const int maxSteps = 48;
 
     const float mint = 0.001;
     float t = mint;
@@ -57,11 +57,11 @@ float raymarch(in vec3 ro, in vec3 rd) {
 
         t += h;
 
-        if(res <= 0.001 || t > maxt) {
+        if(res <= 0.01 || t > maxt) {
             break;
         }
     }
-    return clamp(res, 0.2, 1);
+    return clamp(res, 0.2, 1.0);
 }
 
 float calcAO( in vec3 pos, in vec3 nor )
