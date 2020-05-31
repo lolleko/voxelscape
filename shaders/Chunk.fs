@@ -39,28 +39,29 @@ float map(in vec3 pos) {
 // https://www.shadertoy.com/view/lsKcDD
 float raymarch(in vec3 ro, in vec3 rd) {
     float res = 1.0;
-    float ph = 1e10;
 
-    const int maxSteps = 128;
+    const int maxSteps = 64;
 
     const float mint = 0.001;
     float t = mint;
-    const float maxt = 400.0;
+    const float maxt = 256.0;
+
+    // lower values => softer
+    const float softness = 8.0;
 
     for(int i=0; i < maxSteps; i++)
     {
         float h = map(ro + rd * t);
-        float s = clamp(8.0*h/t,0.0,1.0);
-        res = min( res, s*s*(3.0-2.0*s) );
-        ph = h;
+        float s = clamp(softness*h/t,0.0,1.0);
+        res = min(res, s*s*(3.0-2.0*s));
 
         t += h;
 
-        if(res <= 0.005 || t > maxt) {
+        if(res <= 0.001 || t > maxt) {
             break;
         }
     }
-    return clamp(res, 0, 1);
+    return clamp(res, 0.2, 1);
 }
 
 float calcAO( in vec3 pos, in vec3 nor )
