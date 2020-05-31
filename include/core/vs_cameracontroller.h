@@ -4,6 +4,7 @@
 
 // Include glfw3.h after our OpenGL definitions
 #include <GLFW/glfw3.h>
+#include <glm/fwd.hpp>
 #include <memory>
 #include "world/vs_world.h"
 
@@ -11,7 +12,7 @@
 class VSCamera;
 struct GLFWwindow;
 
-const float SPEED = 100.F;
+const float SPEED = 40.F;
 const float SENSITIVITY = 0.1F;
 
 // Implements Observer pattern with VSCameraController being the subject and VSCamera being the
@@ -41,6 +42,10 @@ public:
 
     virtual void processFramebufferResize(GLFWwindow* window, int width, int height) = 0;
 
+    void setEditorBlockID(int blockID);
+
+    void setMouseInWorldCoords(glm::vec3 coords);
+
 protected:
     VSCamera* cam;
     VSWorld* world;
@@ -51,4 +56,7 @@ protected:
 
     float mouseSensitivity;
     float movementSpeed;
+
+    int editorBlockID = 1;
+    glm::vec3 mouseInWorldCoords = glm::vec3(0);
 };

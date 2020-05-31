@@ -37,7 +37,8 @@ struct VSUIState
     std::filesystem::path loadFilePath = "";
     bool bShouldSaveToFile = false;
     std::filesystem::path saveFilePath = "";
-    int bSetBlockID = 1;
+    bool bShouldUpdateBlockID = false;
+    int bSetBlockID = 0;
 
     // Menu Control flow
     bool bMenuActive = true;

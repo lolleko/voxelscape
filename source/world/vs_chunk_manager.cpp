@@ -68,8 +68,12 @@ VSChunkManager::VSChunkManager()
         glBindVertexArray(0);
     }
 
-    std::vector<glm::vec3> blockColors = {
-        /*Air*/{0.F, 0.F, 0.F}, /*Stone*/{0.3F, 0.3F, 0.3F}, /*Water*/{0.F, 0.F, 0.55F}};
+    std::vector<glm::vec3> blockColors = {/*Air=0*/ {0.F, 0.F, 0.F},
+                                          /*Stone=1*/ {0.3F, 0.3F, 0.3F},
+                                          /*Water=2*/ {0.F, 0.F, 0.5F},
+                                          /*Grass=3*/ {0.F, 0.5F, 0.F},
+                                          /*Wood=4*/ {0.5F, 0.25F, 0.1F},
+                                          /*Sand=5*/ {1.F, 0.9F, 0.5F}};
 
     chunkShader.uniforms().setVec3Array("blockColors", blockColors);
 }
@@ -413,9 +417,12 @@ bool VSChunkManager::updateShadows(std::size_t chunkIndex)
 
         // TODO this wont work anymore if the terrain becomes more complex
         // overhangs or floating stuff will cause issues
-        const std::int32_t chunkRadius = 1;//glm::min(1, 128 / static_cast<int>(glm::sqrt(chunkSize.x * chunkSize.x + chunkSize.z * chunkSize.z)));
+        const std::int32_t chunkRadius =
+            1;  // glm::min(1, 128 / static_cast<int>(glm::sqrt(chunkSize.x * chunkSize.x +
+                // chunkSize.z * chunkSize.z)));
 
-        for (int x = glm::max(chunkCoords.x - chunkRadius, 0); x <= glm::min(chunkCoords.x + chunkRadius, chunkCount.x - 1);
+        for (int x = glm::max(chunkCoords.x - chunkRadius, 0);
+             x <= glm::min(chunkCoords.x + chunkRadius, chunkCount.x - 1);
              x++)
         {
             for (int y = glm::max(chunkCoords.y - chunkRadius, 0);
@@ -455,14 +462,12 @@ bool VSChunkManager::updateShadows(std::size_t chunkIndex)
             {
                 auto distanceMaxComponent = std::numeric_limits<float>::max();
 
-                for (const auto& blockCandidate: relevantVisibleBlocks)
+                for (const auto& blockCandidate : relevantVisibleBlocks)
                 {
                     // https://iquilezles.org/www/articles/distfunctions/distfunctions.htm
                     constexpr auto bounds = glm::vec3(0.5f);
                     const auto direction =
-                        abs(blockLocationWorldSpace -
-                            blockCandidate.locationWorldSpace) -
-                        bounds;
+                        abs(blockLocationWorldSpace - blockCandidate.locationWorldSpace) - bounds;
                     auto candidateMaxComponent =
                         glm::min(glm::max(direction.x, glm::max(direction.y, direction.z)), 0.F);
                     const auto directionClamped = glm::max(direction, 0.F);

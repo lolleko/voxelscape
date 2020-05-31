@@ -123,6 +123,7 @@ void VSUI::render()
     ImGui::Render();
 }
 
+#include <iostream>
 void VSUI::renderEditorGUI()
 {
     if (ImGui::BeginMainMenuBar())
@@ -145,11 +146,18 @@ void VSUI::renderEditorGUI()
         }
     }
     ImGui::EndMainMenuBar();
+    // Select block type to set
+    // This needs to be adapted to the new block types obviously
+    const char* blockTypes[] = {"Stone", "Water", "Grass", "Wood", "Sand"};
+    if (ImGui::Combo(
+            "Select block type", (int*)&uiState->bSetBlockID, blockTypes, IM_ARRAYSIZE(blockTypes)))
+    {
+        uiState->bShouldUpdateBlockID = true;
+    }
     ImGui::Checkbox("wireframe", (bool*)&uiState->isWireframeModeEnabled);
     ImGui::Checkbox("draw chunk border", (bool*)&uiState->bShouldDrawChunkBorder);
     ImGui::InputInt3("chunk size", (int*)&uiState->chunkSize);
     ImGui::InputInt2("world size", (int*)&uiState->chunkCount);
-    ImGui::InputInt("Build block ID", (int*)&uiState->bSetBlockID);
     if (ImGui::Button("Refresh chunk settings"))
     {
         uiState->bShouldUpdateChunks = true;
@@ -167,7 +175,6 @@ void VSUI::renderEditorGUI()
         "Application average %.3f ms/frame (%.1f FPS)",
         1000.0f / ImGui::GetIO().Framerate,
         ImGui::GetIO().Framerate);
-
     ImGui::TextColored(ImVec4(1, 1, 0, 1), "Log");
     ImGui::BeginChild("Scrolling");
     ImGui::Text("%s", uiState->logStream.str().c_str());

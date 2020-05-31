@@ -1,6 +1,8 @@
 #pragma once
 
 #include <imgui.h>
+#include <array>
+#include <string>
 #include "ui/imgui_impl/imfilebrowser.h"
 
 struct VSUIState;

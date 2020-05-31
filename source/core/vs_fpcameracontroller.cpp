@@ -1,5 +1,7 @@
 #include "core/vs_fpcameracontroller.h"
 #include <GLFW/glfw3.h>
+#include <glm/fwd.hpp>
+#include <glm/matrix.hpp>
 #include "core/vs_camera.h"
 #include "world/vs_world.h"
 #include "world/vs_chunk_manager.h"
@@ -22,31 +24,52 @@ void VSFPCameraController::processMouseButton(GLFWwindow* window, int button, in
     }
 
     // Delete block
-    if (button == GLFW_MOUSE_BUTTON_MIDDLE && action == GLFW_PRESS)
-    {
-        glm::ivec3 worldSize = world->getChunkManager()->getWorldSize();
-        glm::ivec3 position = world->intersectRayWithBlock(cam->getPosition(), cam->getFront());
-        // Check if block is placed in bounds
-        position += glm::ivec3(worldSize / 2);
-        if (position.x < 0 || position.z < 0)
-        {
-            // do nothing
-            return;
-        }
-        if (position.x >= worldSize.x || position.y >= worldSize.y || position.z >= worldSize.z)
-        {
-            // do nothing
-            return;
-        }
-        world->getChunkManager()->setBlock(
-            position, 0);
-    }
+    // if (button == GLFW_MOUSE_BUTTON_MIDDLE && action == GLFW_PRESS)
+    // {
+    //     glm::ivec3 worldSize = world->getChunkManager()->getWorldSize();
+    //     glm::ivec3 position = world->intersectRayWithBlock(cam->getPosition(), cam->getFront());
+    //     // Check if block is placed in bounds
+    //     position += glm::ivec3(worldSize / 2);
+    //     if (position.x < 0 || position.z < 0)
+    //     {
+    //         // do nothing
+    //         return;
+    //     }
+    //     if (position.x >= worldSize.x || position.y >= worldSize.y || position.z >= worldSize.z)
+    //     {
+    //         // do nothing
+    //         return;
+    //     }
+    //     world->getChunkManager()->setBlock(position, 0);
+    // }
 
-    // Set block
+    // Set block in middle
+    // if (button == GLFW_MOUSE_BUTTON_RIGHT && action == GLFW_PRESS)
+    // {
+    //     glm::ivec3 worldSize = world->getChunkManager()->getWorldSize();
+    //     glm::ivec3 position =
+    //         world->intersectRayWithBlock(cam->getPosition(), cam->getFront(), true);
+    //     // Check if block is placed in bounds
+    //     position += glm::ivec3(worldSize / 2);
+    //     if (position.x < 0 || position.z < 0)
+    //     {
+    //         // do nothing
+    //         return;
+    //     }
+    //     if (position.x >= worldSize.x || position.y >= worldSize.y || position.z >= worldSize.z)
+    //     {
+    //         // do nothing
+    //         return;
+    //     }
+    //     world->getChunkManager()->setBlock(position, editorBlockID);
+    // }
+
+    // Set block on cursor position
     if (button == GLFW_MOUSE_BUTTON_RIGHT && action == GLFW_PRESS)
     {
         glm::ivec3 worldSize = world->getChunkManager()->getWorldSize();
-        glm::ivec3 position = world->intersectRayWithBlock(cam->getPosition(), cam->getFront(), true);
+        glm::ivec3 position = mouseInWorldCoords;
+        std::cout << position.x << ", " << position.y << ", " << position.z << std::endl;
         // Check if block is placed in bounds
         position += glm::ivec3(worldSize / 2);
         if (position.x < 0 || position.z < 0)
@@ -59,8 +82,28 @@ void VSFPCameraController::processMouseButton(GLFWwindow* window, int button, in
             // do nothing
             return;
         }
-        world->getChunkManager()->setBlock(
-            position, 2);
+        // TODO: figure out whats going wrong
+        world->getChunkManager()->setBlock(position, editorBlockID);
+    }
+
+    // Delete block on cursor position
+    if (button == GLFW_MOUSE_BUTTON_MIDDLE && action == GLFW_PRESS)
+    {
+        glm::ivec3 worldSize = world->getChunkManager()->getWorldSize();
+        glm::ivec3 position = mouseInWorldCoords;
+        // Check if block is placed in bounds
+        position += glm::ivec3(worldSize / 2);
+        if (position.x < 0 || position.z < 0)
+        {
+            // do nothing
+            return;
+        }
+        if (position.x >= worldSize.x || position.y >= worldSize.y || position.z >= worldSize.z)
+        {
+            // do nothing
+            return;
+        }
+        world->getChunkManager()->setBlock(position, 0);
     }
 }
 
@@ -71,6 +114,7 @@ void VSFPCameraController::processMouseMovement(
     GLboolean constrainPitch)
 {
     // Only move camera if left mouse is pressed
+    // (void)window;
     int state = glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT);
     if (state != GLFW_PRESS)
     {

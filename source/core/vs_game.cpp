@@ -103,6 +103,13 @@ void VSGame::gameLoop()
             UI->getMutableState()->bShouldResetEditor = false;
         }
 
+        if (UI->getState()->bShouldUpdateBlockID)
+        {
+            // Increment because list starts at 0 and we do not want to set "Air" blocks
+            world->getCameraController()->setEditorBlockID(UI->getState()->bSetBlockID + 1);
+            UI->getMutableState()->bShouldUpdateBlockID = false;
+        }
+
         // TODO dont pass window as param make abstract input more
         // to make thread separation clearer
         if (!UI->getState()->bFileBrowserActive)

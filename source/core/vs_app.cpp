@@ -4,6 +4,7 @@
 // Include glfw3.h after our OpenGL definitions
 #include <GLFW/glfw3.h>
 #include <spdlog/common.h>
+#include <limits>
 #include <thread>
 
 #include "core/vs_core.h"
@@ -139,7 +140,7 @@ int VSApp::initializeGLFW()
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 0);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);  // 3.2+ only
-    glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);  // 3.0+ only
+    glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);            // 3.0+ only
 #endif
 
     // anti Aliasing
@@ -248,15 +249,19 @@ int VSApp::mainLoop()
             glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
         }
 
-        UI->getMutableState()->totalBlockCount = activeWorld->getChunkManager()->getTotalBlockCount();
-        UI->getMutableState()->visibleBlockCount = activeWorld->getChunkManager()->getVisibleBlockCount();
-        UI->getMutableState()->drawnBlockCount = activeWorld->getChunkManager()->getDrawnBlockCount();
+        UI->getMutableState()->totalBlockCount =
+            activeWorld->getChunkManager()->getTotalBlockCount();
+        UI->getMutableState()->visibleBlockCount =
+            activeWorld->getChunkManager()->getVisibleBlockCount();
+        UI->getMutableState()->drawnBlockCount =
+            activeWorld->getChunkManager()->getDrawnBlockCount();
         UI->getMutableState()->drawCallCount = activeWorld->getChunkManager()->getDrawCallCount();
 
         world->setDirectLightPos(UI->getState()->directLightPos);
 
         // TODO add option for day night
-        //world->setDirectLightPos(glm::vec3(world->getChunkManager()->getWorldSize() * 2) * glm::vec3(cos(glfwGetTime() / 10.f),  sin(glfwGetTime() / 10.f), 0.f));
+        // world->setDirectLightPos(glm::vec3(world->getChunkManager()->getWorldSize() * 2) *
+        // glm::vec3(cos(glfwGetTime() / 10.f),  sin(glfwGetTime() / 10.f), 0.f));
 
         world->getDebugDraw()->drawSphere(world->getDirectLightPos(), 10.f, {255, 255, 255});
 
@@ -277,6 +282,36 @@ int VSApp::mainLoop()
 
         // draw world
         activeWorld->draw(activeWorld);
+
+        // Calculate mouse coords in world space
+        {
+            double xpos;
+            double ypos;
+            glfwGetCursorPos(window, &xpos, &ypos);
+            int width;
+            int height;
+            glfwGetWindowSize(window, &width, &height);
+            float depth;
+            glReadPixels((GLint)xpos, (GLint)(height - ypos), 1, 1, GL_DEPTH_COMPONENT, GL_FLOAT, &depth);
+            xpos /= width;
+            // Invert y coordinate
+            ypos /= height;
+            glm::mat4 VPInv = glm::inverse(getActiveWorld()->getCamera()->getProjectionMatrix() * getActiveWorld()->getCamera()->getViewMatrix());
+            glm::vec4 vec;
+            vec.x = (2 * xpos) - 1.F;
+            // std::cout << "Xpos " << vec[0] << std::endl;
+            vec.y = 1.F - (2 * ypos);
+            vec.z = (2 * depth) - 1.F;
+            // std::cout << "Depth " << depth << std::endl;
+            vec.w = 1;
+            // std::cout << vec[0] << ", "<< vec[1] << ", " << vec[2] << ", " << vec[3] << std::endl;
+            glm::vec4 posWorld4 = VPInv * vec;
+            posWorld4 /= posWorld4.w;
+            // std::cout << posWorld4.x << ", " << posWorld4.y << ", " << posWorld4.z << ", " << posWorld4.w << std::endl;
+            auto position = glm::vec3(posWorld4);
+            // std::cout << position.x << ", " << position.y << ", " << position.z << std::endl;
+            getActiveWorld()->getCameraController()->setMouseInWorldCoords(position);
+        }
 
         // draw ui
         UI->draw();
