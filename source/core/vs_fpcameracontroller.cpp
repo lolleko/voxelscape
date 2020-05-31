@@ -1,6 +1,8 @@
 #include "core/vs_fpcameracontroller.h"
 #include <GLFW/glfw3.h>
+#include <cmath>
 #include <glm/fwd.hpp>
+#include <glm/geometric.hpp>
 #include <glm/matrix.hpp>
 #include "core/vs_camera.h"
 #include "world/vs_world.h"
@@ -48,7 +50,7 @@ void VSFPCameraController::processMouseButton(GLFWwindow* window, int button, in
     // {
     //     glm::ivec3 worldSize = world->getChunkManager()->getWorldSize();
     //     glm::ivec3 position =
-    //         world->intersectRayWithBlock(cam->getPosition(), cam->getFront(), true);
+    //         world->intersectRayWithBlock(mouseInWorldCoords, cam->getFront(), true);
     //     // Check if block is placed in bounds
     //     position += glm::ivec3(worldSize / 2);
     //     if (position.x < 0 || position.z < 0)
@@ -68,8 +70,9 @@ void VSFPCameraController::processMouseButton(GLFWwindow* window, int button, in
     if (button == GLFW_MOUSE_BUTTON_RIGHT && action == GLFW_PRESS)
     {
         glm::ivec3 worldSize = world->getChunkManager()->getWorldSize();
-        glm::ivec3 position = mouseInWorldCoords;
-        std::cout << position.x << ", " << position.y << ", " << position.z << std::endl;
+        // Bauernhack
+        mouseInWorldCoords += 0.05F * glm::normalize(cam->getPosition() - mouseInWorldCoords);
+        glm::ivec3 position = glm::ivec3(std::floor(mouseInWorldCoords.x), std::floor(mouseInWorldCoords.y), std::floor(mouseInWorldCoords.z));
         // Check if block is placed in bounds
         position += glm::ivec3(worldSize / 2);
         if (position.x < 0 || position.z < 0)
@@ -82,7 +85,6 @@ void VSFPCameraController::processMouseButton(GLFWwindow* window, int button, in
             // do nothing
             return;
         }
-        // TODO: figure out whats going wrong
         world->getChunkManager()->setBlock(position, editorBlockID);
     }
 
@@ -90,7 +92,9 @@ void VSFPCameraController::processMouseButton(GLFWwindow* window, int button, in
     if (button == GLFW_MOUSE_BUTTON_MIDDLE && action == GLFW_PRESS)
     {
         glm::ivec3 worldSize = world->getChunkManager()->getWorldSize();
-        glm::ivec3 position = mouseInWorldCoords;
+        // Bauernhack
+        mouseInWorldCoords -= 0.05F * glm::normalize(cam->getPosition() - mouseInWorldCoords);
+        glm::ivec3 position = glm::ivec3(std::floor(mouseInWorldCoords.x), std::floor(mouseInWorldCoords.y), std::floor(mouseInWorldCoords.z));
         // Check if block is placed in bounds
         position += glm::ivec3(worldSize / 2);
         if (position.x < 0 || position.z < 0)

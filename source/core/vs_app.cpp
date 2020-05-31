@@ -4,6 +4,7 @@
 // Include glfw3.h after our OpenGL definitions
 #include <GLFW/glfw3.h>
 #include <spdlog/common.h>
+#include <glm/ext/matrix_projection.hpp>
 #include <limits>
 #include <thread>
 
@@ -292,25 +293,14 @@ int VSApp::mainLoop()
             int height;
             glfwGetWindowSize(window, &width, &height);
             float depth;
-            glReadPixels((GLint)xpos, (GLint)(height - ypos), 1, 1, GL_DEPTH_COMPONENT, GL_FLOAT, &depth);
-            xpos /= width;
-            // Invert y coordinate
-            ypos /= height;
-            glm::mat4 VPInv = glm::inverse(getActiveWorld()->getCamera()->getProjectionMatrix() * getActiveWorld()->getCamera()->getViewMatrix());
-            glm::vec4 vec;
-            vec.x = (2 * xpos) - 1.F;
-            // std::cout << "Xpos " << vec[0] << std::endl;
-            vec.y = 1.F - (2 * ypos);
-            vec.z = (2 * depth) - 1.F;
-            // std::cout << "Depth " << depth << std::endl;
-            vec.w = 1;
-            // std::cout << vec[0] << ", "<< vec[1] << ", " << vec[2] << ", " << vec[3] << std::endl;
-            glm::vec4 posWorld4 = VPInv * vec;
-            posWorld4 /= posWorld4.w;
-            // std::cout << posWorld4.x << ", " << posWorld4.y << ", " << posWorld4.z << ", " << posWorld4.w << std::endl;
-            auto position = glm::vec3(posWorld4);
+            glReadPixels((GLint)xpos, (GLint)(height - ypos), (GLsizei)1.0F, (GLsizei)1.0F, GL_DEPTH_COMPONENT, GL_FLOAT, &depth);
+            auto screenPos = glm::vec3(xpos, height - ypos, depth);
+            auto tmpView = getActiveWorld()->getCamera()->getViewMatrix();
+            auto tmpProj = getActiveWorld()->getCamera()->getProjectionMatrix();
+            glm::vec4 viewport = glm::vec4(0.0F, 0.0F, width, height);
+            auto worldPos = glm::unProject(screenPos, tmpView, tmpProj, viewport);
             // std::cout << position.x << ", " << position.y << ", " << position.z << std::endl;
-            getActiveWorld()->getCameraController()->setMouseInWorldCoords(position);
+            getActiveWorld()->getCameraController()->setMouseInWorldCoords(worldPos);
         }
 
         // draw ui
