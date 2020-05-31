@@ -7,9 +7,11 @@
 #include <numeric>
 #include <array>
 #include <glm/gtx/norm.hpp>
+#include <vector>
 
 #include "renderer/vs_modelloader.h"
 
+#include "world/vs_block.h"
 #include "world/vs_world.h"
 #include "core/vs_camera.h"
 #include "core/vs_app.h"
@@ -105,6 +107,11 @@ void VSChunkManager::setBlock(glm::ivec3 location, VSBlockID blockID)
 glm::ivec3 VSChunkManager::getWorldSize() const
 {
     return worldSize;
+}
+
+glm::ivec2 VSChunkManager::getChunkCount() const
+{
+    return chunkCount;
 }
 
 void VSChunkManager::draw(VSWorld* world)
@@ -210,11 +217,26 @@ void VSChunkManager::updateChunks()
 
     initializeChunks();
 
+    // Init from file asynchronous
+    bool expected = true;
+    if (bShouldInitializeFromData.compare_exchange_weak(expected, false))
+    {
+        // Set block data to chunks, TODO: add checks, this is potentially dangerous
+        uint32_t chunkSize = getChunkBlockCount();
+        auto iter = worldDataFromFile.blocks.begin();
+        for (const auto chunk : chunks)
+        {
+            chunk->blocks.insert(chunk->blocks.begin(), iter, iter + chunkSize);
+            chunk->bIsDirty = true;
+            iter += chunkSize;
+        }
+    }
+
     auto blocksUpdated = 0;
 
     // Todod add conifg option
     constexpr auto udpateLimit = 64*256*64;
-
+  
     for (std::size_t chunkIndex = 0; chunkIndex < getTotalChunkCount(); ++chunkIndex)
     {
         // to avoid stutter we only update approx. 64*256*64 blocks per frame
@@ -287,6 +309,30 @@ std::size_t VSChunkManager::getDrawCallCount() const
 bool VSChunkManager::shouldReinitializeChunks() const
 {
     return bShouldReinitializeChunks.load();
+}
+
+VSChunkManager::VSWorldData VSChunkManager::getData() const
+{
+    VSChunkManager::VSWorldData worldData{};
+
+    worldData.chunkSize = getWorldSize();
+    worldData.chunkCount = getChunkCount();
+
+    // Write BlockIDs to vector
+    worldData.blocks.reserve(getChunkBlockCount() * getTotalChunkCount());
+    for (const auto chunk : chunks)
+    {
+        worldData.blocks.insert(worldData.blocks.end(), chunk->blocks.begin(), chunk->blocks.end());
+    }
+
+    return worldData;
+}
+
+void VSChunkManager::initFromData(const VSWorldData& data)
+{
+    setChunkDimensions(data.chunkSize, data.chunkCount);
+    worldDataFromFile = data;
+    bShouldInitializeFromData = true;
 }
 
 void VSChunkManager::initializeChunks()
@@ -695,24 +741,20 @@ VSChunkManager::worldCoordinatesToChunkAndBlockIndex(const glm::ivec3& worldCoor
 {
     const auto chunkCoordinates = worldCoordinatesToChunkCoordinates(worldCoords);
     const auto chunkIndex = chunkCoordinatesToChunkIndex(chunkCoordinates);
-    return {
-        chunkIndex,
-        blockCoordinatesToBlockIndex(
-            {worldCoords.x - chunkCoordinates.x * chunkSize.x,
-             worldCoords.y,
-             worldCoords.z - chunkCoordinates.y * chunkSize.z})};
+    return {chunkIndex,
+            blockCoordinatesToBlockIndex({worldCoords.x - chunkCoordinates.x * chunkSize.x,
+                                          worldCoords.y,
+                                          worldCoords.z - chunkCoordinates.y * chunkSize.z})};
 }
 
 std::tuple<glm::ivec2, std::size_t>
 VSChunkManager::worldCoordinatesToChunkCoordinatesAndBlockIndex(const glm::ivec3& worldCoords) const
 {
     const auto chunkCoordinates = worldCoordinatesToChunkCoordinates(worldCoords);
-    return {
-        chunkCoordinates,
-        blockCoordinatesToBlockIndex(
-            {worldCoords.x - chunkCoordinates.x * chunkSize.x,
-             worldCoords.y,
-             worldCoords.z - chunkCoordinates.y * chunkSize.z})};
+    return {chunkCoordinates,
+            blockCoordinatesToBlockIndex({worldCoords.x - chunkCoordinates.x * chunkSize.x,
+                                          worldCoords.y,
+                                          worldCoords.z - chunkCoordinates.y * chunkSize.z})};
 }
 
 glm::ivec3 VSChunkManager::blockCoordinatesToWorldCoordinates(
@@ -720,8 +762,13 @@ glm::ivec3 VSChunkManager::blockCoordinatesToWorldCoordinates(
     const glm::ivec3& blockCoords) const
 {
     const glm::ivec2 chunkCoordinates = chunkIndexToChunkCoordinates(chunkIndex);
-    return {
-        chunkCoordinates.x * chunkSize.x + blockCoords.x,
-        blockCoords.y,
-        chunkCoordinates.y * chunkSize.z + blockCoords.z};
+    return {chunkCoordinates.x * chunkSize.x + blockCoords.x,
+            blockCoords.y,
+            chunkCoordinates.y * chunkSize.z + blockCoords.z};
+}
+
+void VSChunkManager::setWorldData(const VSWorldData& worldData)
+{
+    worldDataFromFile = worldData;
+    bShouldInitializeFromData = true;
 }
