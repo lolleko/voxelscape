@@ -1,5 +1,7 @@
 #include <glad/glad.h>
 #include <stb_image.h>
+#include <algorithm>
+#include <filesystem>
 
 #include "core/vs_log.h"
 #include "renderer/vs_textureloader.h"
@@ -51,29 +53,31 @@ unsigned int loadCubemap(std::vector<std::string> faces)
 
 unsigned int loadDebugCubemap()
 {
-    std::vector<std::string> faces{"textures/cubemapDebug/right.jpg",
-                                   "textures/cubemapDebug/left.jpg",
-                                   "textures/cubemapDebug/top.jpg",
-                                   "textures/cubemapDebug/bottom.jpg",
-                                   "textures/cubemapDebug/front.jpg",
-                                   "textures/cubemapDebug/back.jpg"};
+    std::vector<std::string> faces{
+        "textures/cubemapDebug/right.jpg",
+        "textures/cubemapDebug/left.jpg",
+        "textures/cubemapDebug/top.jpg",
+        "textures/cubemapDebug/bottom.jpg",
+        "textures/cubemapDebug/front.jpg",
+        "textures/cubemapDebug/back.jpg"};
     return loadCubemap(faces);
 }
 
 unsigned int loadSkyboxCubemap()
 {
-    std::vector<std::string> faces{"textures/skybox/right.jpg",
-                                   "textures/skybox/left.jpg",
-                                   "textures/skybox/top.jpg",
-                                   "textures/skybox/bottom.jpg",
-                                   "textures/skybox/front.jpg",
-                                   "textures/skybox/back.jpg"};
+    std::vector<std::string> faces{
+        "textures/skybox/right.jpg",
+        "textures/skybox/left.jpg",
+        "textures/skybox/top.jpg",
+        "textures/skybox/bottom.jpg",
+        "textures/skybox/front.jpg",
+        "textures/skybox/back.jpg"};
     return loadCubemap(faces);
 }
 
 unsigned int TextureFromFile(std::string filename, bool gamma)
 {
-    (void) gamma;
+    (void)gamma;
 
     unsigned int textureID;
     glGenTextures(1, &textureID);
@@ -118,7 +122,7 @@ unsigned int TextureFromFile(std::string filename, bool gamma)
 
 unsigned int TextureAtlasFromFile(std::string atlasDir, bool gamma)
 {
-    (void) gamma;
+    (void)gamma;
 
     int width;
     int height;
@@ -128,8 +132,15 @@ unsigned int TextureAtlasFromFile(std::string atlasDir, bool gamma)
     std::vector<unsigned char> pixels;
     int imageCount = 0;
 
-    for(const auto& imagePath : std::filesystem::directory_iterator(atlasDir)) {
-        unsigned char* data = stbi_load(imagePath.path().string().c_str(), &width, &height, &nrComponents, 0);
+    const auto dirIter = std::filesystem::directory_iterator(atlasDir);
+    auto dirContents = std::vector<std::filesystem::directory_entry>(begin(dirIter), end(dirIter));
+
+    std::sort(dirContents.begin(), dirContents.end());
+
+    for (const auto& imagePath : dirContents)
+    {
+        unsigned char* data =
+            stbi_load(imagePath.path().string().c_str(), &width, &height, &nrComponents, 0);
         if (data)
         {
             if (nrComponents == 1)
@@ -160,7 +171,17 @@ unsigned int TextureAtlasFromFile(std::string atlasDir, bool gamma)
     glGenTextures(1, &textureID);
 
     glBindTexture(GL_TEXTURE_2D_ARRAY, textureID);
-    glTexImage3D(GL_TEXTURE_2D_ARRAY, 0, format, width, height, imageCount, 0, format, GL_UNSIGNED_BYTE, pixels.data());
+    glTexImage3D(
+        GL_TEXTURE_2D_ARRAY,
+        0,
+        format,
+        width,
+        height,
+        imageCount,
+        0,
+        format,
+        GL_UNSIGNED_BYTE,
+        pixels.data());
 
     glGenerateMipmap(GL_TEXTURE_2D_ARRAY);
 

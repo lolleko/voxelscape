@@ -8,21 +8,20 @@
 #include <array>
 #include <glm/gtx/norm.hpp>
 #include <vector>
+#include <functional>
 
 #include "renderer/vs_modelloader.h"
+#include "renderer/vs_textureloader.h"
 
 #include "world/vs_block.h"
 #include "world/vs_world.h"
+
 #include "core/vs_camera.h"
 #include "core/vs_app.h"
+#include "core/vs_debug_draw.h"
+
 #include "ui/vs_ui.h"
 #include "ui/vs_ui_state.h"
-
-#include <functional>
-#include <renderer/vs_textureloader.h>
-#include <functional>
-
-#include "core/vs_debug_draw.h"
 
 enum VSCubeFace : std::uint8_t
 {
@@ -259,7 +258,8 @@ void VSChunkManager::updateChunks()
             blocksUpdated += getChunkBlockCount();
         }
 
-        if (blocksUpdated > udpateLimit) {
+        if (blocksUpdated > udpateLimit)
+        {
             return;
         }
     }
