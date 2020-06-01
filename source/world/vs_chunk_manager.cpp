@@ -235,7 +235,7 @@ void VSChunkManager::updateChunks()
     auto blocksUpdated = 0;
 
     // Todod add conifg option
-    constexpr auto udpateLimit = 128 * 256 * 128;
+    constexpr auto udpateLimit = 256 * 256 * 258;
 
     for (std::size_t chunkIndex = 0; chunkIndex < getTotalChunkCount(); ++chunkIndex)
     {
