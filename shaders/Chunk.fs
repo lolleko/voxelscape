@@ -7,6 +7,7 @@ in VertexData {
     vec3 tangent;
     vec3 biTangent;
     vec3 material;
+    flat uint blockID;
 } i;
 
 out vec4 outColor;
@@ -90,18 +91,20 @@ void main() {
 
     float sun = clamp(dot(norm, directLightDir), 0.0, 1.0 );
 
-    vec3 lin  = sun * vec3(1.00,0.80,0.55) * pow(vec3(shadowFactor), vec3(1.0,1.2,1.5));
+    vec3 light  = sun * vec3(1.00,0.80,0.55) * pow(vec3(shadowFactor), vec3(1.0,1.2,1.5));
     // TODO sky light and indirect light
 
     // block material
-    vec3 color = i.material * lin;
+    vec3 tex =  pow(texture(spriteTexture, vec3(i.texCoord, i.blockID)).rgb, vec3(2.2));
+
+    vec3 color = tex * light;
 
     // gamma correction
     color = pow(color, vec3(1.0/2.2));
 
     outColor = vec4(color, 1.0);
 
-    outColor = texture(spriteTexture, vec3(i.texCoord, 4));
+    //outColor = texture(spriteTexture, vec3(i.texCoord, 4));
 
     //outColor = vec4(occ);
 

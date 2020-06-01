@@ -247,16 +247,19 @@ void VSChunkManager::updateChunks()
 
     auto blocksUpdated = 0;
 
-    // Todod add conifg option
-    constexpr auto udpateLimit = 256 * 256 * 258;
+    // Todo add conifg option
+    constexpr auto udpateLimit = 64 * 256 * 64;
 
     for (std::size_t chunkIndex = 0; chunkIndex < getTotalChunkCount(); ++chunkIndex)
     {
         // to avoid stutter we only update approx. 64*256*64 blocks per frame
         // this could be moved ot a thread as well, but is fast enough to run on the main thread.
-        if (blocksUpdated < udpateLimit && updateVisibleBlocks(chunkIndex))
+        if (updateVisibleBlocks(chunkIndex))
         {
             blocksUpdated += getChunkBlockCount();
+        }
+
+        if (blocksUpdated > udpateLimit) {
             return;
         }
     }

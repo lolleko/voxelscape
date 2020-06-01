@@ -20,6 +20,7 @@ out VertexData {
     vec3 tangent;
     vec3 biTangent;
     vec3 material;
+    flat uint blockID;
 } o;
 
 uniform mat4 VP;
@@ -32,6 +33,7 @@ void main()
     o.tangent = inTangent;
     o.biTangent = inBiTangent;
     o.material = blockColors[blockID];
+    o.blockID = blockID;
 
     gl_Position = VP * vec4(o.worldPosition, 1.0);
 }
