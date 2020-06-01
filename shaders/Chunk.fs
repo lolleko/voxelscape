@@ -6,12 +6,12 @@ in VertexData {
     vec2 texCoord;
     vec3 tangent;
     vec3 biTangent;
-    vec3 color;
+    vec3 material;
 } i;
 
 out vec4 outColor;
 
-uniform vec3 lightPos; 
+uniform vec3 lightDir;
 uniform vec3 lightColor; 
 uniform vec3 viewPos;
 
@@ -27,8 +27,8 @@ vec3 worldSizeHalf = worldSize / 2u;
 float map(in vec3 pos) {
     vec3 shadowTexCoord = (pos + worldSizeHalf) / vec3(worldSize);
     float distance = texture(shadowTexture, shadowTexCoord).r;
-
-    return distance;
+    //float distance = texelFetch(shadowTexture, clamp(ivec3(pos + worldSizeHalf), ivec3(0.0), ivec3(worldSize) - ivec3(1.0)), 0).r;
+    return distance + 0.5;
 
 
     // ivec3 shadowTexCoord = clamp(ivec3(pos + worldSizeHalf), ivec3(0.0), ivec3(worldSize) - ivec3(1.0));
@@ -39,30 +39,29 @@ float map(in vec3 pos) {
 // https://www.shadertoy.com/view/lsKcDD
 float raymarch(in vec3 ro, in vec3 rd) {
     float res = 1.0;
-    float ph = 1e20;
+
+    const int maxSteps = 48;
 
     const float mint = 0.001;
     float t = mint;
-    const float maxt = 512.0;
+    const float maxt = 256.0;
 
-    const float k = 10.0;
+    // lower values => softer
+    const float softness = 8.0;
 
-    for( int i=0; i<96; i++ )
+    for(int i=0; i < maxSteps; i++)
     {
         float h = map(ro + rd * t);
+        float s = clamp(softness*h/t,0.0,1.0);
+        res = min(res, s*s*(3.0-2.0*s));
 
-        //float y = h*h/(2.0*ph);
-        float y = (i==0) ? 0.0 : h*h/(2.0*ph);
-        float d = sqrt(h*h-y*y);
-        res = min( res, k*d/max(0.0,t-y) );
-        ph = h;
         t += h;
 
-        if( h <= 0 || res <= 0.01 || t > maxt) {
+        if(res <= 0.01 || t > maxt) {
             break;
         }
     }
-    return clamp(res, 0.0, 1.0);
+    return clamp(res, 0.2, 1.0);
 }
 
 float calcAO( in vec3 pos, in vec3 nor )
@@ -82,37 +81,24 @@ float calcAO( in vec3 pos, in vec3 nor )
 void main() {
     vec3 norm = normalize(i.normal);
 
-    vec3 viewDir = normalize(viewPos - i.worldPosition);
-
-    // dont calculate light if behind face
-    if (dot(norm, viewDir) < 0) {
-       outColor = vec4(0.0);
-       return;
-    }
-
     vec3 rayStart = i.worldPosition;
 
-    vec3 lightDir = normalize(lightPos - i.worldPosition);
+    vec3 directLightDir = normalize(lightDir);
 
-    float shadowFactor = enableShadows ? raymarch(rayStart, lightDir) : 1.0;
+    float shadowFactor = enableShadows ? raymarch(rayStart, directLightDir) : 1.0;
 
-    // ambient
-    float ambientStrength = 0.2;
-    float occ = 1.0; // TODO enableAO ? calcAO(i.worldPosition, norm) : 1.0;
-    vec3 ambient = occ * ambientStrength * lightColor;
+    float sun = clamp(dot(norm, directLightDir), 0.0, 1.0 );
 
-    float diff = max(dot(norm, lightDir), 0.0);
-    vec3 diffuse = diff * lightColor;
+    vec3 lin  = sun * vec3(1.00,0.80,0.55) * pow(vec3(shadowFactor), vec3(1.0,1.2,1.5));
+    // TODO sky light and indirect light
 
-    float specularStrength = 0.5;
-    vec3 reflectDir = reflect(-lightDir, norm);
-    float spec = pow(max(dot(viewDir, reflectDir), 0.0), 32);
+    // block material
+    vec3 color = i.material * lin;
 
-    vec3 specular = specularStrength * spec * lightColor;  
+    // gamma correction
+    color = pow(color, vec3(1.0/2.2));
 
-    vec3 result = (ambient + shadowFactor * (diffuse + specular)) * i.color;
-
-    outColor = vec4(result, 1.0);
+    outColor = vec4(color, 1.0);
 
     //outColor = vec4(occ);
 
@@ -122,5 +108,5 @@ void main() {
 
     //outColor = vec4(map(i.worldPosition + vec3(0, 24, 0)) / 255, 0, 0, 1);
 
-    //outColor = vec4(map(i.worldPosition) / 255, 0, 0, 1);
+    //outColor = vec4(map(i.worldPosition + lightDir * 0.1), 0, 0, 1);
 }

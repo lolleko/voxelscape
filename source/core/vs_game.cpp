@@ -66,7 +66,7 @@ void VSGame::gameLoop()
         if (UI->getState()->bShouldGenerateHeightMap)
         {
             const auto worldSize = world->getChunkManager()->getWorldSize();
-            VSHeightmap hm = VSHeightmap(42, worldSize.y, 1, 0.02F, 4.F);
+            VSHeightmap hm = VSHeightmap(42, worldSize.y, 1, 0.01F, 1.F);
             for (int x = 0; x < worldSize.x; x++)
             {
                 for (int z = 0; z < worldSize.z; z++)
