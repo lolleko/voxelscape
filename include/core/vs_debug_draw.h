@@ -34,6 +34,9 @@ public:
         std::uint32_t segments = 12,
         float thickness = 1.F);
 
+    void
+    drawPoint(const glm::vec3& center, const glm::vec<3, std::byte>& color, float thickness = 1.F);
+
     void draw(VSWorld* world) override;
 
 private:

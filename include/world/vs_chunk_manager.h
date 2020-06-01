@@ -7,11 +7,14 @@
 #include <vector>
 #include <array>
 #include <renderer/vs_shader.h>
+#include <future>
 
 #include "core/vs_core.h"
 
 #include "renderer/vs_drawable.h"
 #include "renderer/vs_vertex_context.h"
+
+#include "world/vs_chunk_update.h"
 
 #include "vs_block.h"
 
@@ -123,8 +126,7 @@ private:
 
     GLuint shadowTextureID;
 
-    using VSShadwoChunkUpdate =
-        VSChunkUpdate<std::vector<float>>;
+    using VSShadwoChunkUpdate = VSChunkUpdate<std::vector<float>>;
 
     std::map<VSChunk*, std::shared_ptr<VSShadwoChunkUpdate>> activeShadowBuildTasks;
 
@@ -138,7 +140,12 @@ private:
 
     void deleteChunk(VSChunk* chunk);
 
-    bool updateShadows(std::size_t chunkIndex);
+    void updateShadows(std::size_t chunkIndex);
+
+    std::vector<float> chunkUpdateShadow(
+        const std::atomic<bool>& bShouldCancel,
+        std::atomic<bool>& bIsReady,
+        std::size_t chunkIndex) const;
 
     bool updateVisibleBlocks(std::size_t chunkIndex);
 
