@@ -115,3 +115,59 @@ unsigned int TextureFromFile(std::string filename, bool gamma)
 
     return textureID;
 };
+
+unsigned int TextureAtlasFromFile(std::string atlasDir, bool gamma)
+{
+    (void) gamma;
+
+    int width;
+    int height;
+    int nrComponents;
+    GLenum format = GL_RGB;
+
+    std::vector<unsigned char> pixels;
+    int imageCount = 0;
+
+    for(const auto& imagePath : std::filesystem::directory_iterator(atlasDir)) {
+        unsigned char* data = stbi_load(imagePath.path().string().c_str(), &width, &height, &nrComponents, 0);
+        if (data)
+        {
+            if (nrComponents == 1)
+                format = GL_RED;
+            else if (nrComponents == 3)
+                format = GL_RGB;
+            else if (nrComponents == 4)
+                format = GL_RGBA;
+
+            pixels.insert(pixels.end(), data, data + (width * height * nrComponents));
+
+            imageCount++;
+
+            stbi_image_free(data);
+        }
+        else
+        {
+            VSLog::Log(
+                VSLog::Category::Core,
+                VSLog::Level::err,
+                "TextureAtlas failed to load at path: {}",
+                imagePath.path().string().c_str());
+            stbi_image_free(data);
+        }
+    }
+
+    unsigned int textureID;
+    glGenTextures(1, &textureID);
+
+    glBindTexture(GL_TEXTURE_2D_ARRAY, textureID);
+    glTexImage3D(GL_TEXTURE_2D_ARRAY, 0, format, width, height, imageCount, 0, format, GL_UNSIGNED_BYTE, pixels.data());
+
+    glGenerateMipmap(GL_TEXTURE_2D_ARRAY);
+
+    glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_WRAP_S, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_WRAP_T, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D_ARRAY, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+    return textureID;
+};

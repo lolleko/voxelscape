@@ -17,6 +17,7 @@ uniform vec3 viewPos;
 
 uniform uvec3 worldSize;
 
+uniform sampler2DArray spriteTexture;
 uniform sampler3D shadowTexture;
 
 uniform bool enableShadows;
@@ -113,6 +114,8 @@ void main() {
     vec3 result = (ambient + shadowFactor * (diffuse + specular)) * i.color;
 
     outColor = vec4(result, 1.0);
+
+    outColor = texture(spriteTexture, vec3(i.texCoord, 4));
 
     //outColor = vec4(occ);
 

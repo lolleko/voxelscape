@@ -115,7 +115,20 @@ private:
 
     std::uint32_t drawnBlockCount;
 
+    GLuint spriteTexture;
+
+    GLuint spriteTextureID;
+
     GLuint shadowTexture;
+
+    GLuint shadowTextureID;
+
+    using VSShadwoChunkUpdate =
+        VSChunkUpdate<std::vector<float>>;
+
+    std::map<VSChunk*, std::shared_ptr<VSShadwoChunkUpdate>> activeShadowBuildTasks;
+
+    static inline auto maxShadowUpdateThreads = std::thread::hardware_concurrency();
 
     void initializeChunks();
 

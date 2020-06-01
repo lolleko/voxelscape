@@ -10,3 +10,5 @@ unsigned int loadDebugCubemap();
 unsigned int loadSkyboxCubemap();
 
 unsigned int TextureFromFile(std::string filename, bool gamma = false);
+
+unsigned int TextureAtlasFromFile(std::string filename, bool gamma = false);

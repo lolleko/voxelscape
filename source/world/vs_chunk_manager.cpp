@@ -18,6 +18,10 @@
 #include "ui/vs_ui.h"
 #include "ui/vs_ui_state.h"
 
+
+#include <functional>
+#include <renderer/vs_textureloader.h>
+
 #include "core/vs_debug_draw.h"
 
 enum VSCubeFace : std::uint8_t
@@ -32,6 +36,9 @@ enum VSCubeFace : std::uint8_t
 
 VSChunkManager::VSChunkManager()
 {
+    spriteTextureID = 0;
+    shadowTextureID = 1;
+
     for (std::size_t i = 1; i < 64; i++)
     {
         auto* vertexContext = loadVertexContext("models/cubes/" + std::to_string(i) + ".obj");
@@ -68,10 +75,12 @@ VSChunkManager::VSChunkManager()
         glBindVertexArray(0);
     }
 
+    spriteTexture = TextureAtlasFromFile("textures/tiles");
+
     std::vector<glm::vec3> blockColors = {
         {0.F, 0.F, 0.F}, {0.3F, 0.3F, 0.3F}, {0.01F, 0.5F, 0.15F}};
 
-    chunkShader.uniforms().setVec3Array("blockColors", blockColors);
+    chunkShader.uniforms().setVec3Array("blockColors", blockColors).setInt("spriteTexture", spriteTextureID);
 }
 
 VSBlockID VSChunkManager::getBlock(glm::ivec3 location) const
@@ -155,8 +164,11 @@ void VSChunkManager::draw(VSWorld* world)
             visibleChunks.push_back(chunk);
         }
     }
-    glActiveTexture(GL_TEXTURE0);
+    glActiveTexture(GL_TEXTURE0 + shadowTextureID);
     glBindTexture(GL_TEXTURE_3D, shadowTexture);
+
+    glActiveTexture(GL_TEXTURE0 + spriteTextureID);
+    glBindTexture(GL_TEXTURE_2D_ARRAY, spriteTexture);
 
     chunkShader.uniforms()
         .setVec3("lightPos", world->getDirectLightPos())
@@ -164,7 +176,8 @@ void VSChunkManager::draw(VSWorld* world)
         .setVec3("viewPos", world->getCamera()->getPosition())
         .setMat4("VP", world->getCamera()->getVPMatrix())
         .setUVec3("worldSize", getWorldSize())
-        .setInt("shadowTexture", 0)
+        .setInt("shadowTexture", shadowTextureID)
+        .setInt("spriteTexture", spriteTextureID)
         .setBool("enableShadows", VSApp::getInstance()->getUI()->getState()->bAreShadowsEnabled)
         .setBool("enableAO", VSApp::getInstance()->getUI()->getState()->bIsAmbientOcclusionEnabled);
 
@@ -357,6 +370,8 @@ void VSChunkManager::initializeChunks()
                 chunks[y * chunkCount.x + x] = newChunk;
             }
         }
+
+        glDeleteTextures(1, &shadowTexture);
 
         glGenTextures(1, &shadowTexture);
         glBindTexture(GL_TEXTURE_3D, shadowTexture);
