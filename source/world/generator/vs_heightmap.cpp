@@ -46,5 +46,5 @@ void VSHeightmap::setMaxHeight(int maxHeight)
 int VSHeightmap::getVoxelHeight(int x, int y)
 {
     float height = getHeight(x, y) * (float)mMaxHeight;
-    return static_cast<int>(std::round(height));
+    return static_cast<int>(std::round(height))/* + mMaxHeight / 2*/;
 }

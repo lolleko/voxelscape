@@ -95,7 +95,7 @@ void VSUI::render()
         }
         if (ImGui::Button("Generate Heightmap"))
         {
-            uiState->bShouldGenerateHeightMap = true;
+            uiState->bShouldGenerateTerrain = true;
         }
         if (ImGui::Button("Show Editor"))
         {
@@ -148,12 +148,16 @@ void VSUI::renderEditorGUI()
     ImGui::EndMainMenuBar();
     // Select block type to set
     // This needs to be adapted to the new block types obviously
-    const char* blockTypes[] = {"Stone", "Water", "Grass", "Wood", "Sand"};
+    const char* blockTypes[] = {"Stone", "Water", "Grass", "Wood", "Sand", "Leaf"};
     if (ImGui::Combo(
             "Select block type", (int*)&uiState->bSetBlockID, blockTypes, IM_ARRAYSIZE(blockTypes)))
     {
         uiState->bShouldUpdateBlockID = true;
     }
+    // This needs to be adapted to available biome types
+    const char* biomeTypes[] = {"Mediterran", "Desert"};
+    ImGui::Combo("Select biome", (int*)&uiState->bBiomeType, biomeTypes, IM_ARRAYSIZE(biomeTypes));
+
     ImGui::Checkbox("wireframe", (bool*)&uiState->isWireframeModeEnabled);
     ImGui::Checkbox("draw chunk border", (bool*)&uiState->bShouldDrawChunkBorder);
     ImGui::InputInt3("chunk size", (int*)&uiState->chunkSize);
@@ -162,9 +166,9 @@ void VSUI::renderEditorGUI()
     {
         uiState->bShouldUpdateChunks = true;
     }
-    if (ImGui::Button("Generate Heightmap"))
+    if (ImGui::Button("Generate Terrain"))
     {
-        uiState->bShouldGenerateHeightMap = true;
+        uiState->bShouldGenerateTerrain = true;
     }
     if (ImGui::Button("Reset Editor"))
     {
