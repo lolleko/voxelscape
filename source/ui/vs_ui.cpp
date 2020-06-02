@@ -81,7 +81,7 @@ void VSUI::render()
     else
     {
         ImGui::ColorEdit3("clear color", (float*)&uiState->clearColor);
-        ImGui::DragFloat3("sun position", (float*)&uiState->directLightPos);
+        ImGui::DragFloat3("sun dir", (float*)&uiState->directLightDir, 0.01F, -1.F, 1.F);
         ImGui::Checkbox("wireframe", (bool*)&uiState->isWireframeModeEnabled);
         ImGui::Checkbox("draw chunk border", (bool*)&uiState->bShouldDrawChunkBorder);
         ImGui::Checkbox("freeze frustum", (bool*)&uiState->bShouldFreezeFrustum);

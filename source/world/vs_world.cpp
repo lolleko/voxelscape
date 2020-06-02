@@ -158,14 +158,14 @@ glm::ivec3 VSWorld::intersectRayWithBlock(glm::vec3 rayOrigin, glm::vec3 rayDire
     return glm::vec3();
 }
 
-glm::vec3 VSWorld::getDirectLightPos() const
+glm::vec3 VSWorld::getDirectLightDir() const
 {
-    return directLightPos;
+    return directLightDir;
 }
 
-void VSWorld::setDirectLightPos(const glm::vec3& newDirectLightPos)
+void VSWorld::setDirectLightDir(const glm::vec3& newDirectLightDir)
 {
-    directLightPos = newDirectLightPos;
+    directLightDir = newDirectLightDir;
 }
 
 glm::vec3 VSWorld::getDirectLightColor() const

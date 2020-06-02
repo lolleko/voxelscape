@@ -20,7 +20,7 @@ namespace VSParser
         json["chunkCount"] = {worldData.chunkCount.x, worldData.chunkCount.y};
         json["chunkSize"] = {worldData.chunkSize.x, worldData.chunkSize.y, worldData.chunkSize.z};
         json["blocks"] = worldData.blocks;
-        outFile /*<< std::setw(4)*/ << json << std::endl;
+        outFile << std::setw(4) << json << std::endl;
         outFile.close();
         return true;
     }

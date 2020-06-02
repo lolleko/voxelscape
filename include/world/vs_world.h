@@ -41,9 +41,9 @@ public:
     [[nodiscard]] glm::ivec3
     intersectRayWithBlock(glm::vec3 rayOrigin, glm::vec3 rayDirection, bool returnPrev = false);
 
-    [[nodiscard]] glm::vec3 getDirectLightPos() const;
+    [[nodiscard]] glm::vec3 getDirectLightDir() const;
 
-    void setDirectLightPos(const glm::vec3& newDirectLightPos);
+    void setDirectLightDir(const glm::vec3& newDirectLightDir);
 
     [[nodiscard]] glm::vec3 getDirectLightColor() const;
 
@@ -61,5 +61,5 @@ private:
 
     std::set<IVSDrawable*> drawables;
 
-    glm::vec3 directLightPos{500.f, 1000.f, 500.f};
+    glm::vec3 directLightDir;
 };
