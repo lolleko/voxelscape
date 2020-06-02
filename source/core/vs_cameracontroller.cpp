@@ -11,3 +11,13 @@ VSCameraController::VSCameraController(VSCamera* camera, VSWorld* world)
     this->cam = camera;
     this->world = world;
 }
+
+void VSCameraController::setEditorBlockID(int blockID)
+{
+    editorBlockID = blockID;
+}
+
+void VSCameraController::setMouseInWorldCoords(glm::vec3 coords)
+{
+    mouseInWorldCoords = coords;
+}

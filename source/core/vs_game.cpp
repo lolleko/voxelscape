@@ -12,7 +12,7 @@
 #include "world/vs_world.h"
 #include "world/vs_chunk_manager.h"
 
-#include "world/generator/vs_heightmap.h"
+#include "world/generator/vs_terrain.h"
 
 void VSGame::initialize(VSApp* inApp)
 {
@@ -63,28 +63,17 @@ void VSGame::gameLoop()
             UI->getMutableState()->bShouldLoadFromFile = false;
         }
 
-        if (UI->getState()->bShouldGenerateHeightMap)
+        if (UI->getState()->bShouldGenerateTerrain)
         {
-            const auto worldSize = world->getChunkManager()->getWorldSize();
-            VSHeightmap hm = VSHeightmap(42, worldSize.y, 1, 0.01F, 1.F);
-            for (int x = 0; x < worldSize.x; x++)
+            if (UI->getState()->bBiomeType == 0)
             {
-                for (int z = 0; z < worldSize.z; z++)
-                {
-                    for (int y = 0; y < hm.getVoxelHeight(x, z); y++)
-                    {
-                        if (y > worldSize.y / 2)
-                        {
-                            world->getChunkManager()->setBlock({x, y, z}, 1);
-                        }
-                        else
-                        {
-                            world->getChunkManager()->setBlock({x, y, z}, 2);
-                        }
-                    }
-                }
+                VSTerrainGeneration::buildTaiga(world);
             }
-            UI->getMutableState()->bShouldGenerateHeightMap = false;
+            else if (UI->getState()->bBiomeType == 1)
+            {
+                VSTerrainGeneration::buildDesert(world);
+            }
+            UI->getMutableState()->bShouldGenerateTerrain = false;
         }
 
         if (UI->getState()->bShouldResetEditor &&
@@ -101,6 +90,13 @@ void VSGame::gameLoop()
                 }
             }
             UI->getMutableState()->bShouldResetEditor = false;
+        }
+
+        if (UI->getState()->bShouldUpdateBlockID)
+        {
+            // Increment because list starts at 0 and we do not want to set "Air" blocks
+            world->getCameraController()->setEditorBlockID(UI->getState()->bSetBlockID + 1);
+            UI->getMutableState()->bShouldUpdateBlockID = false;
         }
 
         // TODO dont pass window as param make abstract input more

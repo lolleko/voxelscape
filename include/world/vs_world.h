@@ -35,10 +35,11 @@ public:
     /*
      * Intersect ray with world to find the block coordinates where the ray first hits a block.
      * Transforms input to block data to calculate intersections ans transforms back to world
-     * coordinates before returning the intersection. For now we return the block coordinates before
-     * the intersection to place a new block in the editor.
+     * coordinates before returning the intersection. If returnPrev is set, the previous block
+     * coords are returned.
      */
-    [[nodiscard]] glm::ivec3 intersectRayWithBlock(glm::vec3 rayOrigin, glm::vec3 rayDirection);
+    [[nodiscard]] glm::ivec3
+    intersectRayWithBlock(glm::vec3 rayOrigin, glm::vec3 rayDirection, bool returnPrev = false);
 
     [[nodiscard]] glm::vec3 getDirectLightDir() const;
 

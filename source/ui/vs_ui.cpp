@@ -95,7 +95,7 @@ void VSUI::render()
         }
         if (ImGui::Button("Generate Heightmap"))
         {
-            uiState->bShouldGenerateHeightMap = true;
+            uiState->bShouldGenerateTerrain = true;
         }
         if (ImGui::Button("Show Editor"))
         {
@@ -123,6 +123,7 @@ void VSUI::render()
     ImGui::Render();
 }
 
+#include <iostream>
 void VSUI::renderEditorGUI()
 {
     if (ImGui::BeginMainMenuBar())
@@ -145,24 +146,43 @@ void VSUI::renderEditorGUI()
         }
     }
     ImGui::EndMainMenuBar();
+    // Select block type to set
+    // This needs to be adapted to the new block types obviously
+    const char* blockTypes[] = {"Stone", "Water", "Grass", "Wood", "Sand", "Leaf"};
+    if (ImGui::Combo(
+            "Select block type", (int*)&uiState->bSetBlockID, blockTypes, IM_ARRAYSIZE(blockTypes)))
+    {
+        uiState->bShouldUpdateBlockID = true;
+    }
+    // This needs to be adapted to available biome types
+    const char* biomeTypes[] = {"Mediterran", "Desert"};
+    ImGui::Combo("Select biome", (int*)&uiState->bBiomeType, biomeTypes, IM_ARRAYSIZE(biomeTypes));
+
+    ImGui::DragFloat3("sun dir", (float*)&uiState->directLightDir, 0.01F, -1.F, 1.F);
     ImGui::Checkbox("wireframe", (bool*)&uiState->isWireframeModeEnabled);
     ImGui::Checkbox("draw chunk border", (bool*)&uiState->bShouldDrawChunkBorder);
+    ImGui::Checkbox("freeze frustum", (bool*)&uiState->bShouldFreezeFrustum);
+    ImGui::Checkbox("shadows", (bool*)&uiState->bAreShadowsEnabled);
     ImGui::InputInt3("chunk size", (int*)&uiState->chunkSize);
     ImGui::InputInt2("world size", (int*)&uiState->chunkCount);
-    ImGui::InputInt("Build block ID", (int*)&uiState->bSetBlockID);
     if (ImGui::Button("Refresh chunk settings"))
     {
         uiState->bShouldUpdateChunks = true;
     }
-    if (ImGui::Button("Generate Heightmap"))
+    if (ImGui::Button("Generate Terrain"))
     {
-        uiState->bShouldGenerateHeightMap = true;
+        uiState->bShouldGenerateTerrain = true;
     }
     if (ImGui::Button("Reset Editor"))
     {
         uiState->bShouldResetEditor = true;
     }
-    ImGui::Text("Drawing blocks %d/%d", uiState->activeBlockCount, uiState->totalBlockCount);
+    ImGui::Text(
+        "Blocks Total; Visible; Drawn: %d; %d; %d",
+        uiState->totalBlockCount,
+        uiState->visibleBlockCount,
+        uiState->drawnBlockCount);
+    ImGui::Text("Drawcalls %d/64", uiState->drawCallCount);
     ImGui::Text(
         "Application average %.3f ms/frame (%.1f FPS)",
         1000.0f / ImGui::GetIO().Framerate,

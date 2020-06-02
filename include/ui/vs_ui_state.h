@@ -13,7 +13,7 @@ struct VSUIState
     glm::ivec3 chunkSize = {32, 64, 32};
     glm::ivec2 chunkCount = {2, 2};
     bool bShouldUpdateChunks = false;
-    bool bShouldGenerateHeightMap = false;
+    bool bShouldGenerateTerrain = false;
     bool bShouldSetGameActive = false;
     
     int activeBlockCount = 0;
@@ -37,7 +37,9 @@ struct VSUIState
     std::filesystem::path loadFilePath = "";
     bool bShouldSaveToFile = false;
     std::filesystem::path saveFilePath = "";
-    int bSetBlockID = 1;
+    bool bShouldUpdateBlockID = false;
+    int bSetBlockID = 0;
+    int bBiomeType = 0;
 
     // Menu Control flow
     bool bMenuActive = true;

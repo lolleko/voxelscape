@@ -89,7 +89,7 @@ void main() {
 
     float shadowFactor = enableShadows ? raymarch(rayStart, directLightDir) : 1.0;
 
-    float sun = clamp(dot(norm, directLightDir), 0.0, 1.0 );
+    float sun = clamp(dot(norm, directLightDir), 0.05, 1.0 );
 
     vec3 light  = sun * vec3(1.00,0.80,0.55) * pow(vec3(shadowFactor), vec3(1.0,1.2,1.5));
     // TODO sky light and indirect light

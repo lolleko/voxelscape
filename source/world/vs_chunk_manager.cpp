@@ -74,10 +74,15 @@ VSChunkManager::VSChunkManager()
         glBindVertexArray(0);
     }
 
-    spriteTexture = TextureAtlasFromFile("textures/tiles");
-
     std::vector<glm::vec3> blockColors = {
-        {0.F, 0.F, 0.F}, {0.3F, 0.3F, 0.3F}, {0.01F, 0.5F, 0.15F}};
+        /*Air=0*/ {0.F, 0.F, 0.F},
+        /*Stone=1*/ {0.3F, 0.3F, 0.3F},
+        /*Water=2*/ {0.F, 0.F, 0.5F},
+        /*Grass=3*/ {0.F, 0.3F, 0.F},
+        /*Wood=4*/ {0.5F, 0.25F, 0.1F},
+        /*Sand=5*/ {1.F, 0.9F, 0.5F},
+        /*Leaf=6*/ {0.F, 0.5F, 0.F}};
+    spriteTexture = TextureAtlasFromFile("textures/tiles");
 
     chunkShader.uniforms()
         .setVec3Array("blockColors", blockColors)

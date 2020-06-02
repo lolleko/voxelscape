@@ -4,6 +4,8 @@
 // Include glfw3.h after our OpenGL definitions
 #include <GLFW/glfw3.h>
 #include <spdlog/common.h>
+#include <glm/ext/matrix_projection.hpp>
+#include <limits>
 #include <thread>
 
 #include "core/vs_core.h"
@@ -139,7 +141,7 @@ int VSApp::initializeGLFW()
     glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
     glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 0);
     glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);  // 3.2+ only
-    glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);  // 3.0+ only
+    glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);            // 3.0+ only
 #endif
 
     // anti Aliasing
@@ -248,15 +250,19 @@ int VSApp::mainLoop()
             glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
         }
 
-        UI->getMutableState()->totalBlockCount = activeWorld->getChunkManager()->getTotalBlockCount();
-        UI->getMutableState()->visibleBlockCount = activeWorld->getChunkManager()->getVisibleBlockCount();
-        UI->getMutableState()->drawnBlockCount = activeWorld->getChunkManager()->getDrawnBlockCount();
+        UI->getMutableState()->totalBlockCount =
+            activeWorld->getChunkManager()->getTotalBlockCount();
+        UI->getMutableState()->visibleBlockCount =
+            activeWorld->getChunkManager()->getVisibleBlockCount();
+        UI->getMutableState()->drawnBlockCount =
+            activeWorld->getChunkManager()->getDrawnBlockCount();
         UI->getMutableState()->drawCallCount = activeWorld->getChunkManager()->getDrawCallCount();
 
         world->setDirectLightDir(UI->getState()->directLightDir);
 
         // TODO add option for day night
-        //world->setDirectLightPos(glm::vec3(world->getChunkManager()->getWorldSize() * 2) * glm::vec3(cos(glfwGetTime() / 10.f),  sin(glfwGetTime() / 10.f), 0.f));
+        // world->setDirectLightPos(glm::vec3(world->getChunkManager()->getWorldSize() * 2) *
+        // glm::vec3(cos(glfwGetTime() / 10.f),  sin(glfwGetTime() / 10.f), 0.f));
 
         //world->getDebugDraw()->drawSphere(world->getDirectLightDir(), 10.f, {255, 255, 255});
 
@@ -277,6 +283,25 @@ int VSApp::mainLoop()
 
         // draw world
         activeWorld->draw(activeWorld);
+
+        // Calculate mouse coords in world space
+        {
+            double xpos;
+            double ypos;
+            glfwGetCursorPos(window, &xpos, &ypos);
+            int width;
+            int height;
+            glfwGetWindowSize(window, &width, &height);
+            float depth;
+            glReadPixels((GLint)xpos, (GLint)(height - ypos), (GLsizei)1.0F, (GLsizei)1.0F, GL_DEPTH_COMPONENT, GL_FLOAT, &depth);
+            auto screenPos = glm::vec3(xpos, height - ypos, depth);
+            auto tmpView = getActiveWorld()->getCamera()->getViewMatrix();
+            auto tmpProj = getActiveWorld()->getCamera()->getProjectionMatrix();
+            glm::vec4 viewport = glm::vec4(0.0F, 0.0F, width, height);
+            auto worldPos = glm::unProject(screenPos, tmpView, tmpProj, viewport);
+            // std::cout << position.x << ", " << position.y << ", " << position.z << std::endl;
+            getActiveWorld()->getCameraController()->setMouseInWorldCoords(worldPos);
+        }
 
         // draw ui
         UI->draw();
