@@ -158,8 +158,11 @@ void VSUI::renderEditorGUI()
     const char* biomeTypes[] = {"Mediterran", "Desert"};
     ImGui::Combo("Select biome", (int*)&uiState->bBiomeType, biomeTypes, IM_ARRAYSIZE(biomeTypes));
 
+    ImGui::DragFloat3("sun dir", (float*)&uiState->directLightDir, 0.01F, -1.F, 1.F);
     ImGui::Checkbox("wireframe", (bool*)&uiState->isWireframeModeEnabled);
     ImGui::Checkbox("draw chunk border", (bool*)&uiState->bShouldDrawChunkBorder);
+    ImGui::Checkbox("freeze frustum", (bool*)&uiState->bShouldFreezeFrustum);
+    ImGui::Checkbox("shadows", (bool*)&uiState->bAreShadowsEnabled);
     ImGui::InputInt3("chunk size", (int*)&uiState->chunkSize);
     ImGui::InputInt2("world size", (int*)&uiState->chunkCount);
     if (ImGui::Button("Refresh chunk settings"))
@@ -174,11 +177,17 @@ void VSUI::renderEditorGUI()
     {
         uiState->bShouldResetEditor = true;
     }
-    ImGui::Text("Drawing blocks %d/%d", uiState->activeBlockCount, uiState->totalBlockCount);
+    ImGui::Text(
+        "Blocks Total; Visible; Drawn: %d; %d; %d",
+        uiState->totalBlockCount,
+        uiState->visibleBlockCount,
+        uiState->drawnBlockCount);
+    ImGui::Text("Drawcalls %d/64", uiState->drawCallCount);
     ImGui::Text(
         "Application average %.3f ms/frame (%.1f FPS)",
         1000.0f / ImGui::GetIO().Framerate,
         ImGui::GetIO().Framerate);
+
     ImGui::TextColored(ImVec4(1, 1, 0, 1), "Log");
     ImGui::BeginChild("Scrolling");
     ImGui::Text("%s", uiState->logStream.str().c_str());
