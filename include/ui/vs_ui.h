@@ -18,6 +18,7 @@ public:
     void cleanup();
 
     void render();
+    void renderDebugGUI();
     void renderEditorGUI();
     void renderMainMenu();
 

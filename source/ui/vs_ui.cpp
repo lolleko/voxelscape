@@ -73,6 +73,7 @@ void VSUI::render()
     if (uiState->bEditorActive)
     {
         renderEditorGUI();
+        renderDebugGUI();
     }
     else if (uiState->bMenuActive)
     {
@@ -80,50 +81,57 @@ void VSUI::render()
     }
     else
     {
-        ImGui::ColorEdit3("clear color", (float*)&uiState->clearColor);
-        ImGui::DragFloat3("sun dir", (float*)&uiState->directLightDir, 0.01F, -1.F, 1.F);
-        ImGui::Checkbox("wireframe", (bool*)&uiState->isWireframeModeEnabled);
-        ImGui::Checkbox("draw chunk border", (bool*)&uiState->bShouldDrawChunkBorder);
-        ImGui::Checkbox("freeze frustum", (bool*)&uiState->bShouldFreezeFrustum);
-        ImGui::Checkbox("shadows", (bool*)&uiState->bAreShadowsEnabled);
-        // TODO ImGui::Checkbox("AO", (bool*)&uiState->bIsAmbientOcclusionEnabled);
-        ImGui::InputInt3("chunk size", (int*)&uiState->chunkSize);
-        ImGui::InputInt2("world size", (int*)&uiState->chunkCount);
-        if (ImGui::Button("Refresh chunk settings"))
-        {
-            uiState->bShouldUpdateChunks = true;
-        }
-        if (ImGui::Button("Generate Heightmap"))
-        {
-            uiState->bShouldGenerateTerrain = true;
-        }
-        if (ImGui::Button("Show Editor"))
-        {
-            uiState->bShouldSetEditorActive = true;
-            uiState->bEditorActive = true;
-        }
-        ImGui::Text(
-            "Blocks Total; Visible; Drawn: %d; %d; %d",
-            uiState->totalBlockCount,
-            uiState->visibleBlockCount,
-            uiState->drawnBlockCount);
-        ImGui::Text("Drawcalls %d/64", uiState->drawCallCount);
-        ImGui::Text(
-            "Application average %.3f ms/frame (%.1f FPS)",
-            1000.0f / ImGui::GetIO().Framerate,
-            ImGui::GetIO().Framerate);
-
-        ImGui::TextColored(ImVec4(1, 1, 0, 1), "Log");
-        ImGui::BeginChild("Scrolling");
-        ImGui::Text("%s", uiState->logStream.str().c_str());
-        ImGui::EndChild();
+        renderDebugGUI();
     }
 
     // Rendering
     ImGui::Render();
 }
 
-#include <iostream>
+void VSUI::renderDebugGUI()
+{
+    ImGui::ColorEdit3("clear color", (float*)&uiState->clearColor);
+    ImGui::DragFloat3("sun dir", (float*)&uiState->directLightDir, 0.01F, -1.F, 1.F);
+    ImGui::Checkbox("wireframe", (bool*)&uiState->isWireframeModeEnabled);
+    ImGui::Checkbox("draw chunk border", (bool*)&uiState->bShouldDrawChunkBorder);
+    ImGui::Checkbox("freeze frustum", (bool*)&uiState->bShouldFreezeFrustum);
+    ImGui::Checkbox("shadows", (bool*)&uiState->bAreShadowsEnabled);
+    // TODO ImGui::Checkbox("AO", (bool*)&uiState->bIsAmbientOcclusionEnabled);
+    ImGui::InputInt3("chunk size", (int*)&uiState->chunkSize);
+    ImGui::InputInt2("world size", (int*)&uiState->chunkCount);
+    if (ImGui::Button("Refresh chunk settings"))
+    {
+        uiState->bShouldUpdateChunks = true;
+    }
+    // This needs to be adapted to available biome types
+    const char* biomeTypes[] = {"Mountains", "Desert"};
+    ImGui::Combo("Select biome", (int*)&uiState->bBiomeType, biomeTypes, IM_ARRAYSIZE(biomeTypes));
+    if (ImGui::Button("Generate Terrain"))
+    {
+        uiState->bShouldGenerateTerrain = true;
+    }
+    if (ImGui::Button("Show Editor"))
+    {
+        uiState->bShouldSetEditorActive = true;
+        uiState->bEditorActive = true;
+    }
+    ImGui::Text(
+        "Blocks Total; Visible; Drawn: %d; %d; %d",
+        uiState->totalBlockCount,
+        uiState->visibleBlockCount,
+        uiState->drawnBlockCount);
+    ImGui::Text("Drawcalls %d/64", uiState->drawCallCount);
+    ImGui::Text(
+        "Application average %.3f ms/frame (%.1f FPS)",
+        1000.0f / ImGui::GetIO().Framerate,
+        ImGui::GetIO().Framerate);
+
+    ImGui::TextColored(ImVec4(1, 1, 0, 1), "Log");
+    ImGui::BeginChild("Scrolling");
+    ImGui::Text("%s", uiState->logStream.str().c_str());
+    ImGui::EndChild();
+}
+
 void VSUI::renderEditorGUI()
 {
     if (ImGui::BeginMainMenuBar())
@@ -148,50 +156,14 @@ void VSUI::renderEditorGUI()
     ImGui::EndMainMenuBar();
     // Select block type to set
     // This needs to be adapted to the new block types obviously
+    ImGui::Begin("Editor");
     const char* blockTypes[] = {"Stone", "Water", "Grass", "Wood", "Sand", "Leaf"};
     if (ImGui::Combo(
             "Select block type", (int*)&uiState->bSetBlockID, blockTypes, IM_ARRAYSIZE(blockTypes)))
     {
         uiState->bShouldUpdateBlockID = true;
     }
-    // This needs to be adapted to available biome types
-    const char* biomeTypes[] = {"Mountains", "Desert"};
-    ImGui::Combo("Select biome", (int*)&uiState->bBiomeType, biomeTypes, IM_ARRAYSIZE(biomeTypes));
-
-    ImGui::DragFloat3("sun dir", (float*)&uiState->directLightDir, 0.01F, -1.F, 1.F);
-    ImGui::Checkbox("wireframe", (bool*)&uiState->isWireframeModeEnabled);
-    ImGui::Checkbox("draw chunk border", (bool*)&uiState->bShouldDrawChunkBorder);
-    ImGui::Checkbox("freeze frustum", (bool*)&uiState->bShouldFreezeFrustum);
-    ImGui::Checkbox("shadows", (bool*)&uiState->bAreShadowsEnabled);
-    ImGui::InputInt3("chunk size", (int*)&uiState->chunkSize);
-    ImGui::InputInt2("world size", (int*)&uiState->chunkCount);
-    if (ImGui::Button("Refresh chunk settings"))
-    {
-        uiState->bShouldUpdateChunks = true;
-    }
-    if (ImGui::Button("Generate Terrain"))
-    {
-        uiState->bShouldGenerateTerrain = true;
-    }
-    if (ImGui::Button("Reset Editor"))
-    {
-        uiState->bShouldResetEditor = true;
-    }
-    ImGui::Text(
-        "Blocks Total; Visible; Drawn: %d; %d; %d",
-        uiState->totalBlockCount,
-        uiState->visibleBlockCount,
-        uiState->drawnBlockCount);
-    ImGui::Text("Drawcalls %d/64", uiState->drawCallCount);
-    ImGui::Text(
-        "Application average %.3f ms/frame (%.1f FPS)",
-        1000.0f / ImGui::GetIO().Framerate,
-        ImGui::GetIO().Framerate);
-
-    ImGui::TextColored(ImVec4(1, 1, 0, 1), "Log");
-    ImGui::BeginChild("Scrolling");
-    ImGui::Text("%s", uiState->logStream.str().c_str());
-    ImGui::EndChild();
+    ImGui::End();
 
     // Handle file browsers
     loadFileDialog->Display();
