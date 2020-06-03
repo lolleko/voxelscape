@@ -155,7 +155,7 @@ void VSUI::renderEditorGUI()
         uiState->bShouldUpdateBlockID = true;
     }
     // This needs to be adapted to available biome types
-    const char* biomeTypes[] = {"Mediterran", "Desert"};
+    const char* biomeTypes[] = {"Mountains", "Desert"};
     ImGui::Combo("Select biome", (int*)&uiState->bBiomeType, biomeTypes, IM_ARRAYSIZE(biomeTypes));
 
     ImGui::DragFloat3("sun dir", (float*)&uiState->directLightDir, 0.01F, -1.F, 1.F);

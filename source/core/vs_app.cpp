@@ -6,17 +6,20 @@
 #include <spdlog/common.h>
 #include <glm/ext/matrix_projection.hpp>
 #include <limits>
+#include <memory>
 #include <thread>
 
 #include "core/vs_core.h"
 #include "core/vs_log.h"
 #include "core/vs_cameracontroller.h"
 // TODO: Remove and find better position to set camera cantroller
+#include "core/vs_menu.h"
 #include "core/vs_rtscameracontroller.h"
 #include "core/vs_dummycameracontroller.h"
 #include "core/vs_camera.h"
 #include "core/vs_game.h"
 #include "core/vs_debug_draw.h"
+#include "core/vs_editor.h"
 
 #include "world/vs_chunk_manager.h"
 
@@ -76,34 +79,12 @@ int VSApp::initialize()
 
     // auto monkeyModel = std::make_shared<VSModel>("monkey.obj");
 
-    world = new VSWorld();
-    editorWorld = new VSWorld();
-    menuWorld = new VSWorld();
-    auto dummyController = new VSDummyCameraController();
-    menuWorld->setCameraController(dummyController);
+    addWorld(VSMenu::WorldName, VSMenu::initWorld());
+    addWorld(VSEditor::WorldName, VSEditor::initWorld());
+    addWorld("game", new VSWorld());
 
-    auto skybox = new VSSkybox();
-    world->addDrawable(skybox);
-    editorWorld->addDrawable(skybox);
-    menuWorld->addDrawable(skybox);
-
-    // TODO: initialize editor world method, maybe in VSWorld?
-    const auto worldSize = editorWorld->getChunkManager()->getWorldSize();
-    for (int x = 0; x < worldSize.x; x++)
-    {
-        for (int z = 0; z < worldSize.z; z++)
-        {
-            editorWorld->getChunkManager()->setBlock({x, 0, z}, 1);
-        }
-    }
-    editorWorld->getCamera()->setPosition(glm::vec3(-50.F, -5.F, -50.F));
-    editorWorld->getCamera()->setPitchYaw(-10.F, 45.F);
-
-    // TODO: initialize menu world somewhere else, maybe in VSWorld?
-    // TODO: initiialize menu world
-
-    // Set menu world active initially
-    activeWorld = menuWorld;
+    // Set menu active on application start
+    setWorldActive(VSMenu::WorldName);
 
     VSLog::Log(VSLog::Category::Core, VSLog::Level::info, "Successfully initialized logger");
 
@@ -164,21 +145,19 @@ int VSApp::initializeGLFW()
     glfwSetFramebufferSizeCallback(window, [](GLFWwindow* window, int width, int height) {
         glViewport(0, 0, width, height);
         auto* app = static_cast<VSApp*>(glfwGetWindowUserPointer(window));
-        app->getActiveWorld()->getCameraController()->processFramebufferResize(
-            window, width, height);
+        app->getWorld()->getCameraController()->processFramebufferResize(window, width, height);
     });
     glfwSetCursorPosCallback(window, [](GLFWwindow* window, double xpos, double ypos) {
         auto* app = static_cast<VSApp*>(glfwGetWindowUserPointer(window));
-        app->getActiveWorld()->getCameraController()->processMouseMovement(window, xpos, ypos);
+        app->getWorld()->getCameraController()->processMouseMovement(window, xpos, ypos);
     });
     glfwSetMouseButtonCallback(window, [](GLFWwindow* window, int button, int action, int mods) {
         auto* app = static_cast<VSApp*>(glfwGetWindowUserPointer(window));
-        app->getActiveWorld()->getCameraController()->processMouseButton(
-            window, button, action, mods);
+        app->getWorld()->getCameraController()->processMouseButton(window, button, action, mods);
     });
     glfwSetScrollCallback(window, [](GLFWwindow* window, double xoffset, double yoffset) {
         auto* app = static_cast<VSApp*>(glfwGetWindowUserPointer(window));
-        app->getActiveWorld()->getCameraController()->processMouseScroll(window, xoffset, yoffset);
+        app->getWorld()->getCameraController()->processMouseScroll(window, xoffset, yoffset);
     });
     glfwSwapInterval(1);
     // Capture cursor for FPS Camera
@@ -192,24 +171,32 @@ VSWorld* VSApp::getWorld() const
     return world;
 }
 
-VSWorld* VSApp::getEditorWorld()
+void VSApp::setWorldActive(std::string key)
 {
-    return editorWorld;
+    if (worlds.count(key) > 0)
+    {
+        world = worlds.at(key);
+    }
+    // Key already exists
+    VSLog::Log(
+        VSLog::Category::Core,
+        VSLog::Level::warn,
+        "World with key '{}' does not exist and will not be set active",
+        key);
 }
 
-void VSApp::setEditorWorldActive()
+void VSApp::addWorld(std::string key, VSWorld* world)
 {
-    activeWorld = editorWorld;
-}
-
-void VSApp::setGameWorldActive()
-{
-    activeWorld = world;
-}
-
-VSWorld* VSApp::getActiveWorld()
-{
-    return activeWorld;
+    if (worlds.count(key) > 0)
+    {
+        // Key already exists
+        VSLog::Log(
+            VSLog::Category::Core,
+            VSLog::Level::warn,
+            "World with key '{}' already exists and will not be added",
+            key);
+    }
+    worlds.insert(std::pair<std::string, VSWorld*>(key, world));
 }
 
 VSUI* VSApp::getUI() const
@@ -250,21 +237,18 @@ int VSApp::mainLoop()
             glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
         }
 
-        UI->getMutableState()->totalBlockCount =
-            activeWorld->getChunkManager()->getTotalBlockCount();
-        UI->getMutableState()->visibleBlockCount =
-            activeWorld->getChunkManager()->getVisibleBlockCount();
-        UI->getMutableState()->drawnBlockCount =
-            activeWorld->getChunkManager()->getDrawnBlockCount();
-        UI->getMutableState()->drawCallCount = activeWorld->getChunkManager()->getDrawCallCount();
+        UI->getMutableState()->totalBlockCount = world->getChunkManager()->getTotalBlockCount();
+        UI->getMutableState()->visibleBlockCount = world->getChunkManager()->getVisibleBlockCount();
+        UI->getMutableState()->drawnBlockCount = world->getChunkManager()->getDrawnBlockCount();
+        UI->getMutableState()->drawCallCount = world->getChunkManager()->getDrawCallCount();
 
-        activeWorld->setDirectLightDir(UI->getState()->directLightDir);
+        world->setDirectLightDir(UI->getState()->directLightDir);
 
         // TODO add option for day night
         // world->setDirectLightPos(glm::vec3(world->getChunkManager()->getWorldSize() * 2) *
         // glm::vec3(cos(glfwGetTime() / 10.f),  sin(glfwGetTime() / 10.f), 0.f));
 
-        //world->getDebugDraw()->drawSphere(world->getDirectLightDir(), 10.f, {255, 255, 255});
+        // world->getDebugDraw()->drawSphere(world->getDirectLightDir(), 10.f, {255, 255, 255});
 
         auto display_w = 0;
         auto display_h = 0;
@@ -279,10 +263,10 @@ int VSApp::mainLoop()
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
         // update chunks
-        activeWorld->update();
+        world->update();
 
         // draw world
-        activeWorld->draw(activeWorld);
+        world->draw(world);
 
         // Calculate mouse coords in world space
         {
@@ -293,14 +277,21 @@ int VSApp::mainLoop()
             int height;
             glfwGetWindowSize(window, &width, &height);
             float depth;
-            glReadPixels((GLint)xpos, (GLint)(height - ypos), (GLsizei)1.0F, (GLsizei)1.0F, GL_DEPTH_COMPONENT, GL_FLOAT, &depth);
+            glReadPixels(
+                (GLint)xpos,
+                (GLint)(height - ypos),
+                (GLsizei)1.0F,
+                (GLsizei)1.0F,
+                GL_DEPTH_COMPONENT,
+                GL_FLOAT,
+                &depth);
             auto screenPos = glm::vec3(xpos, height - ypos, depth);
-            auto tmpView = getActiveWorld()->getCamera()->getViewMatrix();
-            auto tmpProj = getActiveWorld()->getCamera()->getProjectionMatrix();
+            auto tmpView = getWorld()->getCamera()->getViewMatrix();
+            auto tmpProj = getWorld()->getCamera()->getProjectionMatrix();
             glm::vec4 viewport = glm::vec4(0.0F, 0.0F, width, height);
             auto worldPos = glm::unProject(screenPos, tmpView, tmpProj, viewport);
             // std::cout << position.x << ", " << position.y << ", " << position.z << std::endl;
-            getActiveWorld()->getCameraController()->setMouseInWorldCoords(worldPos);
+            getWorld()->getCameraController()->setMouseInWorldCoords(worldPos);
         }
 
         // draw ui

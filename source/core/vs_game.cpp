@@ -3,6 +3,7 @@
 #include <ratio>
 
 #include "core/vs_app.h"
+#include "core/vs_editor.h"
 #include "core/vs_cameracontroller.h"
 
 #include "ui/vs_ui.h"
@@ -30,15 +31,15 @@ void VSGame::gameLoop()
 
         if (UI->getState()->bShouldSetEditorActive)
         {
-            app->setEditorWorldActive();
+            app->setWorldActive(VSEditor::WorldName);
             UI->getMutableState()->bShouldSetEditorActive = false;
         }
         if (UI->getState()->bShouldSetGameActive)
         {
-            app->setGameWorldActive();
+            app->setWorldActive("game");
             UI->getMutableState()->bShouldSetGameActive = false;
         }
-        auto* world = app->getActiveWorld();
+        auto* world = app->getWorld();
 
         // Update world state with ui state
         if (UI->getState()->bShouldUpdateChunks)

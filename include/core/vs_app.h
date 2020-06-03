@@ -1,5 +1,7 @@
 #pragma once
 
+#include <map>
+#include <memory>
 #include <string>
 #include <thread>
 
@@ -20,10 +22,9 @@ public:
 
     [[nodiscard]] VSWorld* getWorld() const;
 
-    VSWorld* getEditorWorld();
-    void setEditorWorldActive();
-    void setGameWorldActive();
-    VSWorld* getActiveWorld();
+    void setWorldActive(std::string key);
+
+    void addWorld(std::string key, VSWorld* world);
 
     [[nodiscard]] VSUI* getUI() const;
 
@@ -34,10 +35,9 @@ public:
 private:
     VSUI* UI;
 
+    std::map<std::string, VSWorld*> worlds;
+
     VSWorld* world;
-    VSWorld* editorWorld;
-    VSWorld* menuWorld;
-    VSWorld* activeWorld;
 
     VSGame* game;
 
