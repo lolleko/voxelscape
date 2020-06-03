@@ -258,7 +258,7 @@ int VSApp::mainLoop()
             activeWorld->getChunkManager()->getDrawnBlockCount();
         UI->getMutableState()->drawCallCount = activeWorld->getChunkManager()->getDrawCallCount();
 
-        world->setDirectLightDir(UI->getState()->directLightDir);
+        activeWorld->setDirectLightDir(UI->getState()->directLightDir);
 
         // TODO add option for day night
         // world->setDirectLightPos(glm::vec3(world->getChunkManager()->getWorldSize() * 2) *
