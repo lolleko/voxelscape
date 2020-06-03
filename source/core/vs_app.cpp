@@ -77,7 +77,7 @@ int VSApp::initialize()
     glDepthFunc(GL_LESS);
     glEnable(GL_CULL_FACE);
 
-    // auto monkeyModel = std::make_shared<VSModel>("monkey.obj");
+    // auto monkeyModel = std::make_shared<VSModel>("monkey.obj");  
 
     addWorld(VSMenu::WorldName, VSMenu::initWorld());
     addWorld(VSEditor::WorldName, VSEditor::initWorld());
@@ -242,7 +242,7 @@ int VSApp::mainLoop()
         UI->getMutableState()->drawnBlockCount = world->getChunkManager()->getDrawnBlockCount();
         UI->getMutableState()->drawCallCount = world->getChunkManager()->getDrawCallCount();
 
-        activeWorld->setDirectLightDir(UI->getState()->directLightDir);
+        world->setDirectLightDir(UI->getState()->directLightDir);
 
         // TODO add option for day night
         // world->setDirectLightPos(glm::vec3(world->getChunkManager()->getWorldSize() * 2) *
