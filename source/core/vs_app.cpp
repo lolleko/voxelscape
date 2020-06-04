@@ -6,7 +6,6 @@
 #include <spdlog/common.h>
 #include <glm/ext/matrix_projection.hpp>
 #include <limits>
-#include <memory>
 #include <thread>
 
 #include "core/vs_core.h"
