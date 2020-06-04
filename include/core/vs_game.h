@@ -2,6 +2,7 @@
 
 #include <atomic>
 #include <chrono>
+#include <string>
 
 #include "core/vs_frame_time_tracker.h"
 
