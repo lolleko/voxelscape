@@ -6,6 +6,7 @@
 #include "ui/imgui_impl/imgui_impl_opengl3.h"
 
 #include "ui/vs_ui_state.h"
+#include "world/generator/vs_terrain.h"
 
 VSUI::VSUI()
     : uiState(new VSUIState){};
@@ -112,6 +113,8 @@ void VSUI::renderDebugGUI()
     }
     if (ImGui::Button("Show Editor"))
     {
+        uiState->bShouldUpdateChunks = true;
+        uiState->bShouldResetEditor = true;
         uiState->bShouldSetEditorActive = true;
         uiState->bEditorActive = true;
     }

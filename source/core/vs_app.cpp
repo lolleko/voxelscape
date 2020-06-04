@@ -79,17 +79,17 @@ int VSApp::initialize()
 
     // auto monkeyModel = std::make_shared<VSModel>("monkey.obj");  
 
-    addWorld(VSMenu::WorldName, VSMenu::initWorld());
-    addWorld(VSEditor::WorldName, VSEditor::initWorld());
-    addWorld("game", new VSWorld());
-
-    // Set menu active on application start
-    setWorldActive(VSMenu::WorldName);
-
     VSLog::Log(VSLog::Category::Core, VSLog::Level::info, "Successfully initialized logger");
 
     game = new VSGame();
     game->initialize(this);
+
+    addWorld(VSMenu::WorldName, VSMenu::initWorld());
+    addWorld(VSEditor::WorldName, VSEditor::initWorld());
+    addWorld(VSGame::WorldName, game->initWorld());
+
+    // Set menu active on application start
+    setWorldActive(VSMenu::WorldName);
 
     VSLog::Log(VSLog::Category::Core, VSLog::Level::info, "Successfully initialized game thread");
 

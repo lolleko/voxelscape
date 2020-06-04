@@ -6,4 +6,5 @@ namespace VSEditor
     const std::string WorldName = "EDITOR";
 
     [[nodiscard]] VSWorld* initWorld();
+    void setPlaneBlocks(VSWorld* editorWorld);
 };  // namespace VSEditor

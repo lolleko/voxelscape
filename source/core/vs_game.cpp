@@ -10,10 +10,13 @@
 #include "ui/vs_ui_state.h"
 #include "ui/vs_parser.h"
 
+#include "world/vs_skybox.h"
 #include "world/vs_world.h"
 #include "world/vs_chunk_manager.h"
 
 #include "world/generator/vs_terrain.h"
+
+const std::string VSGame::WorldName = "GAME";
 
 void VSGame::initialize(VSApp* inApp)
 {
@@ -36,7 +39,7 @@ void VSGame::gameLoop()
         }
         if (UI->getState()->bShouldSetGameActive)
         {
-            app->setWorldActive("game");
+            app->setWorldActive(WorldName);
             UI->getMutableState()->bShouldSetGameActive = false;
         }
         auto* world = app->getWorld();
@@ -68,7 +71,7 @@ void VSGame::gameLoop()
         {
             if (UI->getState()->bBiomeType == 0)
             {
-                VSTerrainGeneration::buildTaiga(world);
+                VSTerrainGeneration::buildMountains(world);
             }
             else if (UI->getState()->bBiomeType == 1)
             {
@@ -82,14 +85,7 @@ void VSGame::gameLoop()
         {
             // TODO: Clear world
             // world->getChunkManager()->clearBlocks();
-            const auto worldSize = world->getChunkManager()->getWorldSize();
-            for (int x = 0; x < worldSize.x; x++)
-            {
-                for (int z = 0; z < worldSize.z; z++)
-                {
-                    world->getChunkManager()->setBlock({x, 0, z}, 1);
-                }
-            }
+            VSEditor::setPlaneBlocks(world);
             UI->getMutableState()->bShouldResetEditor = false;
         }
 
@@ -120,4 +116,12 @@ void VSGame::handleEditor()
 void VSGame::quit()
 {
     bShouldQuit = true;
+}
+
+VSWorld* VSGame::initWorld()
+{
+    VSWorld* gameWorld = new VSWorld();
+    auto skybox = new VSSkybox();
+    gameWorld->addDrawable(skybox);
+    return gameWorld;
 }

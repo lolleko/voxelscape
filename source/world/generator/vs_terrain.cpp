@@ -10,17 +10,11 @@ namespace VSTerrainGeneration
 {
     void buildTerrain(VSWorld* world)
     {
-        // int biomeCount = 2; /* Flatland, Mountains, Forrest */
         auto chunkManager = world->getChunkManager();
         glm::ivec3 worldSize = chunkManager->getWorldSize();
-        // VSHeightmap biomeMap = VSHeightmap(42, biomeCount, 1, 0.01F, 1.F);
-
-        // VSHeightmap flatland = VSHeightmap(42, worldSize.y, 4, 0.02F, 40.F, 0.5F, 1.F);
-        // VSHeightmap mountains = VSHeightmap(42, worldSize.y, 4, 0.02F, 1.F);
         VSHeightmap desert = VSHeightmap(42, worldSize.y, 4, 0.02F, 40.F, 0.5F, 1.F);
         bool desertMode = true;
         VSHeightmap hm = VSHeightmap(42, worldSize.y, 4, 0.02F, worldSize.y, 1.F, 1.F);
-        // std::vector<VSHeightmap> biomeMaps = {flatland, mountains, hm};
 
         std::random_device rd;   // Will be used to obtain a seed for the random number engine
         std::mt19937 gen(rd());  // Standard mersenne_twister_engine seeded with rd()
@@ -92,14 +86,9 @@ namespace VSTerrainGeneration
                 }
             }
         }
-
-        // build tree
-        // treeAt(world, 10, hm.getVoxelHeight(10, 10), 10);
-
-        // printMap();
     }
 
-    void buildTaiga(VSWorld* world)
+    void buildMountains(VSWorld* world)
     {
         auto chunkManager = world->getChunkManager();
         glm::ivec3 worldSize = chunkManager->getWorldSize();
@@ -226,19 +215,5 @@ namespace VSTerrainGeneration
         chunkManager->setBlock({x, y + 2, z - 1}, 6);
         chunkManager->setBlock({x, y + 2, z - 2}, 6);
         chunkManager->setBlock({x, y + 3, z - 2}, 6);
-    }
-
-    void printMap()
-    {
-        int biomeCount = 3;
-        VSHeightmap hm = VSHeightmap(42, biomeCount, 1, 10000.F, 1.F);
-        for (int x = 0; x < 80; x++)
-        {
-            for (int y = 0; y < 50; y++)
-            {
-                std::cout << hm.getVoxelHeight(x, y) << " ";
-            }
-            std::cout << std::endl;
-        }
     }
 }  // namespace VSTerrainGeneration
