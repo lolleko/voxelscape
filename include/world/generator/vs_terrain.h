@@ -5,13 +5,9 @@
 
 namespace VSTerrainGeneration
 {
-    struct Config {
-        
-    };
-
     void buildTerrain(VSWorld* world);
     void buildDesert(VSWorld* world);
-    void buildTaiga(VSWorld* world);
+    void buildMountains(VSWorld* world);
 
     void treeAt(VSWorld* world, int x, int y, int z);
     void cactusAt(VSWorld* world, int x, int y, int z);
