@@ -36,7 +36,9 @@ struct VSUIState
     bool bFileBrowserActive = false;
     std::filesystem::path loadFilePath = "";
     bool bShouldSaveToFile = false;
+    bool bShouldSaveBuilding = false;
     std::filesystem::path saveFilePath = "";
+    std::filesystem::path saveBuildingPath = "";
     bool bShouldUpdateBlockID = false;
     int bSetBlockID = 0;
     int bBiomeType = 0;

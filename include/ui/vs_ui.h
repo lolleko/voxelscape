@@ -36,4 +36,5 @@ private:
 
     ImGui::FileBrowser* loadFileDialog;
     ImGui::FileBrowser* saveFileDialog;
+    ImGui::FileBrowser* saveBuildingDialog;
 };

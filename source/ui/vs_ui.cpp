@@ -46,6 +46,8 @@ void VSUI::setup(const char* glsl_version, GLFWwindow* window)
     loadFileDialog->SetTypeFilters({".json"});
     saveFileDialog = new ImGui::FileBrowser(ImGuiFileBrowserFlags_EnterNewFilename);
     saveFileDialog->SetTitle("Save scene file");
+    saveBuildingDialog = new ImGui::FileBrowser(ImGuiFileBrowserFlags_EnterNewFilename);
+    saveBuildingDialog->SetTitle("Save building");
 
     // Setup Platform/Renderer bindings
     ImGui_ImplGlfw_InitForOpenGL(window, true);
@@ -141,17 +143,23 @@ void VSUI::renderEditorGUI()
     {
         if (ImGui::BeginMenu("File..."))
         {
-            if (ImGui::MenuItem("Load model..."))
+            if (ImGui::MenuItem("Load world..."))
             {
                 // Open File dialog
                 uiState->bFileBrowserActive = true;
                 loadFileDialog->Open();
             }
-            if (ImGui::MenuItem("Save model..."))
+            if (ImGui::MenuItem("Save world..."))
             {
                 // Open File dialog
                 uiState->bFileBrowserActive = true;
                 saveFileDialog->Open();
+            }
+            if (ImGui::MenuItem("Save Building..."))
+            {
+                // Open File dialog
+                uiState->bFileBrowserActive = true;
+                saveBuildingDialog->Open();
             }
             ImGui::EndMenu();
         }
@@ -186,6 +194,15 @@ void VSUI::renderEditorGUI()
         uiState->bShouldSaveToFile = true;
         uiState->bFileBrowserActive = false;
         saveFileDialog->ClearSelected();
+    }
+    saveBuildingDialog->Display();
+    if (saveBuildingDialog->HasSelected())
+    {
+        // Save building
+        uiState->saveBuildingPath = saveBuildingDialog->GetSelected();
+        uiState->bShouldSaveBuilding = true;
+        uiState->bFileBrowserActive = false;
+        saveBuildingDialog->ClearSelected();
     }
 }
 

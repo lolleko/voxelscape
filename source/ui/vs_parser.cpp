@@ -4,7 +4,6 @@
 #include <filesystem>
 #include <fstream>
 #include <nlohmann/json.hpp>
-#include <iostream>
 #include "world/vs_block.h"
 #include "world/vs_chunk_manager.h"
 
@@ -23,6 +22,54 @@ namespace VSParser
         outFile << std::setw(4) << json << std::endl;
         outFile.close();
         return true;
+    }
+
+    bool writeBuildToFile(VSChunkManager::VSBuildingData& buildData, std::filesystem::path path)
+    {
+        std::ofstream outFile;
+        outFile.open(path);
+        // TODO: Check if file is empty etc.
+
+        nlohmann::json json;
+        json["buildingSize"] = {
+            buildData.buildSize.x, buildData.buildSize.y, buildData.buildSize.z};
+        json["blocks"] = buildData.blocks;
+        outFile << std::setw(4) << json << std::endl;
+        outFile.close();
+        return true;
+    }
+
+    VSChunkManager::VSBuildingData readBuildFromFile(std::filesystem::path path)
+    {
+        VSChunkManager::VSBuildingData buildData;
+        if (!std::filesystem::exists(path))
+        {
+            return VSChunkManager::VSBuildingData{};
+        }
+        std::ifstream inFile;
+
+        inFile.open(path);
+
+        // TODO: Implement, checks, there is a lot of stuff that can go wrong
+        nlohmann::json json;
+        inFile >> json;
+        auto const blocksPos = json.find("blocks");
+        auto const buildSizePos = json.find("buildingSize");
+        if (blocksPos == json.end() || buildSizePos == json.end())
+        {
+            // Did not find all the necessary keys
+            return VSChunkManager::VSBuildingData{};
+        }
+
+        // Parse block data
+        json.at("blocks").get_to(buildData.blocks);
+        std::vector<int> buildSizeVec(3);
+        json.at("buildingSize").get_to(buildSizeVec);
+        buildData.buildSize.x = buildSizeVec.at(0);
+        buildData.buildSize.y = buildSizeVec.at(1);
+        buildData.buildSize.z = buildSizeVec.at(2);
+
+        return buildData;
     }
 
     VSChunkManager::VSWorldData readFromFile(std::filesystem::path path)
