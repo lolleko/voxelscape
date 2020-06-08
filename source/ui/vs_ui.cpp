@@ -82,6 +82,10 @@ void VSUI::render()
     {
         renderMainMenu();
     }
+    else if (uiState->bGameConfigActive)
+    {
+        renderGameConfigGUI();
+    }
     else
     {
         renderDebugGUI();
@@ -220,11 +224,9 @@ void VSUI::renderMainMenu()
         ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoCollapse);
     ImGui::Dummy(
         ImVec2(ImGui::GetIO().DisplaySize.x * 0.75F, ImGui::GetIO().DisplaySize.y * 0.05F));
-    if (ImGui::Button("Start Game", ImVec2(ImGui::GetWindowContentRegionWidth(), 0.F)))
+    if (ImGui::Button("New Game", ImVec2(ImGui::GetWindowContentRegionWidth(), 0.F)))
     {
-        // TODO: Start Game
-        uiState->bShouldSetGameActive = true;
-        uiState->bEditorActive = false;
+        uiState->bGameConfigActive = true;
         uiState->bMenuActive = false;
     }
     if (ImGui::Button("Start Editor", ImVec2(ImGui::GetWindowContentRegionWidth(), 0.F)))
@@ -237,6 +239,45 @@ void VSUI::renderMainMenu()
     }
     ImGui::End();
     ImGui::PopFont();
+}
+
+void VSUI::renderGameConfigGUI()
+{
+    ImGui::PushFont(menuFont);
+    ImGui::SetNextWindowPos(
+        ImVec2(ImGui::GetIO().DisplaySize.x * 0.5F, ImGui::GetIO().DisplaySize.y * 0.5F),
+        ImGuiCond_Always,
+        ImVec2(0.5F, 0.5F));
+    ImGui::SetNextWindowSize(ImVec2(0.F, 0.F));
+    ImGui::Begin(
+        "Configure Game",
+        0,
+        ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoCollapse);
+
+    ImGui::Dummy(
+        ImVec2(ImGui::GetIO().DisplaySize.x * 0.75F, ImGui::GetIO().DisplaySize.y * 0.05F));
+
+    const char* worldSizes[] = {"Small", "Medium", "Large"};
+    if (ImGui::Combo(
+            "World size", (int*)&uiState->worldSize, worldSizes, IM_ARRAYSIZE(worldSizes)))
+    {
+        uiState->bShouldUpdateBlockID = true;
+    }
+    // This needs to be adapted to available biome types
+    const char* biomeTypes[] = {"Mountains", "Desert"};
+    ImGui::Combo("Select biome", (int*)&uiState->bBiomeType, biomeTypes, IM_ARRAYSIZE(biomeTypes));
+
+    if (ImGui::Button("Start Game", ImVec2(ImGui::GetWindowContentRegionWidth(), 0.F)))
+    {
+        uiState->bShouldSetGameActive = true;
+        uiState->bGameConfigActive = false;
+    }
+    ImGui::End();
+    ImGui::PopFont();
+}
+
+void VSUI::renderGameGUI()
+{
 }
 
 void VSUI::draw()

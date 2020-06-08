@@ -21,6 +21,8 @@ public:
     void renderDebugGUI();
     void renderEditorGUI();
     void renderMainMenu();
+    void renderGameGUI();
+    void renderGameConfigGUI();
 
     void draw();
 
