@@ -77,7 +77,7 @@ void VSGame::gameLoop()
             (void) buildData;
         }
 
-        if (UI->getState()->bShouldGenerateTerrain)
+        if (UI->getState()->bShouldGenerateTerrain && !world->getChunkManager()->shouldReinitializeChunks())
         {
             if (UI->getState()->bBiomeType == 0)
             {

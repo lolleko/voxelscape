@@ -258,10 +258,24 @@ void VSUI::renderGameConfigGUI()
         ImVec2(ImGui::GetIO().DisplaySize.x * 0.75F, ImGui::GetIO().DisplaySize.y * 0.05F));
 
     const char* worldSizes[] = {"Small", "Medium", "Large"};
-    if (ImGui::Combo(
-            "World size", (int*)&uiState->worldSize, worldSizes, IM_ARRAYSIZE(worldSizes)))
+    if (ImGui::Combo("World size", (int*)&uiState->worldSize, worldSizes, IM_ARRAYSIZE(worldSizes)))
     {
-        uiState->bShouldUpdateBlockID = true;
+        if (uiState->worldSize == 0)
+        {
+            // Small
+            uiState->chunkCount = {4, 4};
+        }
+        else if (uiState->worldSize == 1)
+        {
+            // Medium
+            uiState->chunkCount = {8, 8};
+        }
+        else if (uiState->worldSize == 2)
+        {
+            // Large
+            uiState->chunkCount = {16, 16};
+        }
+        uiState->bShouldUpdateChunks = true;
     }
     // This needs to be adapted to available biome types
     const char* biomeTypes[] = {"Mountains", "Desert"};
@@ -269,6 +283,8 @@ void VSUI::renderGameConfigGUI()
 
     if (ImGui::Button("Start Game", ImVec2(ImGui::GetWindowContentRegionWidth(), 0.F)))
     {
+        uiState->bShouldUpdateChunks = true;
+        uiState->bShouldGenerateTerrain = true;
         uiState->bShouldSetGameActive = true;
         uiState->bGameConfigActive = false;
     }
