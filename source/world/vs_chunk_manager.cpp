@@ -103,8 +103,10 @@ void VSChunkManager::setBlock(const glm::ivec3& location, VSBlockID blockID)
     const auto [chunkCoordinates, blockIndex] =
         worldCoordinatesToChunkCoordinatesAndBlockIndex(zeroBaseLocation);
 
-    chunks[chunkCoordinatesToChunkIndex(chunkCoordinates)]->blocks[blockIndex] = blockID;
-    chunks[chunkCoordinatesToChunkIndex(chunkCoordinates)]->bIsDirty = true;
+    const auto chunkIndex = chunkCoordinatesToChunkIndex(chunkCoordinates);
+
+    chunks[chunkIndex]->blocks[blockIndex] = blockID;
+    chunks[chunkIndex]->bIsDirty = true;
 
     const auto right = glm::clamp(chunkCoordinates + glm::ivec2(1, 0), {0, 0}, chunkCount - 1);
     const auto left = glm::clamp(chunkCoordinates - glm::ivec2(1, 0), {0, 0}, chunkCount - 1);
@@ -688,16 +690,17 @@ std::uint8_t VSChunkManager::isBorderBlockVisible(
     std::size_t chunkIndex,
     const glm::ivec3& blockCoordinates) const
 {
-    glm::ivec3 blockWorldCoordinates =
+    const auto blockWorldCoordinates =
         blockCoordinatesToWorldCoordinates(chunkIndex, blockCoordinates);
-    if (blockWorldCoordinates.x == 0 || blockWorldCoordinates.x == worldSize.x - 1 ||
-        blockWorldCoordinates.y == 0 || blockWorldCoordinates.y == worldSize.y - 1 ||
-        blockWorldCoordinates.z == 0 || blockWorldCoordinates.z == worldSize.z - 1)
+    if (blockWorldCoordinates.x == -worldSizeHalf.x ||
+        blockWorldCoordinates.x == worldSizeHalf.x - 1 ||
+        blockWorldCoordinates.y == -worldSizeHalf.y ||
+        blockWorldCoordinates.y == worldSizeHalf.y - 1 ||
+        blockWorldCoordinates.z == -worldSizeHalf.z ||
+        blockWorldCoordinates.z == worldSizeHalf.z - 1)
     {
-        const auto top = blockCoordinatesToWorldCoordinates(
-            chunkIndex, glm::ivec3(blockCoordinates.x, blockCoordinates.y + 1, blockCoordinates.z));
-
-        if (top.y <= worldSize.y && getBlock(top) == VS_DEFAULT_BLOCK_ID)
+        if (blockWorldCoordinates.y + 1 < worldSizeHalf.y &&
+            getBlock(blockWorldCoordinates + glm::ivec3(0, 1, 0)) == VS_DEFAULT_BLOCK_ID)
         {
             // always use a full block at the world border for now
             return 63;
@@ -708,24 +711,18 @@ std::uint8_t VSChunkManager::isBorderBlockVisible(
         }
     }
 
-    const auto right = blockCoordinatesToWorldCoordinates(
-        chunkIndex, glm::ivec3(blockCoordinates.x + 1, blockCoordinates.y, blockCoordinates.z));
+    const auto right = blockWorldCoordinates + glm::ivec3(1, 0, 0);
 
-    const auto left = blockCoordinatesToWorldCoordinates(
-        chunkIndex, glm::ivec3(blockCoordinates.x - 1, blockCoordinates.y, blockCoordinates.z));
+    const auto left = blockWorldCoordinates + glm::ivec3(-1, 0, 0);
 
-    const auto top = blockCoordinatesToWorldCoordinates(
-        chunkIndex, glm::ivec3(blockCoordinates.x, blockCoordinates.y + 1, blockCoordinates.z));
+    const auto top = blockWorldCoordinates + glm::ivec3(0, 1, 0);
 
-    const auto bottom = blockCoordinatesToWorldCoordinates(
-        chunkIndex, glm::ivec3(blockCoordinates.x, blockCoordinates.y - 1, blockCoordinates.z));
+    const auto bottom = blockWorldCoordinates + glm::ivec3(0, -1, 0);
 
-    const auto front = blockCoordinatesToWorldCoordinates(
-        chunkIndex, glm::ivec3(blockCoordinates.x, blockCoordinates.y, blockCoordinates.z + 1));
+    const auto front = blockWorldCoordinates + glm::ivec3(0, 0, 1);
 
     // TODO is + 1 or -1 back?
-    const auto back = blockCoordinatesToWorldCoordinates(
-        chunkIndex, glm::ivec3(blockCoordinates.x, blockCoordinates.y, blockCoordinates.z - 1));
+    const auto back = blockWorldCoordinates + glm::ivec3(0, 0, -1);
 
     std::uint8_t encoded = 0;
     encoded |= static_cast<int>(getBlock(right) == VS_DEFAULT_BLOCK_ID) << VSCubeFace::Right;
@@ -801,11 +798,7 @@ glm::ivec3 VSChunkManager::blockCoordinatesToWorldCoordinates(
     std::size_t chunkIndex,
     const glm::ivec3& blockCoords) const
 {
-    const glm::ivec2 chunkCoordinates = chunkIndexToChunkCoordinates(chunkIndex);
-    return {
-        chunkCoordinates.x * chunkSize.x + blockCoords.x,
-        blockCoords.y,
-        chunkCoordinates.y * chunkSize.z + blockCoords.z};
+    return chunks[chunkIndex]->chunkLocation + glm::vec3(blockCoords - chunkSize / 2);
 }
 
 void VSChunkManager::setWorldData(const VSWorldData& worldData)
