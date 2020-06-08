@@ -89,18 +89,19 @@ VSChunkManager::VSChunkManager()
         .setInt("spriteTexture", spriteTextureID);
 }
 
-VSBlockID VSChunkManager::getBlock(glm::ivec3 location) const
+VSBlockID VSChunkManager::getBlock(const glm::ivec3& location) const
 {
-    const auto [chunkIndex, blockIndex] = worldCoordinatesToChunkAndBlockIndex(location);
+    const auto zeroBaseLocation = location + worldSizeHalf;
+    const auto [chunkIndex, blockIndex] = worldCoordinatesToChunkAndBlockIndex(zeroBaseLocation);
     return chunks[chunkIndex]->blocks[blockIndex];
 }
 
-void VSChunkManager::setBlock(glm::ivec3 location, VSBlockID blockID)
+void VSChunkManager::setBlock(const glm::ivec3& location, VSBlockID blockID)
 {
     assert(!bShouldReinitializeChunks);
-
+    const auto zeroBaseLocation = location + worldSizeHalf;
     const auto [chunkCoordinates, blockIndex] =
-        worldCoordinatesToChunkCoordinatesAndBlockIndex(location);
+        worldCoordinatesToChunkCoordinatesAndBlockIndex(zeroBaseLocation);
 
     chunks[chunkCoordinatesToChunkIndex(chunkCoordinates)]->blocks[blockIndex] = blockID;
     chunks[chunkCoordinatesToChunkIndex(chunkCoordinates)]->bIsDirty = true;
@@ -285,6 +286,7 @@ void VSChunkManager::setChunkDimensions(
     chunkSize = (inChunkSize / 2) * 2;
     chunkCount = (inChunkCount / 2) * 2;
     worldSize = {chunkSize.x * chunkCount.x, chunkSize.y, chunkSize.z * chunkCount.y};
+    worldSizeHalf = worldSize / 2;
     bShouldReinitializeChunks = true;
 }
 
@@ -746,12 +748,12 @@ glm::ivec2 VSChunkManager::chunkIndexToChunkCoordinates(std::size_t chunkIndex) 
     return {chunkIndex % chunkCount.y, chunkIndex / chunkCount.y};
 }
 
-std::size_t VSChunkManager::blockCoordinatesToBlockIndex(const glm::ivec3& chunkCoords) const
+std::size_t VSChunkManager::blockCoordinatesToBlockIndex(const glm::ivec3& bloockCoords) const
 {
     const int width = chunkSize.x;
     const int height = chunkSize.y;
 
-    return chunkCoords.x + chunkCoords.y * width + chunkCoords.z * width * height;
+    return bloockCoords.x + bloockCoords.y * width + bloockCoords.z * width * height;
 }
 
 glm::ivec3 VSChunkManager::blockIndexToBlockCoordinates(std::size_t blockIndex) const

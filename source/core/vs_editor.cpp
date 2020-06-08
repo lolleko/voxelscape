@@ -17,7 +17,8 @@ namespace VSEditor
         return editorWorld;
     }
 
-    // Set blocks for a plane, should be called with the world as parameter that was returned by initWorld() after the chunks were initialized
+    // Set blocks for a plane, should be called with the world as parameter that was returned by
+    // initWorld() after the chunks were initialized
     void setPlaneBlocks(VSWorld* editorWorld)
     {
         const auto worldSize = editorWorld->getChunkManager()->getWorldSize();
@@ -40,7 +41,7 @@ namespace VSEditor
         int yMax = -worldSize.y;
         int zMin = worldSize.z;
         int zMax = -worldSize.z;
-        
+
         for (int x = 0; x < worldSize.x; x++)
         {
             for (int z = 0; z < worldSize.z; z++)
@@ -61,7 +62,8 @@ namespace VSEditor
             }
         }
 
-        buildData.buildSize = {std::abs(xMax - xMin) + 1, std::abs(yMax - yMin) + 1, std::abs(zMax - zMin) + 1};
+        buildData.buildSize = {
+            std::abs(xMax - xMin) + 1, std::abs(yMax - yMin) + 1, std::abs(zMax - zMin) + 1};
 
         for (int x = xMin; x <= xMax; x++)
         {
@@ -69,7 +71,8 @@ namespace VSEditor
             {
                 for (int z = zMin; z <= zMax; z++)
                 {
-                    buildData.blocks.emplace_back(editorWorld->getChunkManager()->getBlock({x, y, z}));
+                    buildData.blocks.emplace_back(
+                        editorWorld->getChunkManager()->getBlock({x, y, z}));
                 }
             }
         }

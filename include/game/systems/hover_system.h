@@ -8,6 +8,7 @@
 #include "game/components/hoverable.h"
 #include "game/components/bounds.h"
 #include "world/vs_world.h"
+#include "game/util/math.h"
 
 void updateHoverSystem(entt::registry& registry)
 {
@@ -20,15 +21,12 @@ void updateHoverSystem(entt::registry& registry)
                                                           const Hoverable& hoverable,
                                                           const Location& location,
                                                           const Bounds& bounds) {
-        // TODO move bounds check to helper function
         const auto mouseLocationLocal = inputs.worldMouse - location;
-        if ((mouseLocationLocal.x >= bounds.min.x && mouseLocationLocal.x <= bounds.max.x) &&
-            (mouseLocationLocal.y >= bounds.min.y && mouseLocationLocal.y <= bounds.max.y) &&
-            (mouseLocationLocal.z >= bounds.min.z && mouseLocationLocal.z <= bounds.max.z))
+        if (isLocationInBounds(mouseLocationLocal, bounds))
         {
             inputs.hoverEntity = entity;
             // Add visual indicator
-            VSApp::getInstance()->getActiveWorld()->getDebugDraw()->drawBox(
+            VSApp::getInstance()->getWorld()->getDebugDraw()->drawBox(
                 {location + bounds.min, location + bounds.max}, hoverable.hoverColor);
             // For now stop on the first intersection
             return;

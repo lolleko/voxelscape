@@ -62,9 +62,9 @@ public:
 
     VSChunkManager();
 
-    VSBlockID getBlock(glm::ivec3 location) const;
+    VSBlockID getBlock(const glm::ivec3& location) const;
 
-    void setBlock(glm::ivec3 location, VSBlockID blockID);
+    void setBlock(const glm::ivec3& location, VSBlockID blockID);
 
     glm::ivec3 getWorldSize() const;
 
@@ -103,6 +103,8 @@ private:
     glm::ivec2 chunkCount{};
 
     glm::ivec3 worldSize{};
+
+    glm::ivec3 worldSizeHalf{};
 
     VSShader chunkShader = VSShader("Chunk");
 
@@ -167,7 +169,7 @@ private:
 
     glm::ivec2 chunkIndexToChunkCoordinates(std::size_t chunkIndex) const;
 
-    std::size_t blockCoordinatesToBlockIndex(const glm::ivec3& chunkCoords) const;
+    std::size_t blockCoordinatesToBlockIndex(const glm::ivec3& bloockCoords) const;
 
     glm::ivec3 blockIndexToBlockCoordinates(std::size_t blockIndex) const;
 
