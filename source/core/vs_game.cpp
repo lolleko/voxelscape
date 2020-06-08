@@ -59,12 +59,22 @@ void VSGame::gameLoop()
             UI->getMutableState()->bShouldSaveToFile = false;
         }
 
+        if (UI->getState()->bShouldSaveBuilding)
+        {
+            // Extract editor plane and save building
+            VSChunkManager::VSBuildingData buildData = VSEditor::extractBuildFromPlane(world);
+            VSParser::writeBuildToFile(buildData, UI->getState()->saveBuildingPath);
+            UI->getMutableState()->bShouldSaveBuilding = false;
+        }
+
         if (UI->getState()->bShouldLoadFromFile)
         {
             VSChunkManager::VSWorldData worldData =
                 VSParser::readFromFile(UI->getState()->loadFilePath);
             world->getChunkManager()->setWorldData(worldData);
             UI->getMutableState()->bShouldLoadFromFile = false;
+            VSChunkManager::VSBuildingData buildData = VSParser::readBuildFromFile(UI->getState()->loadFilePath);
+            (void) buildData;
         }
 
         if (UI->getState()->bShouldGenerateTerrain)
