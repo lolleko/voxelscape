@@ -300,6 +300,7 @@ void VSUI::renderGameConfigGUI()
 
 void VSUI::renderGameGUI()
 {
+    float menuBarHeight = 0.F;
     if (ImGui::BeginMainMenuBar())
     {
         ImGui::MenuItem("Dummy");
@@ -311,8 +312,26 @@ void VSUI::renderGameGUI()
         unsigned int stoneID = TextureFromFile("textures/tiles/1_stone.png");
         ImGui::Image((void*)(intptr_t)stoneID, ImVec2(20, 20));
         ImGui::Text("%i", 70);
+        menuBarHeight = ImGui::GetFontSize() + 2 * ImGui::GetStyle().FramePadding.y;
     }
     ImGui::EndMainMenuBar();
+
+    // Building selection
+    
+
+    ImGui::Begin("Select building", 0, ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove);
+    // Dummies
+    ImGui::Text("Lumberjack");
+    ImGui::SameLine();
+    ImGui::Text("Goldmine");
+    ImGui::End();
+
+    // Minimap
+    ImGui::SetNextWindowPos(ImVec2(ImGui::GetIO().DisplaySize.x, menuBarHeight), ImGuiCond_Always, ImVec2(1.F, 0.F));
+    ImGui::SetNextWindowSize(ImVec2(0.F, 0.F));
+    ImGui::Begin("Minimap", 0, ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove);
+    ImGui::Text("Dummy Text hallo");
+    ImGui::End();
 }
 
 void VSUI::renderLoading()
