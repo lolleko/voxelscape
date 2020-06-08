@@ -23,6 +23,7 @@ public:
     void renderMainMenu();
     void renderGameGUI();
     void renderGameConfigGUI();
+    void renderLoading();
 
     void draw();
 

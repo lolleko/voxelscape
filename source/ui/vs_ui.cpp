@@ -2,6 +2,7 @@
 #include <imgui.h>
 
 #include "core/vs_log.h"
+#include "renderer/vs_textureloader.h"
 #include "ui/imgui_impl/imgui_impl_glfw.h"
 #include "ui/imgui_impl/imgui_impl_opengl3.h"
 
@@ -86,8 +87,13 @@ void VSUI::render()
     {
         renderGameConfigGUI();
     }
+    else if (uiState->bShouldUpdateChunks)
+    {
+        renderLoading();
+    }
     else
     {
+        renderGameGUI();
         renderDebugGUI();
     }
 
@@ -294,6 +300,39 @@ void VSUI::renderGameConfigGUI()
 
 void VSUI::renderGameGUI()
 {
+    if (ImGui::BeginMainMenuBar())
+    {
+        ImGui::MenuItem("Dummy");
+        ImGui::Separator();
+        unsigned int woodID = TextureFromFile("textures/tiles/4_wood.png");
+        ImGui::Image((void*)(intptr_t)woodID, ImVec2(20, 20));
+        ImGui::Text("%i", 10);
+
+        unsigned int stoneID = TextureFromFile("textures/tiles/1_stone.png");
+        ImGui::Image((void*)(intptr_t)stoneID, ImVec2(20, 20));
+        ImGui::Text("%i", 70);
+    }
+    ImGui::EndMainMenuBar();
+}
+
+void VSUI::renderLoading()
+{
+    ImGui::PushFont(menuFont);
+    ImGui::SetNextWindowPos(
+        ImVec2(ImGui::GetIO().DisplaySize.x * 0.5F, ImGui::GetIO().DisplaySize.y * 0.5F),
+        ImGuiCond_Always,
+        ImVec2(0.5F, 0.5F));
+    ImGui::SetNextWindowSize(ImVec2(0.F, 0.F));
+    ImGui::Begin(
+        "Loading",
+        0,
+        ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoCollapse |
+            ImGuiWindowFlags_NoTitleBar);
+
+    ImGui::Text("Loading %c", "|/-\\"[(int)(ImGui::GetTime() / 0.05f) & 3]);
+
+    ImGui::End();
+    ImGui::PopFont();
 }
 
 void VSUI::draw()
