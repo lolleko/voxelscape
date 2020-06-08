@@ -49,8 +49,14 @@ public:
     // This struct is used for serialization (load/save)
     struct VSWorldData
     {
-        glm::vec3 chunkSize;
-        glm::vec2 chunkCount;
+        glm::ivec3 chunkSize;
+        glm::ivec2 chunkCount;
+        std::vector<VSBlockID> blocks;
+    };
+
+    struct VSBuildingData
+    {
+        glm::ivec3 buildSize;
         std::vector<VSBlockID> blocks;
     };
 
