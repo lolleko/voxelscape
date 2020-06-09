@@ -17,15 +17,17 @@ namespace VSEditor
         return editorWorld;
     }
 
-    // Set blocks for a plane, should be called with the world as parameter that was returned by initWorld() after the chunks were initialized
+    // Set blocks for a plane, should be called with the world as parameter that was returned by
+    // initWorld() after the chunks were initialized
     void setPlaneBlocks(VSWorld* editorWorld)
     {
         const auto worldSize = editorWorld->getChunkManager()->getWorldSize();
-        for (int x = 0; x < worldSize.x; x++)
+        const auto worldSizeHalf = worldSize / 2;
+        for (int x = -worldSizeHalf.x; x < worldSizeHalf.x; x++)
         {
-            for (int z = 0; z < worldSize.z; z++)
+            for (int z = -worldSizeHalf.z; z < worldSizeHalf.z; z++)
             {
-                editorWorld->getChunkManager()->setBlock({x, 0, z}, 1);
+                editorWorld->getChunkManager()->setBlock({x, -worldSizeHalf.y, z}, 1);
             }
         }
     }
@@ -34,18 +36,19 @@ namespace VSEditor
     {
         VSChunkManager::VSBuildingData buildData;
         const auto worldSize = editorWorld->getChunkManager()->getWorldSize();
+        const auto worldSizeHalf = worldSize / 2;
         int xMin = worldSize.x;
         int xMax = -worldSize.x;
         int yMin = worldSize.y;
         int yMax = -worldSize.y;
         int zMin = worldSize.z;
         int zMax = -worldSize.z;
-        
-        for (int x = 0; x < worldSize.x; x++)
+
+        for (int x = -worldSizeHalf.x; x < worldSizeHalf.x; x++)
         {
-            for (int z = 0; z < worldSize.z; z++)
+            for (int z = -worldSizeHalf.z; z < worldSizeHalf.z; z++)
             {
-                for (int y = 0; y < worldSize.y; y++)
+                for (int y = -worldSizeHalf.y; y < worldSizeHalf.y; y++)
                 {
                     int blockID = editorWorld->getChunkManager()->getBlock({x, y, z});
                     if (blockID > 1 || (blockID != 0 && y != 0))
@@ -61,7 +64,8 @@ namespace VSEditor
             }
         }
 
-        buildData.buildSize = {std::abs(xMax - xMin) + 1, std::abs(yMax - yMin) + 1, std::abs(zMax - zMin) + 1};
+        buildData.buildSize = {
+            std::abs(xMax - xMin) + 1, std::abs(yMax - yMin) + 1, std::abs(zMax - zMin) + 1};
 
         for (int x = xMin; x <= xMax; x++)
         {
@@ -69,7 +73,8 @@ namespace VSEditor
             {
                 for (int z = zMin; z <= zMax; z++)
                 {
-                    buildData.blocks.emplace_back(editorWorld->getChunkManager()->getBlock({x, y, z}));
+                    buildData.blocks.emplace_back(
+                        editorWorld->getChunkManager()->getBlock({x, y, z}));
                 }
             }
         }
