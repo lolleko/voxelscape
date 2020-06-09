@@ -6,3 +6,4 @@ spdlog
 assimp
 stb
 nlohmann-json
+entt

@@ -46,6 +46,8 @@ public:
 
     void setMouseInWorldCoords(glm::vec3 coords);
 
+    [[nodiscard]] glm::vec3 getMouseInWorldCoords() const;
+
 protected:
     VSCamera* cam;
     VSWorld* world;

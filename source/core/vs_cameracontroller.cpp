@@ -21,3 +21,8 @@ void VSCameraController::setMouseInWorldCoords(glm::vec3 coords)
 {
     mouseInWorldCoords = coords;
 }
+
+glm::vec3 VSCameraController::getMouseInWorldCoords() const
+{
+    return mouseInWorldCoords;
+}

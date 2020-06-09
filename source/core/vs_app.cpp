@@ -24,6 +24,7 @@
 
 #include "ui/vs_ui.h"
 #include "ui/vs_ui_state.h"
+#include "world/vs_block.h"
 #include "world/vs_chunk_manager.h"
 #include "world/vs_world.h"
 #include "world/vs_skybox.h"
@@ -76,7 +77,7 @@ int VSApp::initialize()
     glDepthFunc(GL_LESS);
     glEnable(GL_CULL_FACE);
 
-    // auto monkeyModel = std::make_shared<VSModel>("monkey.obj");  
+    // auto monkeyModel = std::make_shared<VSModel>("monkey.obj");
 
     VSLog::Log(VSLog::Category::Core, VSLog::Level::info, "Successfully initialized logger");
 
@@ -275,23 +276,32 @@ int VSApp::mainLoop()
             int width;
             int height;
             glfwGetWindowSize(window, &width, &height);
-            float depth;
-            glReadPixels(
-                (GLint)xpos,
-                (GLint)(height - ypos),
-                (GLsizei)1.0F,
-                (GLsizei)1.0F,
-                GL_DEPTH_COMPONENT,
-                GL_FLOAT,
-                &depth);
-            auto screenPos = glm::vec3(xpos, height - ypos, depth);
-            auto tmpView = getWorld()->getCamera()->getViewMatrix();
-            auto tmpProj = getWorld()->getCamera()->getProjectionMatrix();
-            glm::vec4 viewport = glm::vec4(0.0F, 0.0F, width, height);
-            auto worldPos = glm::unProject(screenPos, tmpView, tmpProj, viewport);
-            // std::cout << position.x << ", " << position.y << ", " << position.z << std::endl;
-            getWorld()->getCameraController()->setMouseInWorldCoords(worldPos);
+            const auto screenPosCamera = glm::vec3(xpos, double(height) - ypos, 0.F);
+            const auto screenPosFar = glm::vec3(xpos, double(height) - ypos, 1.F);
+
+            const auto tmpView = getWorld()->getCamera()->getViewMatrix();
+            const auto tmpProj = getWorld()->getCamera()->getProjectionMatrix();
+            const glm::vec4 viewport = glm::vec4(0.0F, 0.0F, width, height);
+
+            const auto worldPosNear = glm::unProject(screenPosCamera, tmpView, tmpProj, viewport);
+            const auto worldPosFar = glm::unProject(screenPosFar, tmpView, tmpProj, viewport);
+
+            const auto hitResult =
+                getWorld()->getChunkManager()->lineTrace(worldPosNear, worldPosFar);
+
+            if (hitResult.bHasHit)
+            {
+                getWorld()->getCameraController()->setMouseInWorldCoords(hitResult.hitLocation);
+
+                getWorld()->getDebugDraw()->drawLine(
+                    hitResult.hitLocation,
+                    hitResult.hitLocation + hitResult.hitNormal * 10.F,
+                    {0, 255, 0});
+            }
         }
+
+        getWorld()->getDebugDraw()->drawSphere(
+            getWorld()->getCameraController()->getMouseInWorldCoords(), 0.5F, {255, 0, 0});
 
         // draw ui
         UI->draw();

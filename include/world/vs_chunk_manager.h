@@ -60,11 +60,19 @@ public:
         std::vector<VSBlockID> blocks;
     };
 
+    struct VSTraceResult
+    {
+        bool bHasHit;
+        glm::vec3 hitLocation;
+        glm::vec3 hitNormal;
+        VSBlockID blockID;
+    };
+
     VSChunkManager();
 
-    VSBlockID getBlock(glm::ivec3 location) const;
+    VSBlockID getBlock(const glm::vec3& location) const;
 
-    void setBlock(glm::ivec3 location, VSBlockID blockID);
+    void setBlock(const glm::vec3& location, VSBlockID blockID);
 
     glm::ivec3 getWorldSize() const;
 
@@ -90,6 +98,10 @@ public:
 
     bool shouldReinitializeChunks() const;
 
+    bool isLocationInBounds(const glm::ivec3& location) const;
+
+    VSTraceResult lineTrace(const glm::vec3& start, const glm::vec3& end) const;
+
     // This method is used to retrieve the data to save a scene.
     [[nodiscard]] VSWorldData getData() const;
 
@@ -103,6 +115,16 @@ private:
     glm::ivec2 chunkCount{};
 
     glm::ivec3 worldSize{};
+
+    glm::ivec3 worldSizeHalf{};
+
+    glm::ivec3 newChunkSize{};
+
+    glm::ivec2 newChunkCount{};
+
+    glm::ivec3 newWorldSize{};
+
+    glm::ivec3 newWorldSizeHalf{};
 
     VSShader chunkShader = VSShader("Chunk");
 
@@ -167,7 +189,7 @@ private:
 
     glm::ivec2 chunkIndexToChunkCoordinates(std::size_t chunkIndex) const;
 
-    std::size_t blockCoordinatesToBlockIndex(const glm::ivec3& chunkCoords) const;
+    std::size_t blockCoordinatesToBlockIndex(const glm::ivec3& bloockCoords) const;
 
     glm::ivec3 blockIndexToBlockCoordinates(std::size_t blockIndex) const;
 

@@ -32,6 +32,7 @@ void VSGame::gameLoop()
         frameTimeTracker.startFrame();
 
         auto* UI = app->getUI();
+        auto* world = app->getWorld();
 
         if (UI->getState()->bShouldSetEditorActive)
         {
@@ -43,7 +44,6 @@ void VSGame::gameLoop()
             app->setWorldActive(WorldName);
             UI->getMutableState()->bShouldSetGameActive = false;
         }
-        auto* world = app->getWorld();
 
         // Update world state with ui state
         if (UI->getState()->bShouldUpdateChunks)
@@ -74,8 +74,9 @@ void VSGame::gameLoop()
                 VSParser::readFromFile(UI->getState()->loadFilePath);
             world->getChunkManager()->setWorldData(worldData);
             UI->getMutableState()->bShouldLoadFromFile = false;
-            VSChunkManager::VSBuildingData buildData = VSParser::readBuildFromFile(UI->getState()->loadFilePath);
-            (void) buildData;
+            VSChunkManager::VSBuildingData buildData =
+                VSParser::readBuildFromFile(UI->getState()->loadFilePath);
+            (void)buildData;
         }
 
         if (UI->getState()->bShouldGenerateTerrain && !world->getChunkManager()->shouldReinitializeChunks())
@@ -91,6 +92,26 @@ void VSGame::gameLoop()
             UI->getMutableState()->bShouldGenerateTerrain = false;
             // Update Minimap
             UI->getMutableState()->minimap->updateMinimap(world);
+
+            // auto* world = app->getWorld();
+
+            // VSChunkManager::VSBuildingData buildData =
+            //     VSParser::readBuildFromFile("resources/buildings/test.json");
+
+            // for (int x = 0; x < buildData.buildSize.x; x++)
+            // {
+            //     for (int y = 0; y < buildData.buildSize.y; y++)
+            //     {
+            //         for (int z = 0; x < buildData.buildSize.z; z++)
+            //         {
+            //             world->getChunkManager()->setBlock(
+            //                 {x, y, z},
+            //                 buildData.blocks
+            //                     [x + y * buildData.buildSize.x +
+            //                      z * buildData.buildSize.x * buildData.buildSize.y]);
+            //         }
+            //     }
+            // }
         }
 
         if (UI->getState()->bShouldResetEditor &&
