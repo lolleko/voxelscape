@@ -5,6 +5,7 @@
 #include <glm/geometric.hpp>
 #include <glm/matrix.hpp>
 #include "core/vs_camera.h"
+#include "core/vs_debug_draw.h"
 #include "world/vs_world.h"
 #include "world/vs_chunk_manager.h"
 
@@ -69,49 +70,27 @@ void VSFPCameraController::processMouseButton(GLFWwindow* window, int button, in
     // Set block on cursor position
     if (button == GLFW_MOUSE_BUTTON_RIGHT && action == GLFW_PRESS)
     {
-        glm::ivec3 worldSize = world->getChunkManager()->getWorldSize();
-        // Bauernhack
-        mouseInWorldCoords += 0.05F * glm::normalize(cam->getPosition() - mouseInWorldCoords);
-        glm::ivec3 position = glm::ivec3(
-            std::floor(mouseInWorldCoords.x),
-            std::floor(mouseInWorldCoords.y),
-            std::floor(mouseInWorldCoords.z));
+        std::cout << mouseInWorldCoords.x << ", " << mouseInWorldCoords.y << ", "
+                  << mouseInWorldCoords.z << std::endl;
         // Check if block is placed in bounds
-        if (position.x < 0 || position.z < 0)
+        if (!world->getChunkManager()->isLocationInBounds(mouseInWorldCoords))
         {
             // do nothing
             return;
         }
-        if (position.x >= worldSize.x || position.y >= worldSize.y || position.z >= worldSize.z)
-        {
-            // do nothing
-            return;
-        }
-        world->getChunkManager()->setBlock(position, editorBlockID);
+        world->getChunkManager()->setBlock(mouseInWorldCoords, editorBlockID);
     }
 
     // Delete block on cursor position
     if (button == GLFW_MOUSE_BUTTON_MIDDLE && action == GLFW_PRESS)
     {
-        glm::ivec3 worldSize = world->getChunkManager()->getWorldSize();
-        // Bauernhack
-        mouseInWorldCoords -= 0.05F * glm::normalize(cam->getPosition() - mouseInWorldCoords);
-        glm::ivec3 position = glm::ivec3(
-            std::floor(mouseInWorldCoords.x),
-            std::floor(mouseInWorldCoords.y),
-            std::floor(mouseInWorldCoords.z));
         // Check if block is placed in bounds
-        if (position.x < 0 || position.z < 0)
+        if (!world->getChunkManager()->isLocationInBounds(mouseInWorldCoords))
         {
             // do nothing
             return;
         }
-        if (position.x >= worldSize.x || position.y >= worldSize.y || position.z >= worldSize.z)
-        {
-            // do nothing
-            return;
-        }
-        world->getChunkManager()->setBlock(position, 0);
+        world->getChunkManager()->setBlock(mouseInWorldCoords, 0);
     }
 }
 

@@ -89,17 +89,17 @@ VSChunkManager::VSChunkManager()
         .setInt("spriteTexture", spriteTextureID);
 }
 
-VSBlockID VSChunkManager::getBlock(const glm::ivec3& location) const
+VSBlockID VSChunkManager::getBlock(const glm::vec3& location) const
 {
-    const auto zeroBaseLocation = location + worldSizeHalf;
+    const auto zeroBaseLocation = glm::ivec3(glm::floor(location)) + worldSizeHalf;
     const auto [chunkIndex, blockIndex] = worldCoordinatesToChunkAndBlockIndex(zeroBaseLocation);
     return chunks[chunkIndex]->blocks[blockIndex];
 }
 
-void VSChunkManager::setBlock(const glm::ivec3& location, VSBlockID blockID)
+void VSChunkManager::setBlock(const glm::vec3& location, VSBlockID blockID)
 {
     assert(!bShouldReinitializeChunks);
-    const auto zeroBaseLocation = location + worldSizeHalf;
+    const auto zeroBaseLocation = glm::ivec3(glm::floor(location)) + worldSizeHalf;
     const auto [chunkCoordinates, blockIndex] =
         worldCoordinatesToChunkCoordinatesAndBlockIndex(zeroBaseLocation);
 
@@ -145,6 +145,8 @@ void VSChunkManager::draw(VSWorld* world)
             world->getDebugDraw()->drawBox(
                 {chunkPos - glm::vec3(chunkSize / 2), chunkPos + glm::vec3(chunkSize / 2)},
                 {255, 0, 0});
+
+            world->getDebugDraw()->drawSphere({0, 0, 0}, worldSizeHalf.x, {255, 0, 0});
         }
 
         glm::mat4 VP = world->getCamera()->getVPMatrix();
@@ -285,10 +287,11 @@ void VSChunkManager::setChunkDimensions(
     const glm::ivec2& inChunkCount)
 {
     // Force even number of chunks and blocks
-    chunkSize = (inChunkSize / 2) * 2;
-    chunkCount = (inChunkCount / 2) * 2;
-    worldSize = {chunkSize.x * chunkCount.x, chunkSize.y, chunkSize.z * chunkCount.y};
-    worldSizeHalf = worldSize / 2;
+    newChunkSize = (inChunkSize / 2) * 2;
+    newChunkCount = (inChunkCount / 2) * 2;
+    newWorldSize = {
+        newChunkSize.x * newChunkCount.x, newChunkSize.y, newChunkSize.z * newChunkCount.y};
+    newWorldSizeHalf = newWorldSize / 2;
     bShouldReinitializeChunks = true;
 }
 
@@ -336,6 +339,84 @@ bool VSChunkManager::shouldReinitializeChunks() const
     return bShouldReinitializeChunks.load();
 }
 
+bool VSChunkManager::isLocationInBounds(const glm::ivec3& location) const
+{
+    return (
+        (location.x >= -worldSizeHalf.x && location.x < worldSizeHalf.x) &&
+        (location.y >= -worldSizeHalf.y && location.y < worldSizeHalf.y) &&
+        (location.z >= -worldSizeHalf.z && location.z < worldSizeHalf.z));
+}
+
+VSChunkManager::VSTraceResult
+VSChunkManager::lineTrace(const glm::vec3& start, const glm::vec3& end) const
+{
+    const glm::vec3 startToEnd = end - start;
+
+    const float maxRayLength = glm::length(startToEnd);
+
+    const auto rayDir = startToEnd / maxRayLength;
+
+    float t = 0.F;
+
+    while (t < maxRayLength)
+    {
+        const auto samplePos = start + rayDir * t;
+        if (isLocationInBounds(samplePos))
+        {
+            const auto blockSample = getBlock(samplePos);
+            if (blockSample != VS_DEFAULT_BLOCK_ID)
+            {
+                const auto centerToHitPos = glm::fract(samplePos) - 0.5F;
+
+                glm::vec3 d = glm::abs(centerToHitPos) - 0.5F;
+                const auto distToSurface = length(glm::max(d, glm::vec3(0.F))) +
+                                           glm::min(glm::max(glm::max(d.x, d.y), d.z), 0.F);
+
+                auto interSectionPos = samplePos - rayDir * distToSurface;
+
+                // calc normals
+
+                auto normal = glm::vec3(0, 0, 0);
+
+                if (d.x > d.y && d.x > d.z)
+                {
+                    normal = {glm::sign(centerToHitPos.x) * 1.F, 0.F, 0.F};
+                    interSectionPos.x = glm::round(interSectionPos.x);
+                    if (centerToHitPos.x < 0)
+                    {
+                        interSectionPos.x -= 0.00001F;
+                    }
+                }
+
+                if (d.y > d.x && d.y > d.z)
+                {
+                    normal = {0.F, glm::sign(centerToHitPos.y) * 1.F, 0.F};
+                    interSectionPos.y = glm::round(interSectionPos.y);
+                    if (centerToHitPos.y < 0)
+                    {
+                        interSectionPos.y -= 0.00001F;
+                    }
+                }
+
+                if (d.z > d.x && d.z > d.y)
+                {
+                    normal = {0.F, 0.F, glm::sign(centerToHitPos.z) * 1.F};
+                    interSectionPos.z = glm::round(interSectionPos.z);
+                    if (centerToHitPos.z < 0)
+                    {
+                        interSectionPos.z -= 0.00001F;
+                    }
+                }
+
+                return {true, interSectionPos, normal, blockSample};
+            }
+        }
+        t += 0.005F;
+    }
+
+    return {false, {}, {}, VS_DEFAULT_BLOCK_ID};
+}
+
 VSChunkManager::VSWorldData VSChunkManager::getData() const
 {
     VSChunkManager::VSWorldData worldData{};
@@ -365,6 +446,11 @@ void VSChunkManager::initializeChunks()
     bool expected = true;
     if (bShouldReinitializeChunks.compare_exchange_weak(expected, false))
     {
+        chunkSize = newChunkSize;
+        chunkCount = newChunkCount;
+        worldSize = newWorldSize;
+        worldSizeHalf = newWorldSizeHalf;
+
         for (const auto& [chunk, shadowBuildUpdate] : activeShadowBuildTasks)
         {
             shadowBuildUpdate->cancel();
