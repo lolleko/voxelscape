@@ -4,6 +4,7 @@
 #include <array>
 #include <string>
 #include "ui/imgui_impl/imfilebrowser.h"
+#include "ui/vs_minimap.h"
 
 struct VSUIState;
 struct GLFWwindow;

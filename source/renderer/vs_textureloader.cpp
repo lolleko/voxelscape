@@ -53,25 +53,23 @@ unsigned int loadCubemap(std::vector<std::string> faces)
 
 unsigned int loadDebugCubemap()
 {
-    std::vector<std::string> faces{
-        "textures/cubemapDebug/right.jpg",
-        "textures/cubemapDebug/left.jpg",
-        "textures/cubemapDebug/top.jpg",
-        "textures/cubemapDebug/bottom.jpg",
-        "textures/cubemapDebug/front.jpg",
-        "textures/cubemapDebug/back.jpg"};
+    std::vector<std::string> faces{"textures/cubemapDebug/right.jpg",
+                                   "textures/cubemapDebug/left.jpg",
+                                   "textures/cubemapDebug/top.jpg",
+                                   "textures/cubemapDebug/bottom.jpg",
+                                   "textures/cubemapDebug/front.jpg",
+                                   "textures/cubemapDebug/back.jpg"};
     return loadCubemap(faces);
 }
 
 unsigned int loadSkyboxCubemap()
 {
-    std::vector<std::string> faces{
-        "textures/skybox/right.jpg",
-        "textures/skybox/left.jpg",
-        "textures/skybox/top.jpg",
-        "textures/skybox/bottom.jpg",
-        "textures/skybox/front.jpg",
-        "textures/skybox/back.jpg"};
+    std::vector<std::string> faces{"textures/skybox/right.jpg",
+                                   "textures/skybox/left.jpg",
+                                   "textures/skybox/top.jpg",
+                                   "textures/skybox/bottom.jpg",
+                                   "textures/skybox/front.jpg",
+                                   "textures/skybox/back.jpg"};
     return loadCubemap(faces);
 }
 
@@ -192,3 +190,38 @@ unsigned int TextureAtlasFromFile(std::string atlasDir, bool gamma)
 
     return textureID;
 };
+
+unsigned int TextureFromData(unsigned char* data, int width, int height, int nrComponents)
+{
+    unsigned int textureID;
+    glGenTextures(1, &textureID);
+
+    if (data)
+    {
+        GLenum format = GL_RGB;
+        if (nrComponents == 1)
+            format = GL_RED;
+        else if (nrComponents == 3)
+            format = GL_RGB;
+        else if (nrComponents == 4)
+            format = GL_RGBA;
+
+        glBindTexture(GL_TEXTURE_2D, textureID);
+        glTexImage2D(GL_TEXTURE_2D, 0, format, width, height, 0, format, GL_UNSIGNED_BYTE, data);
+        glGenerateMipmap(GL_TEXTURE_2D);
+
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    }
+    else
+    {
+        VSLog::Log(
+            VSLog::Category::Core,
+            VSLog::Level::err,
+            "Data pointer is null");
+    }
+
+    return textureID;
+}

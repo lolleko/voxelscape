@@ -6,6 +6,7 @@
 #include "core/vs_editor.h"
 #include "core/vs_cameracontroller.h"
 
+#include "ui/vs_minimap.h"
 #include "ui/vs_ui.h"
 #include "ui/vs_ui_state.h"
 #include "ui/vs_parser.h"
@@ -88,6 +89,8 @@ void VSGame::gameLoop()
                 VSTerrainGeneration::buildDesert(world);
             }
             UI->getMutableState()->bShouldGenerateTerrain = false;
+            // Update Minimap
+            UI->getMutableState()->minimap->updateMinimap(world);
         }
 
         if (UI->getState()->bShouldResetEditor &&

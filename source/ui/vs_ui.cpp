@@ -1,5 +1,6 @@
 #include "ui/vs_ui.h"
 #include <imgui.h>
+#include <cstdint>
 
 #include "core/vs_log.h"
 #include "renderer/vs_textureloader.h"
@@ -330,7 +331,8 @@ void VSUI::renderGameGUI()
     ImGui::SetNextWindowPos(ImVec2(ImGui::GetIO().DisplaySize.x, menuBarHeight), ImGuiCond_Always, ImVec2(1.F, 0.F));
     ImGui::SetNextWindowSize(ImVec2(0.F, 0.F));
     ImGui::Begin("Minimap", 0, ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove);
-    ImGui::Text("Dummy Text hallo");
+    unsigned int miniMapID = TextureFromData(uiState->minimap->getPixelData(), uiState->minimap->getWidth(), uiState->minimap->getHeight(), uiState->minimap->getNrComponents());
+    ImGui::Image((void*)(intptr_t)miniMapID, ImVec2(256, 256));
     ImGui::End();
 }
 
