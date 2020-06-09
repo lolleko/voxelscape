@@ -281,7 +281,6 @@ void VSUI::renderGameConfigGUI()
             // Large
             uiState->chunkCount = {16, 16};
         }
-        // uiState->bShouldUpdateChunks = true;
     }
     // This needs to be adapted to available biome types
     const char* biomeTypes[] = {"Mountains", "Desert"};

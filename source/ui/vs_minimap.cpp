@@ -37,11 +37,11 @@ void VSMinimap::updateMinimap(const VSWorld* world)
     auto chunkManager = world->getChunkManager();
     glm::ivec3 worldSize = chunkManager->getWorldSize();
     glm::ivec3 worldSizeHalf = worldSize / 2;
-    float stepX = (float)(worldSize.x - 1) / (width - 1);
-    float stepZ = (float)(worldSize.z - 1) / (height - 1);
-    for (int i = -worldSizeHalf.x; i < worldSizeHalf.x; i++)
+    float stepX = (float)(worldSize.x - 1) / width;
+    float stepZ = (float)(worldSize.z - 1) / height;
+    for (int i = -width / 2; i < width / 2; i++)
     {
-        for (int j = -worldSizeHalf.z; j < worldSizeHalf.z; j++)
+        for (int j = -height / 2; j < height / 2; j++)
         {
             for (int y = worldSizeHalf.y - 1; y >= -worldSizeHalf.y; y--)
             {
@@ -53,6 +53,8 @@ void VSMinimap::updateMinimap(const VSWorld* world)
                     pixels.at((j + height / 2) * width * nrComponents + (i + width / 2) * nrComponents) = blockID2MinimapColor.at(blockID).x;
                     pixels.at((j + height / 2) * width * nrComponents + (i + width / 2) * nrComponents + 1) = blockID2MinimapColor.at(blockID).y;
                     pixels.at((j + height / 2) * width * nrComponents + (i + width / 2) * nrComponents + 2) = blockID2MinimapColor.at(blockID).z;
+                    // TODO: Are breaks still cool? Otherwise will do a while loop
+                    break;
                 }
             }
         }

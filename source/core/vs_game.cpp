@@ -32,7 +32,6 @@ void VSGame::gameLoop()
         frameTimeTracker.startFrame();
 
         auto* UI = app->getUI();
-        auto* world = app->getWorld();
 
         if (UI->getState()->bShouldSetEditorActive)
         {
@@ -42,9 +41,10 @@ void VSGame::gameLoop()
         if (UI->getState()->bShouldSetGameActive)
         {
             app->setWorldActive(WorldName);
-            world = app->getWorld();
             UI->getMutableState()->bShouldSetGameActive = false;
         }
+
+        auto* world = app->getWorld();
 
         // Update world state with ui state
         if (UI->getState()->bShouldUpdateChunks)
