@@ -57,6 +57,4 @@ void VSMinimap::updateMinimap(const VSWorld* world)
             }
         }
     }
-    std::cout << "Updated minimap" << std::endl;
-    // TODO Maybe check if out of world bounds if necessary
 }

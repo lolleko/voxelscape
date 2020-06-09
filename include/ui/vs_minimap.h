@@ -28,7 +28,7 @@ private:
 
     std::vector<unsigned char> pixels;
 
-    const int width = 256;
-    const int height = 256;
+    const int width = 128;
+    const int height = 128;
     const int nrComponents = 3;
 };
