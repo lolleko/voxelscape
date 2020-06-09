@@ -36,23 +36,23 @@ void VSMinimap::updateMinimap(const VSWorld* world)
 {
     auto chunkManager = world->getChunkManager();
     glm::ivec3 worldSize = chunkManager->getWorldSize();
-    int maxHeight = worldSize.y;
+    glm::ivec3 worldSizeHalf = worldSize / 2;
     float stepX = (float)(worldSize.x - 1) / (width - 1);
     float stepZ = (float)(worldSize.z - 1) / (height - 1);
-    for (int i = 0; i < width; i++)
+    for (int i = -worldSizeHalf.x; i < worldSizeHalf.x; i++)
     {
-        for (int j = 0; j < height; j++)
+        for (int j = -worldSizeHalf.z; j < worldSizeHalf.z; j++)
         {
-            for (int y = maxHeight - 1; y >= 0; y--)
+            for (int y = worldSizeHalf.y - 1; y >= -worldSizeHalf.y; y--)
             {
                 int x = (int)std::round(i * stepX);
                 int z = (int)std::round(j * stepZ);
                 VSBlockID blockID = chunkManager->getBlock({x, y, z});
                 if (blockID > 0)
                 {
-                    pixels.at(j * width * nrComponents + i * nrComponents) = blockID2MinimapColor.at(blockID).x;
-                    pixels.at(j * width * nrComponents + i * nrComponents + 1) = blockID2MinimapColor.at(blockID).y;
-                    pixels.at(j * width * nrComponents + i * nrComponents + 2) = blockID2MinimapColor.at(blockID).z;
+                    pixels.at((j + height / 2) * width * nrComponents + (i + width / 2) * nrComponents) = blockID2MinimapColor.at(blockID).x;
+                    pixels.at((j + height / 2) * width * nrComponents + (i + width / 2) * nrComponents + 1) = blockID2MinimapColor.at(blockID).y;
+                    pixels.at((j + height / 2) * width * nrComponents + (i + width / 2) * nrComponents + 2) = blockID2MinimapColor.at(blockID).z;
                 }
             }
         }

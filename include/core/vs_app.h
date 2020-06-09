@@ -21,6 +21,8 @@ public:
 
     [[nodiscard]] VSWorld* getWorld() const;
 
+    [[nodiscard]] std::string getWorldName() const;
+
     void setWorldActive(std::string key);
 
     void addWorld(std::string key, VSWorld* world);
@@ -35,7 +37,7 @@ private:
     VSUI* UI;
 
     std::map<std::string, VSWorld*> worlds;
-
+    std::string worldName;
     VSWorld* world;
 
     VSGame* game;

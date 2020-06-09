@@ -171,11 +171,17 @@ VSWorld* VSApp::getWorld() const
     return world;
 }
 
+std::string VSApp::getWorldName() const
+{
+    return worldName;
+}
+
 void VSApp::setWorldActive(std::string key)
 {
     if (worlds.count(key) > 0)
     {
         world = worlds.at(key);
+        worldName = key;
     }
     // Key already exists
     VSLog::Log(

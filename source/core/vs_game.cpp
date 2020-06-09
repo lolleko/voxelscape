@@ -42,6 +42,7 @@ void VSGame::gameLoop()
         if (UI->getState()->bShouldSetGameActive)
         {
             app->setWorldActive(WorldName);
+            world = app->getWorld();
             UI->getMutableState()->bShouldSetGameActive = false;
         }
 
@@ -74,12 +75,10 @@ void VSGame::gameLoop()
                 VSParser::readFromFile(UI->getState()->loadFilePath);
             world->getChunkManager()->setWorldData(worldData);
             UI->getMutableState()->bShouldLoadFromFile = false;
-            VSChunkManager::VSBuildingData buildData =
-                VSParser::readBuildFromFile(UI->getState()->loadFilePath);
-            (void)buildData;
         }
 
-        if (UI->getState()->bShouldGenerateTerrain && !world->getChunkManager()->shouldReinitializeChunks())
+        if (UI->getState()->bShouldGenerateTerrain &&
+            !world->getChunkManager()->shouldReinitializeChunks())
         {
             if (UI->getState()->bBiomeType == 0)
             {
@@ -90,8 +89,12 @@ void VSGame::gameLoop()
                 VSTerrainGeneration::buildDesert(world);
             }
             UI->getMutableState()->bShouldGenerateTerrain = false;
-            // Update Minimap
-            UI->getMutableState()->minimap->updateMinimap(world);
+
+            if (!UI->getState()->bEditorActive)
+            {
+                // Update Minimap
+                UI->getMutableState()->minimap->updateMinimap(world);
+            }
 
             // auto* world = app->getWorld();
 

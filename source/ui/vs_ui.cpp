@@ -1,6 +1,5 @@
 #include "ui/vs_ui.h"
 #include <imgui.h>
-#include <cstdint>
 
 #include "core/vs_log.h"
 #include "renderer/vs_textureloader.h"
@@ -282,7 +281,7 @@ void VSUI::renderGameConfigGUI()
             // Large
             uiState->chunkCount = {16, 16};
         }
-        uiState->bShouldUpdateChunks = true;
+        // uiState->bShouldUpdateChunks = true;
     }
     // This needs to be adapted to available biome types
     const char* biomeTypes[] = {"Mountains", "Desert"};
@@ -290,9 +289,9 @@ void VSUI::renderGameConfigGUI()
 
     if (ImGui::Button("Start Game", ImVec2(ImGui::GetWindowContentRegionWidth(), 0.F)))
     {
+        uiState->bShouldSetGameActive = true;
         uiState->bShouldUpdateChunks = true;
         uiState->bShouldGenerateTerrain = true;
-        uiState->bShouldSetGameActive = true;
         uiState->bGameConfigActive = false;
     }
     ImGui::End();
