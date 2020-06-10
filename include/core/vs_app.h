@@ -7,6 +7,7 @@
 class VSUI;
 class VSWorld;
 class VSGame;
+class VSInputHandler;
 
 struct GLFWwindow;
 
@@ -22,6 +23,8 @@ public:
     [[nodiscard]] VSWorld* getWorld() const;
 
     [[nodiscard]] std::string getWorldName() const;
+
+    [[nodiscard]] VSInputHandler* getInputHandler() const;
 
     void setWorldActive(std::string key);
 
@@ -41,6 +44,8 @@ private:
     VSWorld* world;
 
     VSGame* game;
+
+    VSInputHandler* inputHandler;
 
     GLFWwindow* window;
 

@@ -19,6 +19,7 @@
 #include "core/vs_game.h"
 #include "core/vs_debug_draw.h"
 #include "core/vs_editor.h"
+#include "core/vs_input_handler.h"
 
 #include "world/vs_chunk_manager.h"
 
@@ -55,6 +56,8 @@ int VSApp::initialize()
     // initialize logger
     VSLog::init(UI->getMutableState()->logStream);
     VSLog::Log(VSLog::Category::Core, VSLog::Level::info, "Successfully initialized logger");
+
+    inputHandler = new VSInputHandler();
 
     VSLog::Log(
         VSLog::Category::Core,
@@ -189,6 +192,11 @@ void VSApp::setWorldActive(std::string key)
         VSLog::Level::warn,
         "World with key '{}' does not exist and will not be set active",
         key);
+}
+
+VSInputHandler* VSApp::getInputHandler() const
+{
+    return inputHandler;
 }
 
 void VSApp::addWorld(std::string key, VSWorld* world)

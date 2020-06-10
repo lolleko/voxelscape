@@ -10,6 +10,7 @@
 
 // Forward declarations
 class VSCamera;
+class VSInputHandler;
 struct GLFWwindow;
 
 const float SPEED = 40.F;
@@ -51,6 +52,7 @@ public:
 protected:
     VSCamera* cam;
     VSWorld* world;
+    VSInputHandler* inputHandler;
 
     bool firstMouse = true;
     float lastX = 0.F;
