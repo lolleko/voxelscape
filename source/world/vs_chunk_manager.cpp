@@ -444,7 +444,7 @@ void VSChunkManager::initFromData(const VSWorldData& data)
 void VSChunkManager::initializeChunks()
 {
     bool expected = true;
-    if (bShouldReinitializeChunks.compare_exchange_weak(expected, false))
+    if (bShouldReinitializeChunks.load() == expected)
     {
         chunkSize = newChunkSize;
         chunkCount = newChunkCount;
@@ -502,6 +502,8 @@ void VSChunkManager::initializeChunks()
             GL_RED,
             GL_FLOAT,
             nullptr);
+
+        bShouldReinitializeChunks.compare_exchange_weak(expected, false);
     }
 }
 

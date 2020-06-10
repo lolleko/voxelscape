@@ -6,6 +6,7 @@
 #include "core/vs_editor.h"
 #include "core/vs_cameracontroller.h"
 
+#include "ui/vs_minimap.h"
 #include "ui/vs_ui.h"
 #include "ui/vs_ui_state.h"
 #include "ui/vs_parser.h"
@@ -31,7 +32,6 @@ void VSGame::gameLoop()
         frameTimeTracker.startFrame();
 
         auto* UI = app->getUI();
-        auto* world = app->getWorld();
 
         if (UI->getState()->bShouldSetEditorActive)
         {
@@ -43,6 +43,8 @@ void VSGame::gameLoop()
             app->setWorldActive(WorldName);
             UI->getMutableState()->bShouldSetGameActive = false;
         }
+
+        auto* world = app->getWorld();
 
         // Update world state with ui state
         if (UI->getState()->bShouldUpdateChunks)
@@ -73,12 +75,10 @@ void VSGame::gameLoop()
                 VSParser::readFromFile(UI->getState()->loadFilePath);
             world->getChunkManager()->setWorldData(worldData);
             UI->getMutableState()->bShouldLoadFromFile = false;
-            VSChunkManager::VSBuildingData buildData =
-                VSParser::readBuildFromFile(UI->getState()->loadFilePath);
-            (void)buildData;
         }
 
-        if (UI->getState()->bShouldGenerateTerrain)
+        if (UI->getState()->bShouldGenerateTerrain &&
+            !world->getChunkManager()->shouldReinitializeChunks())
         {
             if (UI->getState()->bBiomeType == 0)
             {
@@ -89,6 +89,12 @@ void VSGame::gameLoop()
                 VSTerrainGeneration::buildDesert(world);
             }
             UI->getMutableState()->bShouldGenerateTerrain = false;
+
+            if (!UI->getState()->bEditorActive)
+            {
+                // Update Minimap
+                UI->getMutableState()->minimap->updateMinimap(world);
+            }
 
             // auto* world = app->getWorld();
 

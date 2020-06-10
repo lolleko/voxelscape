@@ -2,6 +2,7 @@
 #include <imgui.h>
 
 #include "core/vs_log.h"
+#include "renderer/vs_textureloader.h"
 #include "ui/imgui_impl/imgui_impl_glfw.h"
 #include "ui/imgui_impl/imgui_impl_opengl3.h"
 
@@ -82,8 +83,17 @@ void VSUI::render()
     {
         renderMainMenu();
     }
+    else if (uiState->bGameConfigActive)
+    {
+        renderGameConfigGUI();
+    }
+    else if (uiState->bShouldUpdateChunks)
+    {
+        renderLoading();
+    }
     else
     {
+        renderGameGUI();
         renderDebugGUI();
     }
 
@@ -220,11 +230,9 @@ void VSUI::renderMainMenu()
         ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoCollapse);
     ImGui::Dummy(
         ImVec2(ImGui::GetIO().DisplaySize.x * 0.75F, ImGui::GetIO().DisplaySize.y * 0.05F));
-    if (ImGui::Button("Start Game", ImVec2(ImGui::GetWindowContentRegionWidth(), 0.F)))
+    if (ImGui::Button("New Game", ImVec2(ImGui::GetWindowContentRegionWidth(), 0.F)))
     {
-        // TODO: Start Game
-        uiState->bShouldSetGameActive = true;
-        uiState->bEditorActive = false;
+        uiState->bGameConfigActive = true;
         uiState->bMenuActive = false;
     }
     if (ImGui::Button("Start Editor", ImVec2(ImGui::GetWindowContentRegionWidth(), 0.F)))
@@ -235,6 +243,113 @@ void VSUI::renderMainMenu()
         uiState->bEditorActive = true;
         uiState->bMenuActive = false;
     }
+    ImGui::End();
+    ImGui::PopFont();
+}
+
+void VSUI::renderGameConfigGUI()
+{
+    ImGui::PushFont(menuFont);
+    ImGui::SetNextWindowPos(
+        ImVec2(ImGui::GetIO().DisplaySize.x * 0.5F, ImGui::GetIO().DisplaySize.y * 0.5F),
+        ImGuiCond_Always,
+        ImVec2(0.5F, 0.5F));
+    ImGui::SetNextWindowSize(ImVec2(0.F, 0.F));
+    ImGui::Begin(
+        "Configure Game",
+        0,
+        ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoCollapse);
+
+    ImGui::Dummy(
+        ImVec2(ImGui::GetIO().DisplaySize.x * 0.75F, ImGui::GetIO().DisplaySize.y * 0.05F));
+
+    const char* worldSizes[] = {"Small", "Medium", "Large"};
+    if (ImGui::Combo("World size", (int*)&uiState->worldSize, worldSizes, IM_ARRAYSIZE(worldSizes)))
+    {
+        if (uiState->worldSize == 0)
+        {
+            // Small
+            uiState->chunkCount = {4, 4};
+        }
+        else if (uiState->worldSize == 1)
+        {
+            // Medium
+            uiState->chunkCount = {8, 8};
+        }
+        else if (uiState->worldSize == 2)
+        {
+            // Large
+            uiState->chunkCount = {16, 16};
+        }
+    }
+    // This needs to be adapted to available biome types
+    const char* biomeTypes[] = {"Mountains", "Desert"};
+    ImGui::Combo("Select biome", (int*)&uiState->bBiomeType, biomeTypes, IM_ARRAYSIZE(biomeTypes));
+
+    if (ImGui::Button("Start Game", ImVec2(ImGui::GetWindowContentRegionWidth(), 0.F)))
+    {
+        uiState->bShouldSetGameActive = true;
+        uiState->bShouldUpdateChunks = true;
+        uiState->bShouldGenerateTerrain = true;
+        uiState->bGameConfigActive = false;
+    }
+    ImGui::End();
+    ImGui::PopFont();
+}
+
+void VSUI::renderGameGUI()
+{
+    float menuBarHeight = 0.F;
+    if (ImGui::BeginMainMenuBar())
+    {
+        ImGui::MenuItem("Dummy");
+        ImGui::Separator();
+        unsigned int woodID = TextureFromFile("textures/tiles/4_wood.png");
+        ImGui::Image((void*)(intptr_t)woodID, ImVec2(20, 20));
+        ImGui::Text("%i", 10);
+
+        unsigned int stoneID = TextureFromFile("textures/tiles/1_stone.png");
+        ImGui::Image((void*)(intptr_t)stoneID, ImVec2(20, 20));
+        ImGui::Text("%i", 70);
+        menuBarHeight = ImGui::GetFontSize() + 2 * ImGui::GetStyle().FramePadding.y;
+    }
+    ImGui::EndMainMenuBar();
+
+    // Building selection
+    
+
+    ImGui::Begin("Select building", 0, ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove);
+    // Dummies
+    ImGui::Text("Lumberjack");
+    ImGui::SameLine();
+    ImGui::Text("Goldmine");
+    ImGui::End();
+
+    // Minimap
+    ImGui::SetNextWindowPos(ImVec2(ImGui::GetIO().DisplaySize.x, menuBarHeight), ImGuiCond_Always, ImVec2(1.F, 0.F));
+    ImGui::SetNextWindowSize(ImVec2(0.F, 0.F));
+    ImGui::Begin("Minimap", 0, ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove);
+    unsigned int miniMapID = TextureFromData(uiState->minimap->getPixelData(), uiState->minimap->getWidth(), uiState->minimap->getHeight(), uiState->minimap->getNrComponents());
+    ImGui::Image((void*)(intptr_t)miniMapID, ImVec2(256, 256));
+    ImGui::End();
+}
+
+void VSUI::renderLoading()
+{
+    ImGui::PushFont(menuFont);
+    ImGui::SetNextWindowPos(
+        ImVec2(ImGui::GetIO().DisplaySize.x * 0.5F, ImGui::GetIO().DisplaySize.y * 0.5F),
+        ImGuiCond_Always,
+        ImVec2(0.5F, 0.5F));
+    ImGui::SetNextWindowSize(ImVec2(0.F, 0.F));
+    ImGui::Begin(
+        "Loading",
+        0,
+        ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoCollapse |
+            ImGuiWindowFlags_NoTitleBar);
+
+    ImGui::Text("Loading %c", "|/-\\"[(int)(ImGui::GetTime() / 0.05f) & 3]);
+
     ImGui::End();
     ImGui::PopFont();
 }

@@ -4,6 +4,7 @@
 #include <glm/ext/vector_int3.hpp>
 #include <glm/ext/vector_int2.hpp>
 #include <sstream>
+#include "ui/vs_minimap.h"
 
 struct VSUIState
 {
@@ -11,11 +12,11 @@ struct VSUIState
     bool isWireframeModeEnabled = false;
     bool bShouldDrawChunkBorder = false;
     glm::ivec3 chunkSize = {32, 64, 32};
-    glm::ivec2 chunkCount = {2, 2};
+    glm::ivec2 chunkCount = {4, 4};
     bool bShouldUpdateChunks = false;
     bool bShouldGenerateTerrain = false;
     bool bShouldSetGameActive = false;
-    
+
     int activeBlockCount = 0;
     bool bShouldFreezeFrustum = false;
     bool bAreShadowsEnabled = false;
@@ -45,4 +46,10 @@ struct VSUIState
 
     // Menu Control flow
     bool bMenuActive = true;
+    bool bGameConfigActive = false;
+
+    // Game config
+    int worldSize = 0;  // 0 = Small, 1 = Medium, 2 = Large
+    // TODO: Not to sure if this belongs here
+    VSMinimap* minimap = new VSMinimap();
 };
