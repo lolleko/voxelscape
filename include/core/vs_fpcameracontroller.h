@@ -10,7 +10,9 @@ class VSCamera;
 class VSFPCameraController : public VSCameraController
 {
 public:
-    VSFPCameraController(VSCamera* camera, VSWorld* world);
+    VSFPCameraController(VSCamera* camera, VSWorld* world, VSInputHandler* inputHandler = nullptr);
+
+    void updateCamera() override;
 
     // Processes mouse click
     void processMouseButton(GLFWwindow* window, int button, int action, int mods) override;
@@ -30,4 +32,7 @@ public:
     void processKeyboardInput(GLFWwindow* window, float deltaTime) const override;
 
     void processFramebufferResize(GLFWwindow* window, int width, int height) override;
+
+private:
+    float lastYScrollOffset;
 };

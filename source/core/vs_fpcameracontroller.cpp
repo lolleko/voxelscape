@@ -6,12 +6,46 @@
 #include <glm/matrix.hpp>
 #include "core/vs_camera.h"
 #include "core/vs_debug_draw.h"
+#include "core/vs_input_handler.h"
 #include "world/vs_world.h"
 #include "world/vs_chunk_manager.h"
 
-VSFPCameraController::VSFPCameraController(VSCamera* camera, VSWorld* world)
-    : VSCameraController(camera, world)
+VSFPCameraController::VSFPCameraController(
+    VSCamera* camera,
+    VSWorld* world,
+    VSInputHandler* inputHandler)
+    : VSCameraController(camera, world, inputHandler)
 {
+    lastYScrollOffset = 0.F;
+}
+
+void VSFPCameraController::updateCamera()
+{
+    if (!inputHandler)
+    {
+        return;
+    }
+
+    // Handle scroll
+    {
+        float newYOffset = inputHandler->getYScrollOffset();
+        float yOffset = lastYScrollOffset - newYOffset;
+        float zoom = cam->getZoom();
+        if (zoom >= 1.0F && zoom <= 45.0F)
+        {
+            zoom -= yOffset;
+        }
+        if (zoom <= 1.0F)
+        {
+            zoom = 1.0F;
+        }
+        if (zoom >= 45.0F)
+        {
+            zoom = 45.0F;
+        }
+        cam->setZoom(zoom);
+        lastYScrollOffset = newYOffset;
+    }
 }
 
 void VSFPCameraController::processMouseButton(GLFWwindow* window, int button, int action, int mods)

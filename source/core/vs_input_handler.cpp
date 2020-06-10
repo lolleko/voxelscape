@@ -2,7 +2,12 @@
 
 VSInputHandler::VSInputHandler()
 {
+    yScrollOffset = 1.F;
+}
 
+double VSInputHandler::getYScrollOffset() const
+{
+    return yScrollOffset;
 }
 
 void VSInputHandler::processKeyboardInput(GLFWwindow* window, float deltaTime)

@@ -5,11 +5,17 @@
 // Forward declarations
 class VSCamera;
 
-// Dummy camera controller with no functionality. Supposed to be used for static menu backgroud world.
+// Dummy camera controller with no functionality. Supposed to be used for static menu backgroud
+// world.
 class VSDummyCameraController : public VSCameraController
 {
 public:
-    VSDummyCameraController(VSCamera* camera = nullptr, VSWorld* world = nullptr);
+    VSDummyCameraController(
+        VSCamera* camera = nullptr,
+        VSWorld* world = nullptr,
+        VSInputHandler* inputHandler = nullptr);
+
+    void updateCamera() override;
 
     // Processes mouse click
     void processMouseButton(GLFWwindow* window, int button, int action, int mods) override;

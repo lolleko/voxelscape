@@ -8,6 +8,8 @@ class VSInputHandler
 public:
     VSInputHandler();
 
+    [[nodiscard]] double getYScrollOffset() const;
+
     // Processes mouse click
     void processMouseButton(GLFWwindow* window, int button, int action, int mods);
 

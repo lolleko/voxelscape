@@ -3,8 +3,13 @@
 
 VSDummyCameraController::VSDummyCameraController(
     VSCamera* camera,
-    VSWorld* world)
-    : VSCameraController(camera, world)
+    VSWorld* world,
+    VSInputHandler* inputHandler)
+    : VSCameraController(camera, world, inputHandler)
+{
+}
+
+void VSDummyCameraController::updateCamera()
 {
 }
 

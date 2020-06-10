@@ -5,8 +5,8 @@
 #include "world/vs_world.h"
 
 // TODO: Implement rts camera
-VSRTSCameraController::VSRTSCameraController(VSCamera* camera, VSWorld* world)
-    : VSCameraController(camera, world)
+VSRTSCameraController::VSRTSCameraController(VSCamera* camera, VSWorld* world, VSInputHandler* inputHandler)
+    : VSCameraController(camera, world, inputHandler)
 {
 }
 

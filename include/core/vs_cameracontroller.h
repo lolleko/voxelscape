@@ -21,8 +21,10 @@ const float SENSITIVITY = 0.1F;
 class VSCameraController
 {
 public:
-    VSCameraController(VSCamera* camera, VSWorld* world);
+    VSCameraController(VSCamera* camera, VSWorld* world, VSInputHandler* inputHandler = nullptr);
     virtual ~VSCameraController() = default;
+
+    virtual void updateCamera() = 0;
 
     // Processes mouse click
     virtual void processMouseButton(GLFWwindow* window, int button, int action, int mods) = 0;
@@ -46,6 +48,8 @@ public:
     void setEditorBlockID(int blockID);
 
     void setMouseInWorldCoords(glm::vec3 coords);
+    
+    void setInputHandler(VSInputHandler* inputHandler);
 
     [[nodiscard]] glm::vec3 getMouseInWorldCoords() const;
 

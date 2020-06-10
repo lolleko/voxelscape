@@ -158,9 +158,9 @@ int VSApp::initializeGLFW()
         auto* app = static_cast<VSApp*>(glfwGetWindowUserPointer(window));
         app->getWorld()->getCameraController()->processMouseButton(window, button, action, mods);
     });
-    glfwSetScrollCallback(window, [](GLFWwindow* window, double xoffset, double yoffset) {
+    glfwSetScrollCallback(window, [](GLFWwindow* window, double xOffset, double yOffset) {
         auto* app = static_cast<VSApp*>(glfwGetWindowUserPointer(window));
-        app->getWorld()->getCameraController()->processMouseScroll(window, xoffset, yoffset);
+        app->getInputHandler()->processMouseScroll(window, xOffset, yOffset);
     });
     glfwSwapInterval(1);
     // Capture cursor for FPS Camera
@@ -210,6 +210,7 @@ void VSApp::addWorld(std::string key, VSWorld* world)
             "World with key '{}' already exists and will not be added",
             key);
     }
+    world->getCameraController()->setInputHandler(inputHandler);
     worlds.insert(std::pair<std::string, VSWorld*>(key, world));
 }
 
@@ -278,6 +279,9 @@ int VSApp::mainLoop()
 
         // update chunks
         world->update();
+
+        // Update camera
+        world->getCameraController()->updateCamera();
 
         // draw world
         world->draw(world);
