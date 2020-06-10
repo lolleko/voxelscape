@@ -53,6 +53,10 @@ public:
 
     [[nodiscard]] int getDisplayHeight() const;
 
+    [[nodiscard]] glm::vec3 getMouseInWorldPos() const;
+
+    void setMouseInWorldPos(glm::vec3 worldPos);
+
     void handleLeftClick();
 
     void handleRightClick();
@@ -78,6 +82,9 @@ public:
 
 private:
     float keyDeltaTime = 0.F;
+
+    // This data is also available in cameracontroller, but will be set here to pass to entt inputs
+    glm::vec3 mouseInWorldPos = {0.F, 0.F, 0.F};
 
     // Not really user input but corresponds to resizing the window and currently this data is not kept anywhere else
     int displayWidth = 0;

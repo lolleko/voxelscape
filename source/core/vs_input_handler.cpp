@@ -1,7 +1,9 @@
 #include "core/vs_input_handler.h"
 #include <GLFW/glfw3.h>
+#include <glm/fwd.hpp>
 #include "core/vs_log.h"
 #include "game/components/inputs.h"
+#include "game/components/location.h"
 
 VSInputHandler::VSInputHandler(int displayWidth, int displayHeight)
 {
@@ -13,7 +15,27 @@ VSInputHandler::VSInputHandler(int displayWidth, int displayHeight)
 Inputs VSInputHandler::getInputState() const
 {
     Inputs inputs;
-    (void)inputs;
+
+    if (!leftClickHandled)
+    {
+        inputs.leftButtonState = InputState::JustDown;
+    }
+    else if (leftMouseClicked)
+    {
+        inputs.leftButtonState = InputState::Down;
+    }
+
+    if (!rightClickHandled)
+    {
+        inputs.rightButtonState = InputState::JustDown;
+    }
+    else if (rightMouseClicked)
+    {
+        inputs.rightButtonState = InputState::Down;
+    }
+
+    // Put mouseInWorldPos here
+    // inputs.worldMouse = mouseInWorldPos;
 
     return inputs;
 }
@@ -104,6 +126,16 @@ void VSInputHandler::frameBufferResizeHandled()
             "Framebuffer resize got handled more than once");
     }
     aspectRatioChanged = false;
+}
+
+glm::vec3 VSInputHandler::getMouseInWorldPos() const
+{
+    return mouseInWorldPos;
+}
+
+void VSInputHandler::setMouseInWorldPos(glm::vec3 worldPos)
+{
+    mouseInWorldPos = worldPos;
 }
 
 void VSInputHandler::handleRightClick()

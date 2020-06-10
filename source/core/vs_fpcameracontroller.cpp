@@ -168,6 +168,7 @@ void VSFPCameraController::updateCamera()
         if (hitResult.bHasHit)
         {
             setMouseInWorldCoords(hitResult.hitLocation);
+            inputHandler->setMouseInWorldPos(hitResult.hitLocation);
             setMouseNormalInWorldCoords(hitResult.hitNormal);
 
             world->getDebugDraw()->drawLine(
