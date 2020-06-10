@@ -1,6 +1,7 @@
 #include "core/vs_fpcameracontroller.h"
 #include <GLFW/glfw3.h>
 #include <cmath>
+#include <glm/ext/matrix_projection.hpp>
 #include <glm/fwd.hpp>
 #include <glm/geometric.hpp>
 #include <glm/matrix.hpp>
@@ -136,6 +137,45 @@ void VSFPCameraController::updateCamera()
         }
         cam->setPosition(position);
     }
+
+    // Handle framebufferresize
+    {
+        if (inputHandler->frameBufferResized())
+        {
+            float aspectRatio = inputHandler->getAspectRatio();
+            cam->setAspectRatio(aspectRatio);
+            inputHandler->frameBufferResizeHandled();
+        }
+    }
+
+    // Calculate mouse coords in world space
+    {
+        double xPos = inputHandler->getMouseX();
+        double ypos = inputHandler->getMouseY();
+        int width = inputHandler->getDisplayWidth();
+        int height = inputHandler->getDisplayHeight();
+        const auto screenPosCamera = glm::vec3(xPos, double(height) - ypos, 0.F);
+        const auto screenPosFar = glm::vec3(xPos, double(height) - ypos, 1.F);
+
+        const auto tmpView = cam->getViewMatrix();
+        const auto tmpProj = cam->getProjectionMatrix();
+        const glm::vec4 viewport = glm::vec4(0.0F, 0.0F, width, height);
+
+        const auto worldPosNear = glm::unProject(screenPosCamera, tmpView, tmpProj, viewport);
+        const auto worldPosFar = glm::unProject(screenPosFar, tmpView, tmpProj, viewport);
+
+        const auto hitResult = world->getChunkManager()->lineTrace(worldPosNear, worldPosFar);
+
+        if (hitResult.bHasHit)
+        {
+            setMouseInWorldCoords(hitResult.hitLocation);
+
+            world->getDebugDraw()->drawLine(
+                hitResult.hitLocation,
+                hitResult.hitLocation + hitResult.hitNormal * 10.F,
+                {0, 255, 0});
+        }
+    }
 }
 
 void VSFPCameraController::processMouseButton(GLFWwindow* window, int button, int action, int mods)
@@ -175,54 +215,4 @@ void VSFPCameraController::processMouseButton(GLFWwindow* window, int button, in
         }
         world->getChunkManager()->setBlock(mouseInWorldCoords, 0);
     }
-}
-
-void VSFPCameraController::processKeyboardInput(GLFWwindow* window, float deltaTime) const
-{
-    float velocity = movementSpeed * deltaTime;
-    glm::vec3 position = cam->getPosition();
-
-    if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
-    {
-        glfwSetWindowShouldClose(window, GL_TRUE);
-    }
-    if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
-    {
-        glm::vec3 front = cam->getFront();
-        position += front * velocity;
-    }
-    if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
-    {
-        glm::vec3 front = cam->getFront();
-        position -= front * velocity;
-    }
-    if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
-    {
-        glm::vec3 right = cam->getRight();
-        position -= right * velocity;
-    }
-    if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
-    {
-        glm::vec3 right = cam->getRight();
-        position += right * velocity;
-    }
-    if (glfwGetKey(window, GLFW_KEY_E) == GLFW_PRESS)
-    {
-        glm::vec3 up = cam->getUp();
-        position += up * velocity;
-    }
-    if (glfwGetKey(window, GLFW_KEY_Q) == GLFW_PRESS)
-    {
-        glm::vec3 up = cam->getUp();
-        position -= up * velocity;
-    }
-    cam->setPosition(position);
-}
-
-void VSFPCameraController::processFramebufferResize(GLFWwindow* window, int width, int height)
-{
-    (void)window;
-
-    float aspectRatio = (float)width / height;
-    cam->setAspectRatio(aspectRatio);
 }

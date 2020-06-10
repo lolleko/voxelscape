@@ -20,15 +20,3 @@ void VSDummyCameraController::processMouseButton(
     int /*mods*/)
 {
 }
-
-void VSDummyCameraController::processKeyboardInput(GLFWwindow* /*window*/, float /*deltaTime*/)
-    const
-{
-}
-
-void VSDummyCameraController::processFramebufferResize(
-    GLFWwindow* /*window*/,
-    int /*width*/,
-    int /*height*/)
-{
-}

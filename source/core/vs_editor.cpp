@@ -1,9 +1,18 @@
 #include "core/vs_editor.h"
 #include <algorithm>
+#include <glm/ext/matrix_projection.hpp>
 #include "core/vs_camera.h"
+#include "core/vs_debug_draw.h"
+#include "core/vs_input_handler.h"
+
+#include "core/vs_cameracontroller.h"
 #include "world/vs_chunk_manager.h"
 #include "world/vs_skybox.h"
 #include "world/vs_world.h"
+
+#include "core/vs_app.h"
+#include "ui/vs_ui.h"
+#include "ui/vs_ui_state.h"
 
 namespace VSEditor
 {
@@ -15,6 +24,24 @@ namespace VSEditor
         editorWorld->getCamera()->setPosition(glm::vec3(-50.F, -5.F, -50.F));
         editorWorld->getCamera()->setPitchYaw(-10.F, 45.F);
         return editorWorld;
+    }
+
+    void handleBlockPlacement(VSInputHandler* inputHandler, VSWorld* world)
+    {
+        (void)world;
+        if (!inputHandler->isRightClickHandled())
+        {
+            glm::vec3 mouseInWorldCoords = world->getCameraController()->getMouseInWorldCoords();
+            // Check if block is placed in bounds
+            if (!world->getChunkManager()->isLocationInBounds(mouseInWorldCoords))
+            {
+                // do nothing
+                return;
+            }
+            // Not pretty oof
+            world->getChunkManager()->setBlock(mouseInWorldCoords, VSApp::getInstance()->getUI()->getState()->bSetBlockID + 1);
+            inputHandler->handleRightClick();
+        }
     }
 
     // Set blocks for a plane, should be called with the world as parameter that was returned by

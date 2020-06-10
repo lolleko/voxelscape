@@ -57,8 +57,6 @@ int VSApp::initialize()
     VSLog::init(UI->getMutableState()->logStream);
     VSLog::Log(VSLog::Category::Core, VSLog::Level::info, "Successfully initialized logger");
 
-    inputHandler = new VSInputHandler();
-
     VSLog::Log(
         VSLog::Category::Core,
         VSLog::Level::info,
@@ -142,13 +140,16 @@ int VSApp::initializeGLFW()
         return 1;
     }
 
+    // create input handler 
+    inputHandler = new VSInputHandler(width, height);
+
     glfwMakeContextCurrent(window);
 
     glfwSetWindowUserPointer(window, (void*)this);
     glfwSetFramebufferSizeCallback(window, [](GLFWwindow* window, int width, int height) {
         glViewport(0, 0, width, height);
         auto* app = static_cast<VSApp*>(glfwGetWindowUserPointer(window));
-        app->getWorld()->getCameraController()->processFramebufferResize(window, width, height);
+        app->getInputHandler()->processFramebufferResize(window, width, height);
     });
     glfwSetCursorPosCallback(window, [](GLFWwindow* window, double xpos, double ypos) {
         auto* app = static_cast<VSApp*>(glfwGetWindowUserPointer(window));
@@ -285,38 +286,8 @@ int VSApp::mainLoop()
 
         // draw world
         world->draw(world);
-
-        // Calculate mouse coords in world space
-        {
-            double xpos;
-            double ypos;
-            glfwGetCursorPos(window, &xpos, &ypos);
-            int width;
-            int height;
-            glfwGetWindowSize(window, &width, &height);
-            const auto screenPosCamera = glm::vec3(xpos, double(height) - ypos, 0.F);
-            const auto screenPosFar = glm::vec3(xpos, double(height) - ypos, 1.F);
-
-            const auto tmpView = getWorld()->getCamera()->getViewMatrix();
-            const auto tmpProj = getWorld()->getCamera()->getProjectionMatrix();
-            const glm::vec4 viewport = glm::vec4(0.0F, 0.0F, width, height);
-
-            const auto worldPosNear = glm::unProject(screenPosCamera, tmpView, tmpProj, viewport);
-            const auto worldPosFar = glm::unProject(screenPosFar, tmpView, tmpProj, viewport);
-
-            const auto hitResult =
-                getWorld()->getChunkManager()->lineTrace(worldPosNear, worldPosFar);
-
-            if (hitResult.bHasHit)
-            {
-                getWorld()->getCameraController()->setMouseInWorldCoords(hitResult.hitLocation);
-
-                getWorld()->getDebugDraw()->drawLine(
-                    hitResult.hitLocation,
-                    hitResult.hitLocation + hitResult.hitNormal * 10.F,
-                    {0, 255, 0});
-            }
-        }
+        
+        VSEditor::handleBlockPlacement(inputHandler, world);
 
         getWorld()->getDebugDraw()->drawSphere(
             getWorld()->getCameraController()->getMouseInWorldCoords(), 0.5F, {255, 0, 0});

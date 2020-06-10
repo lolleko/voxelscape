@@ -1,9 +1,12 @@
 #include "core/vs_input_handler.h"
 #include <GLFW/glfw3.h>
+#include "core/vs_log.h"
 
-VSInputHandler::VSInputHandler()
+VSInputHandler::VSInputHandler(int displayWidth, int displayHeight)
 {
-    yScrollOffset = 1.F;
+    this->yScrollOffset = 1.F;
+    this->displayWidth = displayWidth;
+    this->displayHeight = displayHeight;
 }
 
 double VSInputHandler::getYScrollOffset() const
@@ -21,6 +24,16 @@ double VSInputHandler::getMouseY() const
     return yMouse;
 }
 
+int VSInputHandler::getDisplayWidth() const
+{
+    return displayWidth;
+}
+
+int VSInputHandler::getDisplayHeight() const
+{
+    return displayHeight;
+}
+
 bool VSInputHandler::isLeftMouseClicked() const
 {
     return leftMouseClicked;
@@ -36,6 +49,11 @@ bool VSInputHandler::isRightMouseClicked() const
     return rightMouseClicked;
 }
 
+bool VSInputHandler::isRightClickHandled() const
+{
+    return rightClickHandled;
+}
+
 VSInputHandler::KEY_FLAGS VSInputHandler::getKeyFlags() const
 {
     return keyFlags;
@@ -44,6 +62,34 @@ VSInputHandler::KEY_FLAGS VSInputHandler::getKeyFlags() const
 float VSInputHandler::getKeyDeltaTime() const
 {
     return keyDeltaTime;
+}
+
+float VSInputHandler::getAspectRatio() const
+{
+    return aspectRatio;
+}
+
+bool VSInputHandler::frameBufferResized() const
+{
+    return aspectRatioChanged;
+}
+
+void VSInputHandler::frameBufferResizeHandled()
+{
+    if (aspectRatioChanged == false)
+    {
+        // Not good, framebufffer resize should only be handled once
+        VSLog::Log(
+            VSLog::Category::Core,
+            VSLog::Level::warn,
+            "Framebuffer resize got handled more than once");
+    }
+    aspectRatioChanged = false;
+}
+
+void VSInputHandler::handleRightClick()
+{
+    rightClickHandled = true;
 }
 
 void VSInputHandler::processKeyboardInput(GLFWwindow* window, float deltaTime)
@@ -140,7 +186,12 @@ void VSInputHandler::processMouseButton(
 
     if (button == GLFW_MOUSE_BUTTON_RIGHT && action == GLFW_PRESS)
     {
-        rightMouseClicked = true;
+        if (!rightMouseClicked)
+        {
+            // first time, should be handled
+            rightClickHandled = false;
+            rightMouseClicked = true;
+        }
         return;
     }
 
@@ -161,4 +212,12 @@ void VSInputHandler::processMouseButton(
         rightMouseClicked = false;
         return;
     }
+}
+
+void VSInputHandler::processFramebufferResize(GLFWwindow* /*window*/, int width, int height)
+{
+    displayWidth = width;
+    displayHeight = height;
+    aspectRatio = (float)width / height;
+    aspectRatioChanged = true;
 }

@@ -6,7 +6,7 @@
 class VSInputHandler
 {
 public:
-    VSInputHandler();
+    VSInputHandler(int displayWidth, int displayHeight);
 
     enum KEY_FLAGS
     {
@@ -31,9 +31,23 @@ public:
 
     [[nodiscard]] bool isRightMouseClicked() const;
 
+    [[nodiscard]] bool isRightClickHandled() const;
+
     [[nodiscard]] KEY_FLAGS getKeyFlags() const;
 
     [[nodiscard]] float getKeyDeltaTime() const;
+
+    [[nodiscard]] float getAspectRatio() const;
+
+    [[nodiscard]] bool frameBufferResized() const;
+
+    [[nodiscard]] int getDisplayWidth() const;
+
+    [[nodiscard]] int getDisplayHeight() const;
+
+    void handleRightClick();
+
+    void frameBufferResizeHandled();
 
     // Processes mouse click
     void processMouseButton(GLFWwindow* window, int button, int action, int mods);
@@ -53,11 +67,19 @@ public:
 private:
     float keyDeltaTime = 0.F;
 
+    // Not really user input but corresponds to resizing the window and currently this data is not kept anywhere else
+    int displayWidth = 0;
+    int displayHeight = 0;
+
+    float aspectRatio = 0.F;
+    bool aspectRatioChanged = false;
+
     double yScrollOffset;
 
     bool leftMouseClicked = false;
     bool middleMouseClicked = false;
     bool rightMouseClicked = false;
+    bool rightClickHandled = true;
 
     KEY_FLAGS keyFlags = NONE;
 

@@ -13,8 +13,4 @@ public:
 
     // Processes mouse click
     void processMouseButton(GLFWwindow* window, int button, int action, int mods) override;
-
-    void processKeyboardInput(GLFWwindow* window, float deltaTime) const override;
-
-    void processFramebufferResize(GLFWwindow* window, int width, int height) override;
 };

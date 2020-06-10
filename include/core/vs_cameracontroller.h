@@ -29,10 +29,6 @@ public:
     // Processes mouse click
     virtual void processMouseButton(GLFWwindow* window, int button, int action, int mods) = 0;
 
-    virtual void processKeyboardInput(GLFWwindow* window, float deltaTime) const = 0;
-
-    virtual void processFramebufferResize(GLFWwindow* window, int width, int height) = 0;
-
     void setEditorBlockID(int blockID);
 
     void setMouseInWorldCoords(glm::vec3 coords);
