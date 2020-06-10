@@ -31,6 +31,8 @@ public:
 
     [[nodiscard]] bool isLeftMouseClicked() const;
 
+    [[nodiscard]] bool isLeftClickHandled() const;
+
     [[nodiscard]] bool isMiddleMouseClicked() const;
 
     [[nodiscard]] bool isMiddleClickHandled() const;
@@ -50,6 +52,8 @@ public:
     [[nodiscard]] int getDisplayWidth() const;
 
     [[nodiscard]] int getDisplayHeight() const;
+
+    void handleLeftClick();
 
     void handleRightClick();
 
@@ -85,8 +89,11 @@ private:
     double yScrollOffset;
 
     bool leftMouseClicked = false;
+    bool leftClickHandled = true;
+
     bool middleMouseClicked = false;
-    bool middleMouseHandled = true;
+    bool middleClickHandled = true;
+
     bool rightMouseClicked = false;
     bool rightClickHandled = true;
 

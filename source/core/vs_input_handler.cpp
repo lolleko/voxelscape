@@ -13,7 +13,9 @@ VSInputHandler::VSInputHandler(int displayWidth, int displayHeight)
 Inputs VSInputHandler::getInputState() const
 {
     Inputs inputs;
-    (void) inputs;
+    (void)inputs;
+
+    return inputs;
 }
 
 double VSInputHandler::getYScrollOffset() const
@@ -46,9 +48,19 @@ bool VSInputHandler::isLeftMouseClicked() const
     return leftMouseClicked;
 }
 
+bool VSInputHandler::isLeftClickHandled() const
+{
+    return leftClickHandled;
+}
+
 bool VSInputHandler::isMiddleMouseClicked() const
 {
     return middleMouseClicked;
+}
+
+bool VSInputHandler::isMiddleClickHandled() const
+{
+    return middleClickHandled;
 }
 
 bool VSInputHandler::isRightMouseClicked() const
@@ -59,11 +71,6 @@ bool VSInputHandler::isRightMouseClicked() const
 bool VSInputHandler::isRightClickHandled() const
 {
     return rightClickHandled;
-}
-
-bool VSInputHandler::isMiddleClickHandled() const
-{
-    return middleMouseHandled;
 }
 
 VSInputHandler::KEY_FLAGS VSInputHandler::getKeyFlags() const
@@ -106,7 +113,12 @@ void VSInputHandler::handleRightClick()
 
 void VSInputHandler::handleMiddleClick()
 {
-    middleMouseHandled = true;
+    middleClickHandled = true;
+}
+
+void VSInputHandler::handleLeftClick()
+{
+    leftClickHandled = true;
 }
 
 void VSInputHandler::processKeyboardInput(GLFWwindow* window, float deltaTime)
@@ -170,10 +182,8 @@ void VSInputHandler::processKeyboardInput(GLFWwindow* window, float deltaTime)
     }
 }
 
-void VSInputHandler::processMouseScroll(GLFWwindow* window, double xOffset, double yOffset)
+void VSInputHandler::processMouseScroll(GLFWwindow* /*window*/, double /*xOffset*/, double yOffset)
 {
-    (void)window;
-    (void)xOffset;
     yScrollOffset -= yOffset;
 }
 
@@ -191,47 +201,45 @@ void VSInputHandler::processMouseButton(
 {
     if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_PRESS)
     {
+        // first time, should be handled
+        leftClickHandled = false;
         leftMouseClicked = true;
         return;
     }
 
     if (button == GLFW_MOUSE_BUTTON_MIDDLE && action == GLFW_PRESS)
     {
-        if (!middleMouseClicked)
-        {
-            // first time, should be handled
-            middleMouseHandled = false;
-            middleMouseClicked = true;
-        }
+        // first time, should be handled
+        middleClickHandled = false;
         middleMouseClicked = true;
         return;
     }
 
     if (button == GLFW_MOUSE_BUTTON_RIGHT && action == GLFW_PRESS)
     {
-        if (!rightMouseClicked)
-        {
-            // first time, should be handled
-            rightClickHandled = false;
-            rightMouseClicked = true;
-        }
+        // first time, should be handled
+        rightClickHandled = false;
+        rightMouseClicked = true;
         return;
     }
 
     if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_RELEASE)
     {
+        // released
         leftMouseClicked = false;
         return;
     }
 
     if (button == GLFW_MOUSE_BUTTON_MIDDLE && action == GLFW_RELEASE)
     {
+        // released
         middleMouseClicked = false;
         return;
     }
 
     if (button == GLFW_MOUSE_BUTTON_RIGHT && action == GLFW_RELEASE)
     {
+        // released
         rightMouseClicked = false;
         return;
     }
