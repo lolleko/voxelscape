@@ -36,10 +36,75 @@ bool VSInputHandler::isRightMouseClicked() const
     return rightMouseClicked;
 }
 
+VSInputHandler::KEY_FLAGS VSInputHandler::getKeyFlags() const
+{
+    return keyFlags;
+}
+
+float VSInputHandler::getKeyDeltaTime() const
+{
+    return keyDeltaTime;
+}
+
 void VSInputHandler::processKeyboardInput(GLFWwindow* window, float deltaTime)
 {
-    (void)window;
-    (void)deltaTime;
+    keyDeltaTime = deltaTime;
+
+    // Press
+    if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
+    {
+        glfwSetWindowShouldClose(window, GL_TRUE);
+    }
+    if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
+    {
+        keyFlags = KEY_FLAGS(keyFlags | KEY_W);
+    }
+    if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
+    {
+        keyFlags = KEY_FLAGS(keyFlags | KEY_S);
+    }
+    if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
+    {
+        keyFlags = KEY_FLAGS(keyFlags | KEY_A);
+    }
+    if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
+    {
+        keyFlags = KEY_FLAGS(keyFlags | KEY_D);
+    }
+    if (glfwGetKey(window, GLFW_KEY_E) == GLFW_PRESS)
+    {
+        keyFlags = KEY_FLAGS(keyFlags | KEY_E);
+    }
+    if (glfwGetKey(window, GLFW_KEY_Q) == GLFW_PRESS)
+    {
+        keyFlags = KEY_FLAGS(keyFlags | KEY_Q);
+    }
+
+    // Release
+    if (glfwGetKey(window, GLFW_KEY_W) == GLFW_RELEASE)
+    {
+        keyFlags = KEY_FLAGS(keyFlags & ~KEY_W);
+    }
+    if (glfwGetKey(window, GLFW_KEY_S) == GLFW_RELEASE)
+    {
+        keyFlags = KEY_FLAGS(keyFlags & ~KEY_S);
+    }
+    if (glfwGetKey(window, GLFW_KEY_A) == GLFW_RELEASE)
+    {
+        keyFlags = KEY_FLAGS(keyFlags & ~KEY_A);
+    }
+    if (glfwGetKey(window, GLFW_KEY_D) == GLFW_RELEASE)
+    {
+        keyFlags = KEY_FLAGS(keyFlags & ~KEY_D);
+    }
+    if (glfwGetKey(window, GLFW_KEY_E) == GLFW_RELEASE)
+    {
+        keyFlags = KEY_FLAGS(keyFlags & ~KEY_E);
+    }
+    if (glfwGetKey(window, GLFW_KEY_Q) == GLFW_RELEASE)
+    {
+        keyFlags = KEY_FLAGS(keyFlags & ~KEY_Q);
+    }
 }
 
 void VSInputHandler::processMouseScroll(GLFWwindow* window, double xOffset, double yOffset)
@@ -49,18 +114,18 @@ void VSInputHandler::processMouseScroll(GLFWwindow* window, double xOffset, doub
     yScrollOffset -= yOffset;
 }
 
-void VSInputHandler::processMouseMovement(GLFWwindow* window, double xPos, double yPos)
+void VSInputHandler::processMouseMovement(GLFWwindow* /*window*/, double xPos, double yPos)
 {
-    (void)window;
     xMouse = xPos;
     yMouse = yPos;
 }
 
-void VSInputHandler::processMouseButton(GLFWwindow* window, int button, int action, int mods)
+void VSInputHandler::processMouseButton(
+    GLFWwindow* /*window*/,
+    int button,
+    int action,
+    int /*mods*/)
 {
-    (void)window;
-    (void)mods;
-    
     if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_PRESS)
     {
         leftMouseClicked = true;

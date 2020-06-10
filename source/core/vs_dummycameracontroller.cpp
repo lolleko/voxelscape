@@ -21,14 +21,6 @@ void VSDummyCameraController::processMouseButton(
 {
 }
 
-void VSDummyCameraController::processMouseMovement(
-    GLFWwindow* /*window*/,
-    double /*xpos*/,
-    double /*ypos*/,
-    GLboolean /*constrainPitch = GL_TRUE*/)
-{
-}
-
 void VSDummyCameraController::processKeyboardInput(GLFWwindow* /*window*/, float /*deltaTime*/)
     const
 {

@@ -29,14 +29,6 @@ public:
     // Processes mouse click
     virtual void processMouseButton(GLFWwindow* window, int button, int action, int mods) = 0;
 
-    // Processes input received from a mouse input system. Expects the offset value in both the x
-    // and y direction.
-    virtual void processMouseMovement(
-        GLFWwindow* window,
-        double xpos,
-        double ypos,
-        GLboolean constrainPitch = GL_TRUE) = 0;
-
     virtual void processKeyboardInput(GLFWwindow* window, float deltaTime) const = 0;
 
     virtual void processFramebufferResize(GLFWwindow* window, int width, int height) = 0;

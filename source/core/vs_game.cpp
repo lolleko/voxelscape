@@ -5,6 +5,7 @@
 #include "core/vs_app.h"
 #include "core/vs_editor.h"
 #include "core/vs_cameracontroller.h"
+#include "core/vs_input_handler.h"
 
 #include "ui/vs_minimap.h"
 #include "ui/vs_ui.h"
@@ -137,7 +138,7 @@ void VSGame::gameLoop()
         // to make thread separation clearer
         if (!UI->getState()->bFileBrowserActive)
         {
-            world->getCameraController()->processKeyboardInput(
+            app->getInputHandler()->processKeyboardInput(
                 app->getWindow(), frameTimeTracker.getDeltaSeconds());
         }
 

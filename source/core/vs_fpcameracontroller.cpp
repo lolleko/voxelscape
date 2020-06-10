@@ -96,6 +96,46 @@ void VSFPCameraController::updateCamera()
             lastY = yPos;
         }
     }
+
+    // Handle keyboard movement
+    {
+        float velocity = movementSpeed * inputHandler->getKeyDeltaTime();
+        glm::vec3 position = cam->getPosition();
+
+        VSInputHandler::KEY_FLAGS keyFlags = inputHandler->getKeyFlags();
+
+        if (keyFlags & VSInputHandler::KEY_W)
+        {
+            glm::vec3 front = cam->getFront();
+            position += front * velocity;
+        }
+        if (keyFlags & VSInputHandler::KEY_S)
+        {
+            glm::vec3 front = cam->getFront();
+            position -= front * velocity;
+        }
+        if (keyFlags & VSInputHandler::KEY_A)
+        {
+            glm::vec3 right = cam->getRight();
+            position -= right * velocity;
+        }
+        if (keyFlags & VSInputHandler::KEY_D)
+        {
+            glm::vec3 right = cam->getRight();
+            position += right * velocity;
+        }
+        if (keyFlags & VSInputHandler::KEY_E)
+        {
+            glm::vec3 up = cam->getUp();
+            position += up * velocity;
+        }
+        if (keyFlags & VSInputHandler::KEY_Q)
+        {
+            glm::vec3 up = cam->getUp();
+            position -= up * velocity;
+        }
+        cam->setPosition(position);
+    }
 }
 
 void VSFPCameraController::processMouseButton(GLFWwindow* window, int button, int action, int mods)
@@ -135,57 +175,6 @@ void VSFPCameraController::processMouseButton(GLFWwindow* window, int button, in
         }
         world->getChunkManager()->setBlock(mouseInWorldCoords, 0);
     }
-}
-
-void VSFPCameraController::processMouseMovement(
-    GLFWwindow* window,
-    double xpos,
-    double ypos,
-    GLboolean constrainPitch)
-{
-    // Only move camera if left mouse is pressed
-    // (void)window;
-    int state = glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT);
-    if (state != GLFW_PRESS)
-    {
-        return;
-    }
-
-    if (firstMouse)
-    {
-        lastX = xpos;
-        lastY = ypos;
-        firstMouse = false;
-        return;
-    }
-
-    float xoffset = xpos - lastX;
-    float yoffset = lastY - ypos;  // reversed since y-coordinates go from bottom to top
-
-    lastX = xpos;
-    lastY = ypos;
-
-    xoffset *= mouseSensitivity;
-    yoffset *= mouseSensitivity;
-
-    float yaw = cam->getYaw();
-    float pitch = cam->getPitch();
-    yaw += xoffset;
-    pitch += yoffset;
-
-    // Make sure that when pitch is out of bounds, screen doesn't get flipped
-    if (constrainPitch == GL_TRUE)
-    {
-        if (pitch > 89.0F)
-        {
-            pitch = 89.0F;
-        }
-        if (pitch < -89.0F)
-        {
-            pitch = -89.0F;
-        }
-    }
-    cam->setPitchYaw(pitch, yaw);
 }
 
 void VSFPCameraController::processKeyboardInput(GLFWwindow* window, float deltaTime) const
