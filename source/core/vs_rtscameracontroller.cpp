@@ -9,16 +9,3 @@ VSRTSCameraController::VSRTSCameraController(VSCamera* camera, VSWorld* world, V
     : VSCameraController(camera, world, inputHandler)
 {
 }
-
-void VSRTSCameraController::processMouseButton(GLFWwindow* window, int button, int action, int mods)
-{
-    (void) mods;
-    if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_PRESS)
-    {
-        double xpos;
-        double ypos;
-        glfwGetCursorPos(window, &xpos, &ypos);
-        lastX = xpos;
-        lastY = ypos;
-    }
-}

@@ -1,12 +1,19 @@
 #include "core/vs_input_handler.h"
 #include <GLFW/glfw3.h>
 #include "core/vs_log.h"
+#include "game/components/inputs.h"
 
 VSInputHandler::VSInputHandler(int displayWidth, int displayHeight)
 {
     this->yScrollOffset = 1.F;
     this->displayWidth = displayWidth;
     this->displayHeight = displayHeight;
+}
+
+Inputs VSInputHandler::getInputState() const
+{
+    Inputs inputs;
+    (void) inputs;
 }
 
 double VSInputHandler::getYScrollOffset() const
@@ -54,6 +61,11 @@ bool VSInputHandler::isRightClickHandled() const
     return rightClickHandled;
 }
 
+bool VSInputHandler::isMiddleClickHandled() const
+{
+    return middleMouseHandled;
+}
+
 VSInputHandler::KEY_FLAGS VSInputHandler::getKeyFlags() const
 {
     return keyFlags;
@@ -90,6 +102,11 @@ void VSInputHandler::frameBufferResizeHandled()
 void VSInputHandler::handleRightClick()
 {
     rightClickHandled = true;
+}
+
+void VSInputHandler::handleMiddleClick()
+{
+    middleMouseHandled = true;
 }
 
 void VSInputHandler::processKeyboardInput(GLFWwindow* window, float deltaTime)
@@ -180,6 +197,12 @@ void VSInputHandler::processMouseButton(
 
     if (button == GLFW_MOUSE_BUTTON_MIDDLE && action == GLFW_PRESS)
     {
+        if (!middleMouseClicked)
+        {
+            // first time, should be handled
+            middleMouseHandled = false;
+            middleMouseClicked = true;
+        }
         middleMouseClicked = true;
         return;
     }

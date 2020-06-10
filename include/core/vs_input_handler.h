@@ -3,6 +3,8 @@
 #include <GLFW/glfw3.h>
 #include <glm/fwd.hpp>
 
+#include "game/components/inputs.h"
+
 class VSInputHandler
 {
 public:
@@ -19,6 +21,8 @@ public:
         KEY_E = (1 << 5),
     };
 
+    [[nodiscard]] Inputs getInputState() const;
+
     [[nodiscard]] double getYScrollOffset() const;
 
     [[nodiscard]] double getMouseX() const;
@@ -28,6 +32,8 @@ public:
     [[nodiscard]] bool isLeftMouseClicked() const;
 
     [[nodiscard]] bool isMiddleMouseClicked() const;
+
+    [[nodiscard]] bool isMiddleClickHandled() const;
 
     [[nodiscard]] bool isRightMouseClicked() const;
 
@@ -46,6 +52,8 @@ public:
     [[nodiscard]] int getDisplayHeight() const;
 
     void handleRightClick();
+
+    void handleMiddleClick();
 
     void frameBufferResizeHandled();
 
@@ -78,6 +86,7 @@ private:
 
     bool leftMouseClicked = false;
     bool middleMouseClicked = false;
+    bool middleMouseHandled = true;
     bool rightMouseClicked = false;
     bool rightClickHandled = true;
 

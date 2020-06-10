@@ -14,9 +14,6 @@ public:
 
     void updateCamera() override;
 
-    // Processes mouse click
-    void processMouseButton(GLFWwindow* window, int button, int action, int mods) override;
-
 private:
     float lastYScrollOffset;
 };

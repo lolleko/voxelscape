@@ -12,11 +12,3 @@ VSDummyCameraController::VSDummyCameraController(
 void VSDummyCameraController::updateCamera()
 {
 }
-
-void VSDummyCameraController::processMouseButton(
-    GLFWwindow* /*window*/,
-    int /*button*/,
-    int /*action*/,
-    int /*mods*/)
-{
-}

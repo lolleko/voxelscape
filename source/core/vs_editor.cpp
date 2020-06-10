@@ -28,10 +28,10 @@ namespace VSEditor
 
     void handleBlockPlacement(VSInputHandler* inputHandler, VSWorld* world)
     {
-        (void)world;
+        glm::vec3 mouseInWorldCoords = world->getCameraController()->getMouseInWorldCoords();
+
         if (!inputHandler->isRightClickHandled())
         {
-            glm::vec3 mouseInWorldCoords = world->getCameraController()->getMouseInWorldCoords();
             // Check if block is placed in bounds
             if (!world->getChunkManager()->isLocationInBounds(mouseInWorldCoords))
             {
@@ -39,8 +39,21 @@ namespace VSEditor
                 return;
             }
             // Not pretty oof
-            world->getChunkManager()->setBlock(mouseInWorldCoords, VSApp::getInstance()->getUI()->getState()->bSetBlockID + 1);
+            world->getChunkManager()->setBlock(
+                mouseInWorldCoords, VSApp::getInstance()->getUI()->getState()->bSetBlockID + 1);
             inputHandler->handleRightClick();
+        }
+        else if (!inputHandler->isMiddleClickHandled())
+        {
+            // Check if block is placed in bounds
+            if (!world->getChunkManager()->isLocationInBounds(mouseInWorldCoords))
+            {
+                // do nothing
+                return;
+            }
+            mouseInWorldCoords -= 0.05F * world->getCameraController()->getMouseNormalInWorldCoords();
+            world->getChunkManager()->setBlock(mouseInWorldCoords, 0);
+            inputHandler->handleMiddleClick();
         }
     }
 

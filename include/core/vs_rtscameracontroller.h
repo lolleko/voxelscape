@@ -10,7 +10,4 @@ class VSRTSCameraController : public VSCameraController
 {
 public:
     VSRTSCameraController(VSCamera* camera, VSWorld* world, VSInputHandler* inputHandler = nullptr);
-
-    // Processes mouse click
-    void processMouseButton(GLFWwindow* window, int button, int action, int mods) override;
 };

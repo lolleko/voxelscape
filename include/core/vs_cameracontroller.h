@@ -1,9 +1,5 @@
 #pragma once
 
-#include <glad/glad.h>  // Initialize with gladLoadGL()
-
-// Include glfw3.h after our OpenGL definitions
-#include <GLFW/glfw3.h>
 #include <glm/fwd.hpp>
 #include <memory>
 #include "world/vs_world.h"
@@ -26,16 +22,17 @@ public:
 
     virtual void updateCamera() = 0;
 
-    // Processes mouse click
-    virtual void processMouseButton(GLFWwindow* window, int button, int action, int mods) = 0;
-
     void setEditorBlockID(int blockID);
 
     void setMouseInWorldCoords(glm::vec3 coords);
+
+    void setMouseNormalInWorldCoords(glm::vec3 normal);
     
     void setInputHandler(VSInputHandler* inputHandler);
 
     [[nodiscard]] glm::vec3 getMouseInWorldCoords() const;
+
+    [[nodiscard]] glm::vec3 getMouseNormalInWorldCoords() const;
 
 protected:
     VSCamera* cam;
@@ -51,4 +48,5 @@ protected:
 
     int editorBlockID = 1;
     glm::vec3 mouseInWorldCoords = glm::vec3(0);
+    glm::vec3 mouseNormalInWorldCoords = glm::vec3(0);
 };

@@ -1,5 +1,4 @@
 #include "core/vs_fpcameracontroller.h"
-#include <GLFW/glfw3.h>
 #include <cmath>
 #include <glm/ext/matrix_projection.hpp>
 #include <glm/fwd.hpp>
@@ -169,50 +168,12 @@ void VSFPCameraController::updateCamera()
         if (hitResult.bHasHit)
         {
             setMouseInWorldCoords(hitResult.hitLocation);
+            setMouseNormalInWorldCoords(hitResult.hitNormal);
 
             world->getDebugDraw()->drawLine(
                 hitResult.hitLocation,
                 hitResult.hitLocation + hitResult.hitNormal * 10.F,
                 {0, 255, 0});
         }
-    }
-}
-
-void VSFPCameraController::processMouseButton(GLFWwindow* window, int button, int action, int mods)
-{
-    (void)mods;
-    if (button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_PRESS)
-    {
-        double xpos;
-        double ypos;
-        glfwGetCursorPos(window, &xpos, &ypos);
-        lastX = xpos;
-        lastY = ypos;
-    }
-
-    // Set block on cursor position
-    if (button == GLFW_MOUSE_BUTTON_RIGHT && action == GLFW_PRESS)
-    {
-        std::cout << mouseInWorldCoords.x << ", " << mouseInWorldCoords.y << ", "
-                  << mouseInWorldCoords.z << std::endl;
-        // Check if block is placed in bounds
-        if (!world->getChunkManager()->isLocationInBounds(mouseInWorldCoords))
-        {
-            // do nothing
-            return;
-        }
-        world->getChunkManager()->setBlock(mouseInWorldCoords, editorBlockID);
-    }
-
-    // Delete block on cursor position
-    if (button == GLFW_MOUSE_BUTTON_MIDDLE && action == GLFW_PRESS)
-    {
-        // Check if block is placed in bounds
-        if (!world->getChunkManager()->isLocationInBounds(mouseInWorldCoords))
-        {
-            // do nothing
-            return;
-        }
-        world->getChunkManager()->setBlock(mouseInWorldCoords, 0);
     }
 }

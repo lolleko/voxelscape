@@ -286,8 +286,11 @@ int VSApp::mainLoop()
 
         // draw world
         world->draw(world);
-        
-        VSEditor::handleBlockPlacement(inputHandler, world);
+
+        if (worldName == VSEditor::WorldName)
+        {
+            VSEditor::handleBlockPlacement(inputHandler, world);
+        }
 
         getWorld()->getDebugDraw()->drawSphere(
             getWorld()->getCameraController()->getMouseInWorldCoords(), 0.5F, {255, 0, 0});

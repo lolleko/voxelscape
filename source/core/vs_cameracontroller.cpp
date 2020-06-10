@@ -1,5 +1,4 @@
 #include <glm/fwd.hpp>
-#include <iostream>
 
 #include "core/vs_cameracontroller.h"
 #include "core/vs_camera.h"
@@ -26,9 +25,19 @@ void VSCameraController::setMouseInWorldCoords(glm::vec3 coords)
     mouseInWorldCoords = coords;
 }
 
+void VSCameraController::setMouseNormalInWorldCoords(glm::vec3 normal)
+{
+    mouseNormalInWorldCoords = normal;
+}
+
 glm::vec3 VSCameraController::getMouseInWorldCoords() const
 {
     return mouseInWorldCoords;
+}
+
+glm::vec3 VSCameraController::getMouseNormalInWorldCoords() const
+{
+    return mouseNormalInWorldCoords;
 }
 
 void VSCameraController::setInputHandler(VSInputHandler* inputHandler)
