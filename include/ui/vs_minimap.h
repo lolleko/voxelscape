@@ -1,8 +1,6 @@
 #pragma once
-#include <array>
 #include <glm/fwd.hpp>
 #include <vector>
-#include "core/vs_camera.h"
 #include "world/vs_world.h"
 
 class VSMinimap

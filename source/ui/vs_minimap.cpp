@@ -1,7 +1,5 @@
 #include "ui/vs_minimap.h"
-#include <algorithm>
 #include <cmath>
-#include <glm/fwd.hpp>
 #include "core/vs_log.h"
 #include "world/vs_block.h"
 #include "world/vs_chunk_manager.h"
