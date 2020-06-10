@@ -22,10 +22,6 @@ public:
         double ypos,
         GLboolean constrainPitch = GL_TRUE) override;
 
-    // Processes input received from a mouse scroll-wheel event. Only requires input on the vertical
-    // wheel-axis
-    void processMouseScroll(GLFWwindow* window, double xoffset, double yoffset) const override;
-
     void processKeyboardInput(GLFWwindow* window, float deltaTime) const override;
 
     void processFramebufferResize(GLFWwindow* window, int width, int height) override;

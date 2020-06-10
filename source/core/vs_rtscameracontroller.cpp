@@ -73,28 +73,6 @@ void VSRTSCameraController::processMouseMovement(
     cam->setPitchYaw(pitch, yaw);
 }
 
-void VSRTSCameraController::processMouseScroll(GLFWwindow* window, double xoffset, double yoffset)
-    const
-{
-    (void) window;
-    (void) xoffset;
-
-    float zoom = cam->getZoom();
-    if (zoom >= 1.0F && zoom <= 45.0F)
-    {
-        zoom -= yoffset;
-    }
-    if (zoom <= 1.0F)
-    {
-        zoom = 1.0F;
-    }
-    if (zoom >= 45.0F)
-    {
-        zoom = 45.0F;
-    }
-    cam->setZoom(zoom);
-}
-
 void VSRTSCameraController::processKeyboardInput(GLFWwindow* window, float deltaTime) const
 {
     float velocity = movementSpeed * deltaTime;

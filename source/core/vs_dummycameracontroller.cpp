@@ -29,13 +29,6 @@ void VSDummyCameraController::processMouseMovement(
 {
 }
 
-void VSDummyCameraController::processMouseScroll(
-    GLFWwindow* /*window*/,
-    double /*xoffset*/,
-    double /*yoffset*/) const
-{
-}
-
 void VSDummyCameraController::processKeyboardInput(GLFWwindow* /*window*/, float /*deltaTime*/)
     const
 {

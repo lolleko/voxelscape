@@ -37,10 +37,6 @@ public:
         double ypos,
         GLboolean constrainPitch = GL_TRUE) = 0;
 
-    // Processes input received from a mouse scroll-wheel event. Only requires input on the vertical
-    // wheel-axis
-    virtual void processMouseScroll(GLFWwindow* window, double xoffset, double yoffset) const = 0;
-
     virtual void processKeyboardInput(GLFWwindow* window, float deltaTime) const = 0;
 
     virtual void processFramebufferResize(GLFWwindow* window, int width, int height) = 0;

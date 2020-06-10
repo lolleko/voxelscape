@@ -152,11 +152,11 @@ int VSApp::initializeGLFW()
     });
     glfwSetCursorPosCallback(window, [](GLFWwindow* window, double xpos, double ypos) {
         auto* app = static_cast<VSApp*>(glfwGetWindowUserPointer(window));
-        app->getWorld()->getCameraController()->processMouseMovement(window, xpos, ypos);
+        app->getInputHandler()->processMouseMovement(window, xpos, ypos);
     });
     glfwSetMouseButtonCallback(window, [](GLFWwindow* window, int button, int action, int mods) {
         auto* app = static_cast<VSApp*>(glfwGetWindowUserPointer(window));
-        app->getWorld()->getCameraController()->processMouseButton(window, button, action, mods);
+        app->getInputHandler()->processMouseButton(window, button, action, mods);
     });
     glfwSetScrollCallback(window, [](GLFWwindow* window, double xOffset, double yOffset) {
         auto* app = static_cast<VSApp*>(glfwGetWindowUserPointer(window));
