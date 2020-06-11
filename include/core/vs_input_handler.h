@@ -21,8 +21,6 @@ public:
         KEY_E = (1 << 5),
     };
 
-    [[nodiscard]] Inputs getInputState() const;
-
     [[nodiscard]] double getYScrollOffset() const;
 
     [[nodiscard]] double getMouseX() const;

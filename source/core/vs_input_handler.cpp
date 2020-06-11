@@ -2,42 +2,12 @@
 #include <GLFW/glfw3.h>
 #include <glm/fwd.hpp>
 #include "core/vs_log.h"
-#include "game/components/inputs.h"
-#include "game/components/location.h"
 
 VSInputHandler::VSInputHandler(int displayWidth, int displayHeight)
 {
     this->yScrollOffset = 1.F;
     this->displayWidth = displayWidth;
     this->displayHeight = displayHeight;
-}
-
-Inputs VSInputHandler::getInputState() const
-{
-    Inputs inputs;
-
-    if (!leftClickHandled)
-    {
-        inputs.leftButtonState = InputState::JustDown;
-    }
-    else if (leftMouseClicked)
-    {
-        inputs.leftButtonState = InputState::Down;
-    }
-
-    if (!rightClickHandled)
-    {
-        inputs.rightButtonState = InputState::JustDown;
-    }
-    else if (rightMouseClicked)
-    {
-        inputs.rightButtonState = InputState::Down;
-    }
-
-    // Put mouseInWorldPos here
-    // inputs.worldMouse = mouseInWorldPos;
-
-    return inputs;
 }
 
 double VSInputHandler::getYScrollOffset() const
