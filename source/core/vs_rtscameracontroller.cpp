@@ -3,9 +3,49 @@
 #include <glm/fwd.hpp>
 #include "core/vs_camera.h"
 #include "world/vs_world.h"
+#include "core/vs_input_handler.h"
 
 // TODO: Implement rts camera
 VSRTSCameraController::VSRTSCameraController(VSCamera* camera, VSWorld* world, VSInputHandler* inputHandler)
     : VSCameraController(camera, world, inputHandler)
 {
+}
+
+#include <iostream>
+void VSRTSCameraController::updateCamera()
+{
+    if (!inputHandler)
+    {
+        return;
+    }
+
+    // Handle scroll
+    {
+
+    }
+
+    // Handle rotation
+    {
+
+    }
+
+    // Handle keyboard movement
+    {
+
+    }
+
+    // Handle framebufferresize
+    {
+        if (inputHandler->frameBufferResized())
+        {
+            float aspectRatio = inputHandler->getAspectRatio();
+            cam->setAspectRatio(aspectRatio);
+            inputHandler->frameBufferResizeHandled();
+        }
+    }
+
+    // Calculate mouse coords in world space
+    {
+
+    }
 }

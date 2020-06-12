@@ -10,4 +10,8 @@ class VSRTSCameraController : public VSCameraController
 {
 public:
     VSRTSCameraController(VSCamera* camera, VSWorld* world, VSInputHandler* inputHandler = nullptr);
+
+    void updateCamera() override;
+
+private:
 };
