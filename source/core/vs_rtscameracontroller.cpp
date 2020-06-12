@@ -45,8 +45,6 @@ void VSRTSCameraController::updateCamera()
         }
     }
 
-    bool camHasMoved = false;
-    glm::vec3 newPosition = cam->getPosition();
     // Handle keyboard movement
     {
         float velocity = movementSpeed * inputHandler->getKeyDeltaTime();
@@ -57,28 +55,23 @@ void VSRTSCameraController::updateCamera()
         {
             glm::vec3 front = cam->getFront();
             front.y = 0.F;
-            newPosition += glm::normalize(front) * velocity;
+            targetPosition += glm::normalize(front) * velocity;
         }
         if (keyFlags & VSInputHandler::KEY_S)
         {
             glm::vec3 front = cam->getFront();
             front.y = 0.F;
-            newPosition -= glm::normalize(front) * velocity;
+            targetPosition -= glm::normalize(front) * velocity;
         }
         if (keyFlags & VSInputHandler::KEY_A)
         {
             glm::vec3 right = cam->getRight();
-            newPosition -= right * velocity;
+            targetPosition -= right * velocity;
         }
         if (keyFlags & VSInputHandler::KEY_D)
         {
             glm::vec3 right = cam->getRight();
-            newPosition += right * velocity;
-        }
-        if (newPosition != cam->getPosition())
-        {
-            cam->setPosition(newPosition);
-            camHasMoved = true;
+            targetPosition += right * velocity;
         }
     }
 
@@ -86,20 +79,31 @@ void VSRTSCameraController::updateCamera()
     {
         float newYOffset = inputHandler->getYScrollOffset();
         float yOffset = lastYScrollOffset - newYOffset;
+        // if (heightAboveMap >= minHeightAboveMap && heightAboveMap <= maxHeightAboveMap && yOffset
+        // != 0)
+        // {
+        //     heightAboveMap -= yOffset;
+        //     camHasMoved = true;
+        // }
+        // if (heightAboveMap <= maxHeightAboveMap)
+        // {
+        //     heightAboveMap = minHeightAboveMap;
+        // }
+        // if (heightAboveMap >= maxHeightAboveMap)
+        // {
+        //     heightAboveMap = maxHeightAboveMap;
+        // }
         if (pitch >= -45.0F && pitch <= 1.0F)
         {
             pitch -= yOffset;
-            camHasMoved = true;
         }
         if (pitch <= -45.0F)
         {
             pitch = -45.0F;
-            camHasMoved = true;
         }
         if (pitch >= 1.0F)
         {
             pitch = 1.0F;
-            camHasMoved = true;
         }
         heightAboveMap = -pitch;
         cam->setPitchYaw(pitch, 0.F);
@@ -128,7 +132,7 @@ void VSRTSCameraController::updateCamera()
 
     // Adapt height to fixpoint
     {
-        if (camHasMoved)
+        if (targetPosition != cam->getPosition())
         {
             int width = inputHandler->getDisplayWidth();
             int height = inputHandler->getDisplayHeight();
@@ -149,12 +153,11 @@ void VSRTSCameraController::updateCamera()
 
             if (result.bHasHit)
             {
-                glm::vec3 position = cam->getPosition();
-                position.y = result.hitLocation.y + heightAboveMap;
-                targetPosition = position;
+                targetPosition.y = result.hitLocation.y + heightAboveMap;
             }
         }
     }
+
     glm::vec3 smoothedPosition = glm::lerp(cam->getPosition(), targetPosition, smoothSpeed);
     cam->setPosition(smoothedPosition);
 }

@@ -14,7 +14,10 @@ public:
     void updateCamera() override;
 
 private:
-    float heightAboveMap = 45.F;
+    // const float maxHeightAboveMap = 50.F;
+    // const float minHeightAboveMap = 10.F;
+    float heightAboveMap = 50.F;
+
     float pitch = 45.F;
     float lastYScrollOffset;
 
