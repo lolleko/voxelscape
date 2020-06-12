@@ -17,4 +17,8 @@ private:
     float heightAboveMap = 45.F;
     float pitch = 45.F;
     float lastYScrollOffset;
+
+    float smoothSpeed = 0.125F;
+    glm::vec3 offset = {0.F, 0.F, 0.F};
+    glm::vec3 targetPosition = {0.F, 0.F, 0.F};
 };

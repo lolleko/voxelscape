@@ -1,8 +1,10 @@
 #include "core/vs_rtscameracontroller.h"
 #include <GLFW/glfw3.h>
 #include <glm/ext/matrix_projection.hpp>
+#include <glm/ext/quaternion_common.hpp>
 #include <glm/fwd.hpp>
 #include <glm/geometric.hpp>
+#include <glm/gtx/compatibility.hpp>
 #include "core/vs_camera.h"
 #include "world/vs_world.h"
 #include "world/vs_chunk_manager.h"
@@ -149,8 +151,10 @@ void VSRTSCameraController::updateCamera()
             {
                 glm::vec3 position = cam->getPosition();
                 position.y = result.hitLocation.y + heightAboveMap;
-                cam->setPosition(position);
+                targetPosition = position;
             }
         }
     }
+    glm::vec3 smoothedPosition = glm::lerp(cam->getPosition(), targetPosition, smoothSpeed);
+    cam->setPosition(smoothedPosition);
 }
