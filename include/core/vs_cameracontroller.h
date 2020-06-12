@@ -27,7 +27,7 @@ public:
     void setCameraInWorldCoords(glm::vec3 coords);
 
     void setMouseFarInWorldCoords(glm::vec3 far);
-    
+
     void setInputHandler(VSInputHandler* inputHandler);
 
     [[nodiscard]] glm::vec3 getCameraInWorldCoords() const;
