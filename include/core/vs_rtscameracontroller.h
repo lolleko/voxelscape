@@ -14,4 +14,7 @@ public:
     void updateCamera() override;
 
 private:
+    float heightAboveMap = 45.F;
+    float pitch = 45.F;
+    float lastYScrollOffset;
 };
