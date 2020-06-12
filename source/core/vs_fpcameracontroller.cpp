@@ -160,8 +160,8 @@ void VSFPCameraController::updateCamera()
         const auto tmpProj = cam->getProjectionMatrix();
         const glm::vec4 viewport = glm::vec4(0.0F, 0.0F, width, height);
 
-        const auto worldPosNear = glm::unProject(screenPosCamera, tmpView, tmpProj, viewport);
-        const auto worldPosFar = glm::unProject(screenPosFar, tmpView, tmpProj, viewport);
+        auto worldPosNear = glm::unProject(screenPosCamera, tmpView, tmpProj, viewport);
+        auto worldPosFar = glm::unProject(screenPosFar, tmpView, tmpProj, viewport);
 
         setCameraInWorldCoords(worldPosNear);
         setMouseFarInWorldCoords(worldPosFar);
