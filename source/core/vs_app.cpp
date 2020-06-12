@@ -19,6 +19,7 @@
 #include "core/vs_game.h"
 #include "core/vs_debug_draw.h"
 #include "core/vs_editor.h"
+#include "core/vs_input_handler.h"
 
 #include "world/vs_chunk_manager.h"
 
@@ -139,25 +140,28 @@ int VSApp::initializeGLFW()
         return 1;
     }
 
+    // create input handler 
+    inputHandler = new VSInputHandler(width, height);
+
     glfwMakeContextCurrent(window);
 
     glfwSetWindowUserPointer(window, (void*)this);
     glfwSetFramebufferSizeCallback(window, [](GLFWwindow* window, int width, int height) {
         glViewport(0, 0, width, height);
         auto* app = static_cast<VSApp*>(glfwGetWindowUserPointer(window));
-        app->getWorld()->getCameraController()->processFramebufferResize(window, width, height);
+        app->getInputHandler()->processFramebufferResize(window, width, height);
     });
     glfwSetCursorPosCallback(window, [](GLFWwindow* window, double xpos, double ypos) {
         auto* app = static_cast<VSApp*>(glfwGetWindowUserPointer(window));
-        app->getWorld()->getCameraController()->processMouseMovement(window, xpos, ypos);
+        app->getInputHandler()->processMouseMovement(window, xpos, ypos);
     });
     glfwSetMouseButtonCallback(window, [](GLFWwindow* window, int button, int action, int mods) {
         auto* app = static_cast<VSApp*>(glfwGetWindowUserPointer(window));
-        app->getWorld()->getCameraController()->processMouseButton(window, button, action, mods);
+        app->getInputHandler()->processMouseButton(window, button, action, mods);
     });
-    glfwSetScrollCallback(window, [](GLFWwindow* window, double xoffset, double yoffset) {
+    glfwSetScrollCallback(window, [](GLFWwindow* window, double xOffset, double yOffset) {
         auto* app = static_cast<VSApp*>(glfwGetWindowUserPointer(window));
-        app->getWorld()->getCameraController()->processMouseScroll(window, xoffset, yoffset);
+        app->getInputHandler()->processMouseScroll(window, xOffset, yOffset);
     });
     glfwSwapInterval(1);
     // Capture cursor for FPS Camera
@@ -191,6 +195,11 @@ void VSApp::setWorldActive(std::string key)
         key);
 }
 
+VSInputHandler* VSApp::getInputHandler() const
+{
+    return inputHandler;
+}
+
 void VSApp::addWorld(std::string key, VSWorld* world)
 {
     if (worlds.count(key) > 0)
@@ -202,6 +211,7 @@ void VSApp::addWorld(std::string key, VSWorld* world)
             "World with key '{}' already exists and will not be added",
             key);
     }
+    world->getCameraController()->setInputHandler(inputHandler);
     worlds.insert(std::pair<std::string, VSWorld*>(key, world));
 }
 
@@ -271,43 +281,16 @@ int VSApp::mainLoop()
         // update chunks
         world->update();
 
+        // Update camera
+        world->getCameraController()->updateCamera();
+
         // draw world
         world->draw(world);
 
-        // Calculate mouse coords in world space
+        if (worldName == VSEditor::WorldName)
         {
-            double xpos;
-            double ypos;
-            glfwGetCursorPos(window, &xpos, &ypos);
-            int width;
-            int height;
-            glfwGetWindowSize(window, &width, &height);
-            const auto screenPosCamera = glm::vec3(xpos, double(height) - ypos, 0.F);
-            const auto screenPosFar = glm::vec3(xpos, double(height) - ypos, 1.F);
-
-            const auto tmpView = getWorld()->getCamera()->getViewMatrix();
-            const auto tmpProj = getWorld()->getCamera()->getProjectionMatrix();
-            const glm::vec4 viewport = glm::vec4(0.0F, 0.0F, width, height);
-
-            const auto worldPosNear = glm::unProject(screenPosCamera, tmpView, tmpProj, viewport);
-            const auto worldPosFar = glm::unProject(screenPosFar, tmpView, tmpProj, viewport);
-
-            const auto hitResult =
-                getWorld()->getChunkManager()->lineTrace(worldPosNear, worldPosFar);
-
-            if (hitResult.bHasHit)
-            {
-                getWorld()->getCameraController()->setMouseInWorldCoords(hitResult.hitLocation);
-
-                getWorld()->getDebugDraw()->drawLine(
-                    hitResult.hitLocation,
-                    hitResult.hitLocation + hitResult.hitNormal * 10.F,
-                    {0, 255, 0});
-            }
+            VSEditor::handleBlockPlacement(inputHandler, world);
         }
-
-        getWorld()->getDebugDraw()->drawSphere(
-            getWorld()->getCameraController()->getMouseInWorldCoords(), 0.5F, {255, 0, 0});
 
         // draw ui
         UI->draw();
