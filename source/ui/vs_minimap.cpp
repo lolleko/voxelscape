@@ -1,6 +1,7 @@
 #include "ui/vs_minimap.h"
 #include <cmath>
 #include "core/vs_log.h"
+#include "renderer/vs_textureloader.h"
 #include "world/vs_block.h"
 #include "world/vs_chunk_manager.h"
 
@@ -30,6 +31,16 @@ unsigned char* VSMinimap::getPixelData()
     return pixels.data();
 }
 
+bool VSMinimap::hasChanged() const
+{
+    return dataChanged;
+}
+
+void VSMinimap::changeNotified()
+{
+    dataChanged = false;
+}
+
 void VSMinimap::updateMinimap(const VSWorld* world)
 {
     auto chunkManager = world->getChunkManager();
@@ -57,4 +68,5 @@ void VSMinimap::updateMinimap(const VSWorld* world)
             }
         }
     }
+    dataChanged = true;
 }

@@ -57,6 +57,9 @@ void VSUI::setup(const char* glsl_version, GLFWwindow* window)
     // Prepare Fonts
     debugFont = io.Fonts->AddFontDefault();
     menuFont = io.Fonts->AddFontFromFileTTF("resources/arial.ttf", 40.F);
+
+    woodResourceTexture = TextureFromFile("textures/tiles/4_wood.png");
+    stoneResourceTexture = TextureFromFile("textures/tiles/1_stone.png");
 };
 
 void VSUI::cleanup()
@@ -309,19 +312,16 @@ void VSUI::renderGameGUI()
     {
         ImGui::MenuItem("Dummy");
         ImGui::Separator();
-        unsigned int woodID = TextureFromFile("textures/tiles/4_wood.png");
-        ImGui::Image((void*)(intptr_t)woodID, ImVec2(20, 20));
+        ImGui::Image((void*)(intptr_t)woodResourceTexture, ImVec2(20, 20));
         ImGui::Text("%i", 10);
 
-        unsigned int stoneID = TextureFromFile("textures/tiles/1_stone.png");
-        ImGui::Image((void*)(intptr_t)stoneID, ImVec2(20, 20));
+        ImGui::Image((void*)(intptr_t)stoneResourceTexture, ImVec2(20, 20));
         ImGui::Text("%i", 70);
         menuBarHeight = ImGui::GetFontSize() + 2 * ImGui::GetStyle().FramePadding.y;
     }
     ImGui::EndMainMenuBar();
 
     // Building selection
-    
 
     ImGui::Begin("Select building", 0, ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove);
     // Dummies
@@ -331,11 +331,26 @@ void VSUI::renderGameGUI()
     ImGui::End();
 
     // Minimap
-    ImGui::SetNextWindowPos(ImVec2(ImGui::GetIO().DisplaySize.x, menuBarHeight), ImGuiCond_Always, ImVec2(1.F, 0.F));
+    ImGui::SetNextWindowPos(
+        ImVec2(ImGui::GetIO().DisplaySize.x, menuBarHeight), ImGuiCond_Always, ImVec2(1.F, 0.F));
     ImGui::SetNextWindowSize(ImVec2(0.F, 0.F));
     ImGui::Begin("Minimap", 0, ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove);
-    unsigned int miniMapID = TextureFromData(uiState->minimap->getPixelData(), uiState->minimap->getWidth(), uiState->minimap->getHeight(), uiState->minimap->getNrComponents());
-    ImGui::Image((void*)(intptr_t)miniMapID, ImVec2(256, 256));
+    // unsigned int minimapID = TextureFromData(
+    //     uiState->minimap->getPixelData(),
+    //     uiState->minimap->getWidth(),
+    //     uiState->minimap->getHeight(),
+    //     uiState->minimap->getNrComponents());
+    if (uiState->minimap->hasChanged())
+    {
+        std::cout << "minimap changed" << std::endl;
+        minimapTexture = TextureFromData(
+            uiState->minimap->getPixelData(),
+            uiState->minimap->getWidth(),
+            uiState->minimap->getHeight(),
+            uiState->minimap->getNrComponents());
+        uiState->minimap->changeNotified();
+    }
+    ImGui::Image((void*)(intptr_t)minimapTexture, ImVec2(256, 256));
     ImGui::End();
 }
 

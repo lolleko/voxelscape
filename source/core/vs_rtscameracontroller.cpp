@@ -6,7 +6,10 @@
 #include "core/vs_input_handler.h"
 
 // TODO: Implement rts camera
-VSRTSCameraController::VSRTSCameraController(VSCamera* camera, VSWorld* world, VSInputHandler* inputHandler)
+VSRTSCameraController::VSRTSCameraController(
+    VSCamera* camera,
+    VSWorld* world,
+    VSInputHandler* inputHandler)
     : VSCameraController(camera, world, inputHandler)
 {
 }
@@ -31,7 +34,44 @@ void VSRTSCameraController::updateCamera()
 
     // Handle keyboard movement
     {
+        float velocity = movementSpeed * inputHandler->getKeyDeltaTime();
+        glm::vec3 position = cam->getPosition();
 
+        VSInputHandler::KEY_FLAGS keyFlags = inputHandler->getKeyFlags();
+
+        if (keyFlags & VSInputHandler::KEY_W)
+        {
+            glm::vec3 front = cam->getFront();
+            front.y = 0.F;
+            position += front * velocity;
+        }
+        if (keyFlags & VSInputHandler::KEY_S)
+        {
+            glm::vec3 front = cam->getFront();
+            front.y = 0.F;
+            position -= front * velocity;
+        }
+        if (keyFlags & VSInputHandler::KEY_A)
+        {
+            glm::vec3 right = cam->getRight();
+            position -= right * velocity;
+        }
+        if (keyFlags & VSInputHandler::KEY_D)
+        {
+            glm::vec3 right = cam->getRight();
+            position += right * velocity;
+        }
+        if (keyFlags & VSInputHandler::KEY_E)
+        {
+            glm::vec3 up = cam->getUp();
+            position += up * velocity;
+        }
+        if (keyFlags & VSInputHandler::KEY_Q)
+        {
+            glm::vec3 up = cam->getUp();
+            position -= up * velocity;
+        }
+        cam->setPosition(position);
     }
 
     // Handle framebufferresize
@@ -46,6 +86,5 @@ void VSRTSCameraController::updateCamera()
 
     // Calculate mouse coords in world space
     {
-
     }
 }

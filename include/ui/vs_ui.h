@@ -35,6 +35,10 @@ public:
 private:
     VSUIState* uiState;
 
+    unsigned int minimapTexture;
+    unsigned int woodResourceTexture;
+    unsigned int stoneResourceTexture;
+
     ImFont* menuFont;
     ImFont* debugFont;
 
