@@ -25,10 +25,10 @@ void VSCameraController::setCameraInWorldCoords(glm::vec3 coords)
     cameraInWorldCoords = coords;
 }
 
-// void VSCameraController::setMouseFarInWorldCoords(glm::vec3 far)
-// {
-//     mouseFarInWorldCoords = far;
-// }
+void VSCameraController::setMouseFarInWorldCoords(glm::vec3 mouseFar)
+{
+    mouseFarInWorldCoords = mouseFar;
+}
 
 glm::vec3 VSCameraController::getCameraInWorldCoords() const
 {
