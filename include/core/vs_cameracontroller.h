@@ -24,15 +24,15 @@ public:
 
     void setEditorBlockID(int blockID);
 
-    void setMouseInWorldCoords(glm::vec3 coords);
+    void setCameraInWorldCoords(glm::vec3 coords);
 
-    void setMouseNormalInWorldCoords(glm::vec3 normal);
+    void setMouseFarInWorldCoords(glm::vec3 far);
     
     void setInputHandler(VSInputHandler* inputHandler);
 
-    [[nodiscard]] glm::vec3 getMouseInWorldCoords() const;
+    [[nodiscard]] glm::vec3 getCameraInWorldCoords() const;
 
-    [[nodiscard]] glm::vec3 getMouseNormalInWorldCoords() const;
+    [[nodiscard]] glm::vec3 getMouseFarInWorldCoords() const;
 
 protected:
     VSCamera* cam;
@@ -47,6 +47,6 @@ protected:
     float movementSpeed;
 
     int editorBlockID = 1;
-    glm::vec3 mouseInWorldCoords = glm::vec3(0);
-    glm::vec3 mouseNormalInWorldCoords = glm::vec3(0);
+    glm::vec3 cameraInWorldCoords = glm::vec3(0);
+    glm::vec3 mouseFarInWorldCoords = glm::vec3(0);
 };

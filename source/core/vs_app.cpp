@@ -292,9 +292,6 @@ int VSApp::mainLoop()
             VSEditor::handleBlockPlacement(inputHandler, world);
         }
 
-        getWorld()->getDebugDraw()->drawSphere(
-            getWorld()->getCameraController()->getMouseInWorldCoords(), 0.5F, {255, 0, 0});
-
         // draw ui
         UI->draw();
 

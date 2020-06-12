@@ -98,16 +98,6 @@ void VSInputHandler::frameBufferResizeHandled()
     aspectRatioChanged = false;
 }
 
-glm::vec3 VSInputHandler::getMouseInWorldPos() const
-{
-    return mouseInWorldPos;
-}
-
-void VSInputHandler::setMouseInWorldPos(glm::vec3 worldPos)
-{
-    mouseInWorldPos = worldPos;
-}
-
 void VSInputHandler::handleRightClick()
 {
     rightClickHandled = true;

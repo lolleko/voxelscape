@@ -20,24 +20,24 @@ void VSCameraController::setEditorBlockID(int blockID)
     editorBlockID = blockID;
 }
 
-void VSCameraController::setMouseInWorldCoords(glm::vec3 coords)
+void VSCameraController::setCameraInWorldCoords(glm::vec3 coords)
 {
-    mouseInWorldCoords = coords;
+    cameraInWorldCoords = coords;
 }
 
-void VSCameraController::setMouseNormalInWorldCoords(glm::vec3 normal)
+void VSCameraController::setMouseFarInWorldCoords(glm::vec3 far)
 {
-    mouseNormalInWorldCoords = normal;
+    mouseFarInWorldCoords = far;
 }
 
-glm::vec3 VSCameraController::getMouseInWorldCoords() const
+glm::vec3 VSCameraController::getCameraInWorldCoords() const
 {
-    return mouseInWorldCoords;
+    return cameraInWorldCoords;
 }
 
-glm::vec3 VSCameraController::getMouseNormalInWorldCoords() const
+glm::vec3 VSCameraController::getMouseFarInWorldCoords() const
 {
-    return mouseNormalInWorldCoords;
+    return mouseFarInWorldCoords;
 }
 
 void VSCameraController::setInputHandler(VSInputHandler* inputHandler)

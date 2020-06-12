@@ -28,32 +28,43 @@ namespace VSEditor
 
     void handleBlockPlacement(VSInputHandler* inputHandler, VSWorld* world)
     {
-        glm::vec3 mouseInWorldCoords = world->getCameraController()->getMouseInWorldCoords();
+        glm::vec3 worldPosNear = world->getCameraController()->getCameraInWorldCoords();
+        glm::vec3 worldPosFar = world->getCameraController()->getMouseFarInWorldCoords();
 
-        if (!inputHandler->isRightClickHandled())
+        const auto hitResult = world->getChunkManager()->lineTrace(worldPosNear, worldPosFar);
+
+        if (hitResult.bHasHit)
         {
-            // Check if block is placed in bounds
-            if (!world->getChunkManager()->isLocationInBounds(mouseInWorldCoords))
+            glm::vec3 mouseInWorldCoords = hitResult.hitLocation;
+
+            // For debugging
+            world->getDebugDraw()->drawSphere(mouseInWorldCoords, 0.5F, {255, 0, 0});
+
+            if (!inputHandler->isRightClickHandled())
             {
-                // do nothing
-                return;
+                // Check if block is placed in bounds
+                if (!world->getChunkManager()->isLocationInBounds(mouseInWorldCoords))
+                {
+                    // do nothing
+                    return;
+                }
+                // Not pretty oof
+                world->getChunkManager()->setBlock(
+                    mouseInWorldCoords, VSApp::getInstance()->getUI()->getState()->bSetBlockID + 1);
+                inputHandler->handleRightClick();
             }
-            // Not pretty oof
-            world->getChunkManager()->setBlock(
-                mouseInWorldCoords, VSApp::getInstance()->getUI()->getState()->bSetBlockID + 1);
-            inputHandler->handleRightClick();
-        }
-        else if (!inputHandler->isMiddleClickHandled())
-        {
-            // Check if block is placed in bounds
-            if (!world->getChunkManager()->isLocationInBounds(mouseInWorldCoords))
+            else if (!inputHandler->isMiddleClickHandled())
             {
-                // do nothing
-                return;
+                // Check if block is placed in bounds
+                if (!world->getChunkManager()->isLocationInBounds(mouseInWorldCoords))
+                {
+                    // do nothing
+                    return;
+                }
+                mouseInWorldCoords -= 0.05F * hitResult.hitNormal;
+                world->getChunkManager()->setBlock(mouseInWorldCoords, 0);
+                inputHandler->handleMiddleClick();
             }
-            mouseInWorldCoords -= 0.05F * world->getCameraController()->getMouseNormalInWorldCoords();
-            world->getChunkManager()->setBlock(mouseInWorldCoords, 0);
-            inputHandler->handleMiddleClick();
         }
     }
 

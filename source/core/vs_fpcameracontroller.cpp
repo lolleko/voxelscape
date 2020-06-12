@@ -163,18 +163,7 @@ void VSFPCameraController::updateCamera()
         const auto worldPosNear = glm::unProject(screenPosCamera, tmpView, tmpProj, viewport);
         const auto worldPosFar = glm::unProject(screenPosFar, tmpView, tmpProj, viewport);
 
-        const auto hitResult = world->getChunkManager()->lineTrace(worldPosNear, worldPosFar);
-
-        if (hitResult.bHasHit)
-        {
-            setMouseInWorldCoords(hitResult.hitLocation);
-            inputHandler->setMouseInWorldPos(hitResult.hitLocation);
-            setMouseNormalInWorldCoords(hitResult.hitNormal);
-
-            world->getDebugDraw()->drawLine(
-                hitResult.hitLocation,
-                hitResult.hitLocation + hitResult.hitNormal * 10.F,
-                {0, 255, 0});
-        }
+        setCameraInWorldCoords(worldPosNear);
+        setMouseFarInWorldCoords(worldPosFar);
     }
 }
