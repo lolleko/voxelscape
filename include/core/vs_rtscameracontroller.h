@@ -15,11 +15,14 @@ public:
 
     void setFocalPoint(glm::vec3 newFocalPoint);
 
+    void handleScroll();
+    void handleFramebufferResize();
+    void handleKeyboard();
+    void handleRotation();
+    void adaptToFixpoint();
+
 private:
-    // const float maxHeightAboveMap = 50.F;
-    // const float minHeightAboveMap = 10.F;
-    // float heightAboveMap = 50.F;
-    // bool targetPosChanged = false
+    bool targetPosChanged = false;
 
     float targetPitch = -45.F;
     float targetYaw = 0.F;

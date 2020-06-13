@@ -19,38 +19,25 @@ VSRTSCameraController::VSRTSCameraController(
     VSInputHandler* inputHandler)
     : VSCameraController(camera, world, inputHandler)
 {
+    targetPosition = cam->getPosition();
     cam->setPitchYaw(targetPitch, targetYaw);
     movementSpeed = 100.F;
-    // lastYScrollOffset = -45.F;
+    lastYScrollOffset = radius;
 }
 
 void VSRTSCameraController::updateCamera()
 {
     if (!inputHandler)
     {
+        // Cannot update without inputs
         return;
     }
 
-    // Handle scroll
-    {
-        float newYOffset = inputHandler->getYScrollOffset();
-        float yOffset = lastYScrollOffset - newYOffset;
-        float oldRadius = radius;
-        if (radius >= minRadius && radius <= maxRadius && yOffset != 0)
-        {
-            radius -= yOffset;
-        }
-        if (radius <= minRadius)
-        {
-            radius = minRadius;
-        }
-        if (radius >= maxRadius)
-        {
-            radius = maxRadius;
-        }
-        targetPosition -= cam->getFront() * (radius - oldRadius);
-        lastYScrollOffset = newYOffset;
-    }
+    targetPosChanged = false;
+
+    // Handeling sequence must not be changed
+
+    handleScroll();
 
     // Calculate old sphere coordinates offset
     glm::vec3 oldSphere;
@@ -63,38 +50,7 @@ void VSRTSCameraController::updateCamera()
         oldSphere.y = radius * std::cos(pitchRad);
     }
 
-    // Handle rotation
-    {
-        float xPos = inputHandler->getMouseX();
-        float yPos = inputHandler->getMouseY();
-        if (inputHandler->isMiddleMouseClicked())
-        {
-            if (firstMouse)
-            {
-                lastX = xPos;
-                lastY = yPos;
-                firstMouse = false;
-            }
-            else
-            {
-                float xOffset = xPos - lastX;
-                float yOffset = lastY - yPos;  // reversed since y-coordinates go from bottom to top
-
-                lastX = xPos;
-                lastY = yPos;
-
-                xOffset *= mouseSensitivity;
-                yOffset *= mouseSensitivity;
-
-                targetYaw += xOffset;
-            }
-        }
-        else
-        {
-            lastX = xPos;
-            lastY = yPos;
-        }
-    }
+    handleRotation();
 
     float smoothedYaw = glm::lerp(cam->getYaw(), targetYaw, smoothSpeed);
 
@@ -109,57 +65,15 @@ void VSRTSCameraController::updateCamera()
         newSphere.y = radius * std::cos(pitchRad);
     }
 
-    targetPosition += (newSphere - oldSphere);
-
-    // Handle framebufferresize
+    if (newSphere != oldSphere)
     {
-        if (inputHandler->frameBufferResized())
-        {
-            float aspectRatio = inputHandler->getAspectRatio();
-            cam->setAspectRatio(aspectRatio);
-            inputHandler->frameBufferResizeHandled();
-        }
+        targetPosition += (newSphere - oldSphere);
+        targetPosChanged = true;
     }
 
-    // Handle keyboard movement
-    {
-        float velocity = movementSpeed * inputHandler->getKeyDeltaTime();
+    handleFramebufferResize();
 
-        VSInputHandler::KEY_FLAGS keyFlags = inputHandler->getKeyFlags();
-
-        if (keyFlags & VSInputHandler::KEY_W)
-        {
-            glm::vec3 front = cam->getFront();
-            front.y = 0.F;
-            targetPosition += glm::normalize(front) * velocity;
-        }
-        if (keyFlags & VSInputHandler::KEY_S)
-        {
-            glm::vec3 front = cam->getFront();
-            front.y = 0.F;
-            targetPosition -= glm::normalize(front) * velocity;
-        }
-        if (keyFlags & VSInputHandler::KEY_A)
-        {
-            glm::vec3 right = cam->getRight();
-            targetPosition -= right * velocity;
-        }
-        if (keyFlags & VSInputHandler::KEY_D)
-        {
-            glm::vec3 right = cam->getRight();
-            targetPosition += right * velocity;
-        }
-        if (keyFlags & VSInputHandler::KEY_E)
-        {
-            glm::vec3 up = cam->getUp();
-            targetPosition += up * velocity;
-        }
-        if (keyFlags & VSInputHandler::KEY_Q)
-        {
-            glm::vec3 up = cam->getUp();
-            targetPosition -= up * velocity;
-        }
-    }
+    handleKeyboard();
 
     // Calculate mouse coords in world space
     {
@@ -181,33 +95,7 @@ void VSRTSCameraController::updateCamera()
         setMouseFarInWorldCoords(worldPosFar);
     }
 
-    // Adapt height to fixpoint
-    {
-        // TODO: Cast ray downwards to find minimal height
-        // TODO: Fix jitter if ray hits different block
-        int width = inputHandler->getDisplayWidth();
-        int height = inputHandler->getDisplayHeight();
-        double xPos = (float)width / 2;
-        double ypos = (float)height / 2;
-        const auto screenPosCamera = glm::vec3(xPos, double(height) - ypos, 0.F);
-        const auto screenPosFar = glm::vec3(xPos, double(height) - ypos, 1.F);
-
-        const auto tmpView = cam->getViewMatrix();
-        const auto tmpProj = cam->getProjectionMatrix();
-        const glm::vec4 viewport = glm::vec4(0.0F, 0.0F, width, height);
-
-        const auto worldPosNear = glm::unProject(screenPosCamera, tmpView, tmpProj, viewport);
-        const auto worldPosFar = glm::unProject(screenPosFar, tmpView, tmpProj, viewport);
-
-        VSChunkManager::VSTraceResult result =
-            world->getChunkManager()->lineTrace(worldPosNear, worldPosFar);
-
-        if (result.bHasHit)
-        {
-            world->getDebugDraw()->drawSphere(result.hitLocation, 0.5F, {255, 0, 0});
-            targetPosition.y = result.hitLocation.y + radius * std::sin(-targetPitch * (M_PI / 180.F));
-        }
-    }
+    adaptToFixpoint();
 
     glm::vec3 smoothedPosition = glm::lerp(cam->getPosition(), targetPosition, smoothSpeed);
     cam->setPitchYaw(targetPitch, smoothedYaw);
@@ -244,5 +132,138 @@ void VSRTSCameraController::setFocalPoint(glm::vec3 newFocalPoint)
     {
         targetPosition = result.hitLocation + cam->getFront() * radius;
         cam->setPosition(targetPosition);
+    }
+}
+
+void VSRTSCameraController::handleScroll()
+{
+    float newYOffset = inputHandler->getYScrollOffset();
+    float yOffset = lastYScrollOffset - newYOffset;
+    float oldRadius = radius;
+    if (radius >= minRadius && radius <= maxRadius && yOffset != 0)
+    {
+        radius -= yOffset;
+    }
+    if (radius <= minRadius)
+    {
+        radius = minRadius;
+    }
+    if (radius >= maxRadius)
+    {
+        radius = maxRadius;
+    }
+    if (oldRadius != radius)
+    {
+        targetPosition -= cam->getFront() * (radius - oldRadius);
+        targetPosChanged = true;
+    }
+    lastYScrollOffset = newYOffset;
+}
+
+void VSRTSCameraController::handleFramebufferResize()
+{
+    if (inputHandler->frameBufferResized())
+    {
+        float aspectRatio = inputHandler->getAspectRatio();
+        cam->setAspectRatio(aspectRatio);
+        inputHandler->frameBufferResizeHandled();
+    }
+}
+
+void VSRTSCameraController::handleKeyboard()
+{
+    float velocity = movementSpeed * inputHandler->getKeyDeltaTime();
+
+    VSInputHandler::KEY_FLAGS keyFlags = inputHandler->getKeyFlags();
+
+    if (keyFlags & VSInputHandler::KEY_W)
+    {
+        glm::vec3 front = cam->getFront();
+        front.y = 0.F;
+        targetPosition += glm::normalize(front) * velocity;
+        targetPosChanged = true;
+    }
+    if (keyFlags & VSInputHandler::KEY_S)
+    {
+        glm::vec3 front = cam->getFront();
+        front.y = 0.F;
+        targetPosition -= glm::normalize(front) * velocity;
+        targetPosChanged = true;
+    }
+    if (keyFlags & VSInputHandler::KEY_A)
+    {
+        glm::vec3 right = cam->getRight();
+        targetPosition -= right * velocity;
+        targetPosChanged = true;
+    }
+    if (keyFlags & VSInputHandler::KEY_D)
+    {
+        glm::vec3 right = cam->getRight();
+        targetPosition += right * velocity;
+        targetPosChanged = true;
+    }
+}
+
+void VSRTSCameraController::handleRotation()
+{
+    float xPos = inputHandler->getMouseX();
+    float yPos = inputHandler->getMouseY();
+    if (inputHandler->isMiddleMouseClicked())
+    {
+        if (firstMouse)
+        {
+            lastX = xPos;
+            lastY = yPos;
+            firstMouse = false;
+        }
+        else
+        {
+            float xOffset = xPos - lastX;
+            float yOffset = lastY - yPos;  // reversed since y-coordinates go from bottom to top
+
+            lastX = xPos;
+            lastY = yPos;
+
+            xOffset *= mouseSensitivity;
+            yOffset *= mouseSensitivity;
+
+            targetYaw += xOffset;
+        }
+    }
+    else
+    {
+        lastX = xPos;
+        lastY = yPos;
+    }
+}
+
+void VSRTSCameraController::adaptToFixpoint()
+{
+    // TODO: Cast ray downwards to find minimal height
+    if (targetPosChanged)
+    {
+        int width = inputHandler->getDisplayWidth();
+        int height = inputHandler->getDisplayHeight();
+        double xPos = (float)width / 2;
+        double ypos = (float)height / 2;
+        const auto screenPosCamera = glm::vec3(xPos, double(height) - ypos, 0.F);
+        const auto screenPosFar = glm::vec3(xPos, double(height) - ypos, 1.F);
+
+        const auto tmpView = cam->getViewMatrix();
+        const auto tmpProj = cam->getProjectionMatrix();
+        const glm::vec4 viewport = glm::vec4(0.0F, 0.0F, width, height);
+
+        const auto worldPosNear = glm::unProject(screenPosCamera, tmpView, tmpProj, viewport);
+        const auto worldPosFar = glm::unProject(screenPosFar, tmpView, tmpProj, viewport);
+
+        VSChunkManager::VSTraceResult result =
+            world->getChunkManager()->lineTrace(worldPosNear, worldPosFar);
+
+        if (result.bHasHit)
+        {
+            world->getDebugDraw()->drawSphere(result.hitLocation, 0.5F, {255, 0, 0});
+            targetPosition.y =
+                result.hitLocation.y + radius * std::sin(-targetPitch * (M_PI / 180.F));
+        }
     }
 }

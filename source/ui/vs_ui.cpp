@@ -342,7 +342,6 @@ void VSUI::renderGameGUI()
     //     uiState->minimap->getNrComponents());
     if (uiState->minimap->hasChanged())
     {
-        std::cout << "minimap changed" << std::endl;
         minimapTexture = TextureFromData(
             uiState->minimap->getPixelData(),
             uiState->minimap->getWidth(),
