@@ -52,4 +52,6 @@ struct VSUIState
     int worldSize = 0;  // 0 = Small, 1 = Medium, 2 = Large
     // TODO: Not to sure if this belongs here
     VSMinimap* minimap = new VSMinimap();
+    bool minimapChanged = false;
+    unsigned int minimapTexture = 0;
 };

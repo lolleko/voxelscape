@@ -30,6 +30,16 @@ unsigned char* VSMinimap::getPixelData()
     return pixels.data();
 }
 
+bool VSMinimap::hasChanged() const
+{
+    return dataChanged;
+}
+
+void VSMinimap::changeNotified()
+{
+    dataChanged = false;
+}
+
 void VSMinimap::updateMinimap(const VSWorld* world)
 {
     auto chunkManager = world->getChunkManager();
@@ -57,4 +67,5 @@ void VSMinimap::updateMinimap(const VSWorld* world)
             }
         }
     }
+    dataChanged = true;
 }

@@ -7,6 +7,7 @@
 #include "core/vs_cameracontroller.h"
 #include "core/vs_input_handler.h"
 
+#include "core/vs_rtscameracontroller.h"
 #include "ui/vs_minimap.h"
 #include "ui/vs_ui.h"
 #include "ui/vs_ui_state.h"
@@ -160,6 +161,8 @@ VSWorld* VSGame::initWorld()
 {
     VSWorld* gameWorld = new VSWorld();
     auto skybox = new VSSkybox();
+    auto cameraController = new VSRTSCameraController(gameWorld->getCamera(), gameWorld);
+    gameWorld->setCameraController(cameraController);
     gameWorld->addDrawable(skybox);
     return gameWorld;
 }
