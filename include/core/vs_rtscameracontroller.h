@@ -32,7 +32,7 @@ private:
 
     float radius = 50.F;
     float maxRadius = 75.F;
-    float minRadius = 1.F;
+    float minRadius = 5.F;
 
     float smoothSpeed = 0.125F;
     // float distance = 50.F;
