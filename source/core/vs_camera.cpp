@@ -4,6 +4,7 @@
 #include <glm/fwd.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
+// TODO: Call update once per frame instead of calling it everytime one attribute has changed
 VSCamera::VSCamera(glm::vec3 position, glm::vec3 up, float yaw, float pitch)
     : front(glm::vec3(0.0F, 0.0F, -1.0F))
     , zoom(ZOOM)
