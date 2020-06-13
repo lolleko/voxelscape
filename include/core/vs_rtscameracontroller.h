@@ -16,10 +16,15 @@ public:
     void setFocalPoint(glm::vec3 newFocalPoint);
 
     void handleScroll();
+
     void handleFramebufferResize();
+
     void handleKeyboard();
+
     void handleRotation();
+
     void adaptToFixpoint();
+    
     // Call this when world size has been changed
     void updateWorldBorders();
 

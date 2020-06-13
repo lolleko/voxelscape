@@ -5,8 +5,6 @@
 #include "world/generator/vs_heightmap.h"
 #include "world/vs_block.h"
 #include "world/vs_chunk_manager.h"
-#include <chrono>
-#include <thread>
 
 namespace VSTerrainGeneration
 {

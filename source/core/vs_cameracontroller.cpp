@@ -2,7 +2,6 @@
 
 #include "core/vs_cameracontroller.h"
 #include "core/vs_camera.h"
-#include "world/vs_chunk_manager.h"
 
 VSCameraController::VSCameraController(
     VSCamera* camera,

@@ -1,7 +1,6 @@
 #pragma once
 #include <glm/fwd.hpp>
 #include <vector>
-#include "renderer/vs_textureloader.h"
 #include "world/vs_world.h"
 
 class VSMinimap

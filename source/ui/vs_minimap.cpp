@@ -1,7 +1,6 @@
 #include "ui/vs_minimap.h"
 #include <cmath>
 #include "core/vs_log.h"
-#include "renderer/vs_textureloader.h"
 #include "world/vs_block.h"
 #include "world/vs_chunk_manager.h"
 
