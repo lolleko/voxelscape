@@ -84,9 +84,13 @@ void VSGame::gameLoop()
         {
             if (UI->getState()->bBiomeType == 0)
             {
-                VSTerrainGeneration::buildMountains(world);
+                VSTerrainGeneration::buildStandard(world);
             }
             else if (UI->getState()->bBiomeType == 1)
+            {
+                VSTerrainGeneration::buildMountains(world);
+            }
+            else if (UI->getState()->bBiomeType == 2)
             {
                 VSTerrainGeneration::buildDesert(world);
             }
