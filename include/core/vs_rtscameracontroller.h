@@ -19,10 +19,15 @@ private:
     // const float maxHeightAboveMap = 50.F;
     // const float minHeightAboveMap = 10.F;
     // float heightAboveMap = 50.F;
+    // bool targetPosChanged = false
 
-    float pitch = -45.F;
-    float yaw = 0.F;
+    float targetPitch = -45.F;
+    float targetYaw = 0.F;
     float lastYScrollOffset;
+
+    float radius = 50.F;
+    float maxRadius = 75.F;
+    float minRadius = 1.F;
 
     float smoothSpeed = 0.125F;
     // float distance = 50.F;
