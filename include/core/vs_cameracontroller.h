@@ -30,6 +30,8 @@ public:
 
     void setInputHandler(VSInputHandler* inputHandler);
 
+    void updateWorldBorders();
+
     [[nodiscard]] glm::vec3 getCameraInWorldCoords() const;
 
     [[nodiscard]] glm::vec3 getMouseFarInWorldCoords() const;

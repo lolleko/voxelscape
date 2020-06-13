@@ -1,3 +1,4 @@
+#define _USE_MATH_DEFINES
 #include "core/vs_rtscameracontroller.h"
 #include <GLFW/glfw3.h>
 #include <cmath>
@@ -242,6 +243,25 @@ void VSRTSCameraController::adaptToFixpoint()
     // TODO: Cast ray downwards to find minimal height
     if (targetPosChanged)
     {
+        // Restrict position to map
+        glm::vec3 worldSize = world->getChunkManager()->getWorldSize();
+        if (targetPosition.x <= - worldSize.x / 2)
+        {
+            targetPosition.x = -worldSize.x / 2;
+        }
+        if (targetPosition.x >= worldSize.x / 2)
+        {
+            targetPosition.x = worldSize.x / 2;
+        }
+        if (targetPosition.z <= - worldSize.z / 2)
+        {
+            targetPosition.z = -worldSize.z / 2;
+        }
+        if (targetPosition.z >= worldSize.z / 2)
+        {
+            targetPosition.z = worldSize.z / 2;
+        }
+
         int width = inputHandler->getDisplayWidth();
         int height = inputHandler->getDisplayHeight();
         double xPos = (float)width / 2;
@@ -264,6 +284,11 @@ void VSRTSCameraController::adaptToFixpoint()
             world->getDebugDraw()->drawSphere(result.hitLocation, 0.5F, {255, 0, 0});
             targetPosition.y =
                 result.hitLocation.y + radius * std::sin(-targetPitch * (M_PI / 180.F));
+        }
+        else
+        {
+            // Focal point has left the world
+            // TODO: set back to closest point in the world
         }
     }
 }

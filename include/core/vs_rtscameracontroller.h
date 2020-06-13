@@ -20,6 +20,8 @@ public:
     void handleKeyboard();
     void handleRotation();
     void adaptToFixpoint();
+    // Call this when world size has been changed
+    void updateWorldBorders();
 
 private:
     bool targetPosChanged = false;
