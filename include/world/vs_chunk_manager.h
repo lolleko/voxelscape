@@ -62,10 +62,10 @@ public:
 
     struct VSTraceResult
     {
-        bool bHasHit;
-        glm::vec3 hitLocation;
-        glm::vec3 hitNormal;
-        VSBlockID blockID;
+        bool bHasHit = false;
+        glm::vec3 hitLocation = {};
+        glm::vec3 hitNormal = {};
+        VSBlockID blockID = VS_DEFAULT_BLOCK_ID;
     };
 
     VSChunkManager();

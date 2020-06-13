@@ -12,15 +12,23 @@ class VSWorld;
 class VSGame
 {
 public:
-    static const std::string WorldName; 
+    static const std::string WorldName;
+
     void initialize(VSApp* inApp);
+
+    virtual void initializeGame(VSApp* inApp);
 
     [[nodiscard]] VSWorld* initWorld();
 
     void gameLoop();
+
+    virtual void update(float deltaSeconds);
+
     void handleEditor();
 
     void quit();
+
+    VSApp* getApp();
 
 private:
     VSApp* app;
@@ -28,4 +36,6 @@ private:
     VSFrameTimeTracker frameTimeTracker;
 
     std::atomic<bool> bShouldQuit;
+
+    void updateInternal(float deltaSeconds);
 };

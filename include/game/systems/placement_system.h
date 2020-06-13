@@ -6,22 +6,23 @@
 #include "game/components/inputs.h"
 #include "game/components/bounds.h"
 
-void updatePlacementSystem(entt::registry& registry)
+void updatePlacementSystem(entt::registry& mainRegistry, entt::registry& /*buildingRegistry*/)
 {
-    auto& inputs = registry.ctx<Inputs>();
+    auto& inputs = mainRegistry.ctx<Inputs>();
 
-    if (inputs.leftButtonState == InputState::JustUp && inputs.selectedBuilding != Buildings::None)
+    if (inputs.mouseTrace.bHasHit && inputs.leftButtonState == InputState::JustUp &&
+        inputs.selectedBuilding != Buildings::None)
     {
         // TODO check and spend resource
         auto intersect = false;
 
         // Intersect with other entities
-        registry.view<Location, Bounds>().each([&inputs, &intersect](
-                                                   auto /*unused*/,
-                                                   const Location& location,
-                                                   const Bounds& bounds) {
+        mainRegistry.view<Location, Bounds>().each([&inputs, &intersect](
+                                                       auto /*unused*/,
+                                                       const Location& location,
+                                                       const Bounds& bounds) {
             // TODO move bounds check to helper function
-            const auto mouseLocationLocal = inputs.worldMouse - location;
+            const auto mouseLocationLocal = inputs.mouseTrace.hitLocation - location;
             if ((mouseLocationLocal.x >= bounds.min.x && mouseLocationLocal.x <= bounds.max.x) &&
                 (mouseLocationLocal.y >= bounds.min.y && mouseLocationLocal.y <= bounds.max.y) &&
                 (mouseLocationLocal.z >= bounds.min.z && mouseLocationLocal.z <= bounds.max.z))

@@ -1,0 +1,10 @@
+{
+    "uuid": "building_lumberjack",
+    "generators": [
+        {
+            "resource": "lumber",
+            "interval": 1,
+            "amount": 2
+        }
+    ]
+}

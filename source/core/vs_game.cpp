@@ -26,124 +26,144 @@ void VSGame::initialize(VSApp* inApp)
     frameTimeTracker.limitFps(120);
 }
 
+void VSGame::initializeGame(VSApp* inApp)
+{
+    (void)inApp;
+}
+
 void VSGame::gameLoop()
 {
     while (!bShouldQuit)
     {
         frameTimeTracker.startFrame();
 
-        auto* UI = app->getUI();
+        const auto deltaSeconds = frameTimeTracker.getDeltaSeconds();
 
-        if (UI->getState()->bShouldSetEditorActive)
-        {
-            app->setWorldActive(VSEditor::WorldName);
-            UI->getMutableState()->bShouldSetEditorActive = false;
-        }
-        if (UI->getState()->bShouldSetGameActive)
-        {
-            app->setWorldActive(WorldName);
-            UI->getMutableState()->bShouldSetGameActive = false;
-        }
+        updateInternal(deltaSeconds);
 
-        auto* world = app->getWorld();
-
-        // Update world state with ui state
-        if (UI->getState()->bShouldUpdateChunks)
-        {
-            world->getChunkManager()->setChunkDimensions(
-                UI->getState()->chunkSize, UI->getState()->chunkCount);
-            UI->getMutableState()->bShouldUpdateChunks = false;
-        }
-
-        if (UI->getState()->bShouldSaveToFile)
-        {
-            VSChunkManager::VSWorldData worldData = world->getChunkManager()->getData();
-            VSParser::writeToFile(worldData, UI->getState()->saveFilePath);
-            UI->getMutableState()->bShouldSaveToFile = false;
-        }
-
-        if (UI->getState()->bShouldSaveBuilding)
-        {
-            // Extract editor plane and save building
-            VSChunkManager::VSBuildingData buildData = VSEditor::extractBuildFromPlane(world);
-            VSParser::writeBuildToFile(buildData, UI->getState()->saveBuildingPath);
-            UI->getMutableState()->bShouldSaveBuilding = false;
-        }
-
-        if (UI->getState()->bShouldLoadFromFile)
-        {
-            VSChunkManager::VSWorldData worldData =
-                VSParser::readFromFile(UI->getState()->loadFilePath);
-            world->getChunkManager()->setWorldData(worldData);
-            UI->getMutableState()->bShouldLoadFromFile = false;
-        }
-
-        if (UI->getState()->bShouldGenerateTerrain &&
-            !world->getChunkManager()->shouldReinitializeChunks())
-        {
-            if (UI->getState()->bBiomeType == 0)
-            {
-                VSTerrainGeneration::buildMountains(world);
-            }
-            else if (UI->getState()->bBiomeType == 1)
-            {
-                VSTerrainGeneration::buildDesert(world);
-            }
-            UI->getMutableState()->bShouldGenerateTerrain = false;
-
-            if (!UI->getState()->bEditorActive)
-            {
-                // Update Minimap
-                UI->getMutableState()->minimap->updateMinimap(world);
-            }
-
-            // auto* world = app->getWorld();
-
-            // VSChunkManager::VSBuildingData buildData =
-            //     VSParser::readBuildFromFile("resources/buildings/test.json");
-
-            // for (int x = 0; x < buildData.buildSize.x; x++)
-            // {
-            //     for (int y = 0; y < buildData.buildSize.y; y++)
-            //     {
-            //         for (int z = 0; x < buildData.buildSize.z; z++)
-            //         {
-            //             world->getChunkManager()->setBlock(
-            //                 {x, y, z},
-            //                 buildData.blocks
-            //                     [x + y * buildData.buildSize.x +
-            //                      z * buildData.buildSize.x * buildData.buildSize.y]);
-            //         }
-            //     }
-            // }
-        }
-
-        if (UI->getState()->bShouldResetEditor &&
-            !world->getChunkManager()->shouldReinitializeChunks())
-        {
-            // TODO: Clear world
-            // world->getChunkManager()->clearBlocks();
-            VSEditor::setPlaneBlocks(world);
-            UI->getMutableState()->bShouldResetEditor = false;
-        }
-
-        if (UI->getState()->bShouldUpdateBlockID)
-        {
-            // Increment because list starts at 0 and we do not want to set "Air" blocks
-            world->getCameraController()->setEditorBlockID(UI->getState()->bSetBlockID + 1);
-            UI->getMutableState()->bShouldUpdateBlockID = false;
-        }
-
-        // TODO dont pass window as param make abstract input more
-        // to make thread separation clearer
-        if (!UI->getState()->bFileBrowserActive)
-        {
-            app->getInputHandler()->processKeyboardInput(
-                app->getWindow(), frameTimeTracker.getDeltaSeconds());
-        }
+        update(deltaSeconds);
 
         frameTimeTracker.endFrame();
     }
+}
+
+void VSGame::updateInternal(float deltaSeconds)
+{
+    (void)deltaSeconds;
+
+    auto* UI = app->getUI();
+
+    if (UI->getState()->bShouldSetEditorActive)
+    {
+        app->setWorldActive(VSEditor::WorldName);
+        UI->getMutableState()->bShouldSetEditorActive = false;
+    }
+    if (UI->getState()->bShouldSetGameActive)
+    {
+        app->setWorldActive(WorldName);
+        UI->getMutableState()->bShouldSetGameActive = false;
+    }
+
+    auto* world = app->getWorld();
+
+    // Update world state with ui state
+    if (UI->getState()->bShouldUpdateChunks)
+    {
+        world->getChunkManager()->setChunkDimensions(
+            UI->getState()->chunkSize, UI->getState()->chunkCount);
+        UI->getMutableState()->bShouldUpdateChunks = false;
+    }
+
+    if (UI->getState()->bShouldSaveToFile)
+    {
+        VSChunkManager::VSWorldData worldData = world->getChunkManager()->getData();
+        VSParser::writeToFile(worldData, UI->getState()->saveFilePath);
+        UI->getMutableState()->bShouldSaveToFile = false;
+    }
+
+    if (UI->getState()->bShouldSaveBuilding)
+    {
+        // Extract editor plane and save building
+        VSChunkManager::VSBuildingData buildData = VSEditor::extractBuildFromPlane(world);
+        VSParser::writeBuildToFile(buildData, UI->getState()->saveBuildingPath);
+        UI->getMutableState()->bShouldSaveBuilding = false;
+    }
+
+    if (UI->getState()->bShouldLoadFromFile)
+    {
+        VSChunkManager::VSWorldData worldData =
+            VSParser::readFromFile(UI->getState()->loadFilePath);
+        world->getChunkManager()->setWorldData(worldData);
+        UI->getMutableState()->bShouldLoadFromFile = false;
+    }
+
+    if (UI->getState()->bShouldGenerateTerrain &&
+        !world->getChunkManager()->shouldReinitializeChunks())
+    {
+        if (UI->getState()->bBiomeType == 0)
+        {
+            VSTerrainGeneration::buildMountains(world);
+        }
+        else if (UI->getState()->bBiomeType == 1)
+        {
+            VSTerrainGeneration::buildDesert(world);
+        }
+        UI->getMutableState()->bShouldGenerateTerrain = false;
+
+        if (!UI->getState()->bEditorActive)
+        {
+            // Update Minimap
+            UI->getMutableState()->minimap->updateMinimap(world);
+        }
+
+        // auto* world = app->getWorld();
+
+        // VSChunkManager::VSBuildingData buildData =
+        //     VSParser::readBuildFromFile("resources/buildings/test.json");
+
+        // for (int x = 0; x < buildData.buildSize.x; x++)
+        // {
+        //     for (int y = 0; y < buildData.buildSize.y; y++)
+        //     {
+        //         for (int z = 0; x < buildData.buildSize.z; z++)
+        //         {
+        //             world->getChunkManager()->setBlock(
+        //                 {x, y, z},
+        //                 buildData.blocks
+        //                     [x + y * buildData.buildSize.x +
+        //                      z * buildData.buildSize.x * buildData.buildSize.y]);
+        //         }
+        //     }
+        // }
+    }
+
+    if (UI->getState()->bShouldResetEditor && !world->getChunkManager()->shouldReinitializeChunks())
+    {
+        // TODO: Clear world
+        // world->getChunkManager()->clearBlocks();
+        VSEditor::setPlaneBlocks(world);
+        UI->getMutableState()->bShouldResetEditor = false;
+    }
+
+    if (UI->getState()->bShouldUpdateBlockID)
+    {
+        // Increment because list starts at 0 and we do not want to set "Air" blocks
+        world->getCameraController()->setEditorBlockID(UI->getState()->bSetBlockID + 1);
+        UI->getMutableState()->bShouldUpdateBlockID = false;
+    }
+
+    // TODO dont pass window as param make abstract input more
+    // to make thread separation clearer
+    if (!UI->getState()->bFileBrowserActive)
+    {
+        app->getInputHandler()->processKeyboardInput(
+            app->getWindow(), frameTimeTracker.getDeltaSeconds());
+    }
+}
+
+void VSGame::update(float deltaSeconds)
+{
+    (void)deltaSeconds;
 }
 
 void VSGame::handleEditor()
@@ -154,6 +174,11 @@ void VSGame::handleEditor()
 void VSGame::quit()
 {
     bShouldQuit = true;
+}
+
+VSApp* VSGame::getApp()
+{
+    return app;
 }
 
 VSWorld* VSGame::initWorld()
