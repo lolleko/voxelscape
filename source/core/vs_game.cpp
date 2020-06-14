@@ -69,30 +69,6 @@ void VSGame::updateInternal(float deltaSeconds)
 
     auto* world = app->getWorld();
 
-    if (UI->getState()->bShouldGenerateTerrain &&
-        !world->getChunkManager()->shouldReinitializeChunks())
-    {
-        if (UI->getState()->bBiomeType == 0)
-        {
-            VSTerrainGeneration::buildStandard(world);
-        }
-        else if (UI->getState()->bBiomeType == 1)
-        {
-            VSTerrainGeneration::buildMountains(world);
-        }
-        else if (UI->getState()->bBiomeType == 2)
-        {
-            VSTerrainGeneration::buildDesert(world);
-        }
-        UI->getMutableState()->bShouldGenerateTerrain = false;
-
-        if (!UI->getState()->bEditorActive)
-        {
-            // Update Minimap
-            UI->getMutableState()->minimap->updateMinimap(world);
-        }
-    }
-
     // Update world state with ui state
     if (UI->getState()->bShouldUpdateChunks)
     {
