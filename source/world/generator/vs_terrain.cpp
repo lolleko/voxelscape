@@ -8,6 +8,65 @@
 
 namespace VSTerrainGeneration
 {
+    void buildStandard(VSWorld* world)
+    {
+        auto chunkManager = world->getChunkManager();
+        glm::ivec3 worldSize = chunkManager->getWorldSize();
+        glm::ivec3 worldSizeHalf = worldSize / 2;
+        VSHeightmap hm = VSHeightmap(42, worldSize.y, 2, 0.01F, worldSize.y, 4.F, 0.125F);
+
+        std::random_device rd;   // Will be used to obtain a seed for the random number engine
+        std::mt19937 gen(rd());  // Standard mersenne_twister_engine seeded with rd()
+        std::uniform_int_distribution<> dis(0, 300);  // For tree map
+
+        for (int x = -worldSizeHalf.x; x < worldSizeHalf.x; x++)
+        {
+            for (int z = -worldSizeHalf.z; z < worldSizeHalf.z; z++)
+            {
+                int height = hm.getVoxelHeight(x, z);
+                int tree = dis(gen);
+                int blockID = 0;
+                if (height > 2 * worldSize.y / 3)
+                {
+                    // Stone
+                    blockID = 1;
+                }
+                else if (height > worldSize.y / 4)
+                {
+                    // Grass
+                    blockID = 3;
+                }
+                else if (height > worldSize.y / 5)
+                {
+                    // Sand
+                    blockID = 5;
+                }
+                else
+                {
+                    // Water for now
+                    blockID = 2;
+                    height = worldSize.y / 5;
+                }
+
+                for (int y = -worldSizeHalf.y; y < height - worldSizeHalf.y; y++)
+                {
+                    chunkManager->setBlock({x, y, z}, blockID);
+                }
+                if (tree == 0)
+                {
+                    if (height < 2 * worldSize.y / 3 && height > worldSize.y / 4)
+                    {
+                        if (x > -worldSizeHalf.x + 1 && z > -worldSizeHalf.z + 1 &&
+                            x < worldSizeHalf.x - 3 && z < worldSizeHalf.z - 3)
+                        {
+                            treeAt(world, x, height - worldSizeHalf.y, z);
+                        }
+                    }
+                }
+            }
+        }
+    }
+
     void buildMountains(VSWorld* world)
     {
         auto chunkManager = world->getChunkManager();
