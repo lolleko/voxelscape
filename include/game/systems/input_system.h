@@ -56,7 +56,7 @@ void updateInputSystem(entt::registry& registry)
 
     if (newMouseTrace.bHasHit)
     {
-        world->getDebugDraw()->drawSphere(newMouseTrace.hitLocation, 0.25F, {255, 0, 0});
+        // world->getDebugDraw()->drawSphere(newMouseTrace.hitLocation, 0.25F, {255, 0, 0});
     }
 
     const auto newLeftButtonState = calculateMouseStateBasedOnPrevious(
