@@ -28,7 +28,7 @@ jobs:
         uses: actions/cache@v1
         with:
           path: ${{ env.VCPKG_INSTALLATION_ROOT }}/installed
-          key: ${{ hashFiles('**/vcpkg_*.txt) }}-${{ runner.os }}-vcpkg-installed
+          key: ${{ hashFiles('**/vcpkg_*.txt') }}-${{ runner.os }}-vcpkg-installed
       - name: Cache vcpkg packages
         id: vcpkg-packages-cache
         uses: actions/cache@v1
