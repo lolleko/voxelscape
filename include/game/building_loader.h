@@ -75,7 +75,7 @@ namespace BuildingParser
             std::uint32_t amount = generatorJSON.at("amount");
             float interval = generatorJSON.at("interval");
 
-            buildingRegistry.emplace<Generator>(buildingEnt, resource, amount, interval, 0);
+            buildingRegistry.emplace<Generator>(buildingEnt, resource, amount, interval, 0.F);
         }
     };
 
