@@ -93,25 +93,6 @@ void VSGame::updateInternal(float deltaSeconds)
         }
     }
 
-void VSGame::updateInternal(float deltaSeconds)
-{
-    (void)deltaSeconds;
-
-    auto* UI = app->getUI();
-
-    if (UI->getState()->bShouldSetEditorActive)
-    {
-        app->setWorldActive(VSEditor::WorldName);
-        UI->getMutableState()->bShouldSetEditorActive = false;
-    }
-    if (UI->getState()->bShouldSetGameActive)
-    {
-        app->setWorldActive(WorldName);
-        UI->getMutableState()->bShouldSetGameActive = false;
-    }
-
-    auto* world = app->getWorld();
-
     // Update world state with ui state
     if (UI->getState()->bShouldUpdateChunks)
     {
