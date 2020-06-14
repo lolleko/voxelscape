@@ -2,16 +2,16 @@
 
 #include <entt/entity/entity.hpp>
 #include <entt/entt.hpp>
+#include <glm/geometric.hpp>
 
 #include "core/vs_app.h"
 #include "core/vs_input_handler.h"
 #include "core/vs_debug_draw.h"
 #include "core/vs_cameracontroller.h"
-#include "game/buildings.h"
+#include "game/components/inputs.h"
 #include "world/vs_world.h"
 #include "world/vs_chunk_manager.h"
 
-#include "game/components/inputs.h"
 #include "game/components/world_context.h"
 
 InputState calculateMouseStateBasedOnPrevious(InputState previous, bool bIsClicked)
@@ -42,7 +42,7 @@ void updateInputSystem(entt::registry& registry)
             inputHandler->isLeftMouseClicked() ? InputState::Down : InputState::Up,
             inputHandler->isRightMouseClicked() ? InputState::Down : InputState::Up,
             entt::null,
-            Buildings::None);
+            "null");
     }
 
     const auto& previousInputs = registry.ctx<Inputs>();
@@ -66,5 +66,6 @@ void updateInputSystem(entt::registry& registry)
         newLeftButtonState,
         newRightButtonState,
         previousInputs.hoverEntity,
+        // TODO get building string from UI State!
         previousInputs.selectedBuilding);
 }

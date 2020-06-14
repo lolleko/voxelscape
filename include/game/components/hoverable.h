@@ -1,8 +1,8 @@
 #pragma once
 
-#include <glm/vec3.hpp>
+#include "game/color.h"
 
 struct Hoverable
 {
-    glm::vec<3, std::byte> hoverColor;
+    Color hoverColor;
 };

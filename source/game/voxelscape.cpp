@@ -20,7 +20,12 @@ void Voxelscape::update(float deltaSeconds)
     // after initailization otherwhise this could crash
     if (getApp()->getWorldName() == VSGame::WorldName)
     {
-        mainRegistry.set<WorldContext>(getApp()->getWorld(), deltaSeconds);
+        mainRegistry.set<WorldContext>(
+            getApp()->getWorld(),
+            deltaSeconds,
+            Bounds{
+                -getApp()->getWorld()->getChunkManager()->getWorldSize() / 2,
+                getApp()->getWorld()->getChunkManager()->getWorldSize() / 2});
         updateInputSystem(mainRegistry);
         updateHoverSystem(mainRegistry);
         updatePlacementSystem(mainRegistry, buildingRegistry);

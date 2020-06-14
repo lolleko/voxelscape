@@ -8,7 +8,6 @@
 #include "game/components/hoverable.h"
 #include "game/components/bounds.h"
 #include "world/vs_world.h"
-#include "game/util/math.h"
 
 void updateHoverSystem(entt::registry& registry)
 {
@@ -24,7 +23,7 @@ void updateHoverSystem(entt::registry& registry)
                                                               const Location& location,
                                                               const Bounds& bounds) {
             const auto mouseLocationLocal = inputs.mouseTrace.hitLocation - location;
-            if (isLocationInBounds(mouseLocationLocal, bounds))
+            if (bounds.isLocationInside(mouseLocationLocal))
             {
                 inputs.hoverEntity = entity;
                 // Add visual indicator

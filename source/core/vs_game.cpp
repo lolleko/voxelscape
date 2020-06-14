@@ -24,6 +24,8 @@ void VSGame::initialize(VSApp* inApp)
 {
     app = inApp;
     frameTimeTracker.limitFps(120);
+
+    initializeGame(inApp);
 }
 
 void VSGame::initializeGame(VSApp* inApp)

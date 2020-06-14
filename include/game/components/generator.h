@@ -2,11 +2,11 @@
 
 #include <cstdint>
 #include <glm/vec3.hpp>
-#include "game/resources.h"
+#include "game/components/unique.h"
 
 struct Generator
 {
-    Resources resource;
+    Unique resource;
     std::uint32_t amount;
     float interval;
     float lastGeneration;

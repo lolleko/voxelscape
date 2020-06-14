@@ -2,9 +2,10 @@
 
 #include <entt/entt.hpp>
 #include <filesystem>
+#include <glm/fwd.hpp>
 #include <nlohmann/json.hpp>
 
-#include "game/resources.h"
+#include "core/vs_log.h"
 #include "ui/vs_parser.h"
 #include "world/vs_chunk_manager.h"
 
@@ -32,8 +33,12 @@ namespace BuildingParser
         const auto blocks = VSParser::readBuildFromFile(blocksFilePath);
 
         buildingRegistry.assign<Blocks>(buildingEnt, blocks.blocks, blocks.buildSize);
+        const glm::vec2 boundsXZ = {
+            (glm::vec3(blocks.buildSize) / 2.F).x, (glm::vec3(blocks.buildSize) / 2.F).z};
         buildingRegistry.assign<Bounds>(
-            buildingEnt, -glm::vec3(blocks.buildSize) / 2.F, glm::vec3(blocks.buildSize) / 2.F);
+            buildingEnt,
+            -glm::vec3(boundsXZ.x, 0.F, boundsXZ.y),
+            glm::vec3(boundsXZ.x, blocks.buildSize.y, boundsXZ.y));
 
         const auto componentsFilePath = buildingDirectory / "components.json";
         if (!std::filesystem::exists(componentsFilePath))
@@ -51,6 +56,8 @@ namespace BuildingParser
         nlohmann::json componentJson;
         componentsFile >> componentJson;
 
+        VSLog::Log(VSLog::Category::Core, VSLog::Level::info, "{0}", componentJson.dump(4));
+
         if (!componentJson.contains("uuid"))
         {
             // TODO handle
@@ -58,22 +65,18 @@ namespace BuildingParser
             return;
         }
 
-        buildingRegistry.assign<Unique>(componentJson.at("uuid"));
+        buildingRegistry.assign<Unique>(buildingEnt, componentJson.at("uuid"));
 
-        const auto generators = componentJson.find("generators");
-        if (generators != componentJson.end() && generators->is_array())
+        if (componentJson.contains("generator"))
         {
-            for (auto& generator : generators.value())
-            {
-                // TODO translate strings to enums (get actual resource)
-                Resources resource = Resources::Lumber;
-                std::uint32_t amount = generator.at("amount");
-                float interval = generator.at("interval");
-                float lastGeneration = 0;
+            const auto generatorJSON = componentJson.at("generator");
 
-                buildingRegistry.assign<Generator>(
-                    buildingEnt, resource, amount, interval, lastGeneration);
-            }
+            buildingRegistry.assign<Generator>(
+                buildingEnt,
+                generatorJSON.at("resource"),
+                generatorJSON.at("amount"),
+                generatorJSON.at("interval"),
+                0);
         }
     };
 
