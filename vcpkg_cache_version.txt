@@ -1,2 +1,2 @@
-# Can be used to for update github actions vcpkg cache
+# Can be used to force update github actions vcpkg cache
 V0.0.1
