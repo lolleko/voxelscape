@@ -1,9 +1,8 @@
 #pragma once
 
-#include <GLFW/glfw3.h>
 #include <glm/fwd.hpp>
 
-#include "game/components/inputs.h"
+struct GLFWwindow;
 
 class VSInputHandler
 {
@@ -77,7 +76,8 @@ public:
 private:
     float keyDeltaTime = 0.F;
 
-    // Not really user input but corresponds to resizing the window and currently this data is not kept anywhere else
+    // Not really user input but corresponds to resizing the window and currently this data is not
+    // kept anywhere else
     int displayWidth = 0;
     int displayHeight = 0;
 

@@ -28,13 +28,13 @@ jobs:
         uses: actions/cache@v1
         with:
           path: ${{ env.VCPKG_INSTALLATION_ROOT }}/installed
-          key: ${{ hashFiles('**/vcpkg_response_file.txt') }}-${{ runner.os }}-vcpkg-installed
+          key: ${{ hashFiles('**/vcpkg_*.txt') }}-${{ runner.os }}-vcpkg-installed
       - name: Cache vcpkg packages
         id: vcpkg-packages-cache
         uses: actions/cache@v1
         with:
           path: ${{ env.VCPKG_INSTALLATION_ROOT }}/packages
-          key: ${{ hashFiles('**/vcpkg_response_file.txt') }}-${{ runner.os }}-vcpkg-packages
+          key: ${{ hashFiles('**/vcpkg_*.txt') }}-${{ runner.os }}-vcpkg-packages
       - run: sudo apt install libxinerama-dev libxcursor-dev xorg-dev libglu1-mesa-dev && sudo update-alternatives --install /usr/bin/c++ c++ /usr/bin/clang++-9 100 && sudo update-alternatives --set c++ /usr/bin/clang++-9
         if: matrix.os == 'ubuntu-latest'
       - run: brew install libomp
