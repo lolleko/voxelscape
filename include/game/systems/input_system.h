@@ -54,7 +54,10 @@ void updateInputSystem(entt::registry& registry)
 
     const auto newMouseTrace = world->getChunkManager()->lineTrace(worldPosNear, worldPosFar);
 
-    world->getDebugDraw()->drawSphere(newMouseTrace.hitLocation, 0.25F, {255, 0, 0});
+    if (newMouseTrace.bHasHit)
+    {
+        world->getDebugDraw()->drawSphere(newMouseTrace.hitLocation, 0.25F, {255, 0, 0});
+    }
 
     const auto newLeftButtonState = calculateMouseStateBasedOnPrevious(
         previousInputs.leftButtonState, inputHandler->isLeftMouseClicked());
