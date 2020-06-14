@@ -23,6 +23,7 @@
 
 #include "world/vs_chunk_manager.h"
 
+#include "game/voxelscape.h"
 #include "ui/vs_ui.h"
 #include "ui/vs_ui_state.h"
 #include "world/vs_block.h"
@@ -82,7 +83,10 @@ int VSApp::initialize()
 
     VSLog::Log(VSLog::Category::Core, VSLog::Level::info, "Successfully initialized logger");
 
-    game = new VSGame();
+    // TODO this has t be refactored at some point
+    // we should might move editor and menu to seperate "game" classes?
+    // If we have time not that important
+    game = new Voxelscape();
     game->initialize(this);
 
     addWorld(VSMenu::WorldName, VSMenu::initWorld());
@@ -140,7 +144,7 @@ int VSApp::initializeGLFW()
         return 1;
     }
 
-    // create input handler 
+    // create input handler
     inputHandler = new VSInputHandler(width, height);
 
     glfwMakeContextCurrent(window);

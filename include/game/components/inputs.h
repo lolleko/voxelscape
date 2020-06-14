@@ -4,7 +4,8 @@
 
 #include <entt/entity/fwd.hpp>
 #include "game/components/location.h"
-#include "game/buildings.h"
+#include "game/components/unique.h"
+#include "world/vs_chunk_manager.h"
 
 enum class InputState
 {
@@ -16,7 +17,7 @@ enum class InputState
 
 struct Inputs
 {
-    Location worldMouse;
+    VSChunkManager::VSTraceResult mouseTrace;
 
     // Button/Key states
     InputState leftButtonState;
@@ -24,5 +25,5 @@ struct Inputs
 
     entt::entity hoverEntity;
 
-    Buildings selectedBuilding;
+    Unique selectedBuilding;
 };
