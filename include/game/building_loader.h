@@ -71,12 +71,11 @@ namespace BuildingParser
         {
             const auto generatorJSON = componentJson.at("generator");
 
-            buildingRegistry.emplace<Generator>(
-                buildingEnt,
-                generatorJSON.at("resource"),
-                generatorJSON.at("amount"),
-                generatorJSON.at("interval"),
-                0);
+            std::string resource = generatorJSON.at("resource");
+            std::uint32_t amount = generatorJSON.at("amount");
+            float interval = generatorJSON.at("itnerval");
+
+            buildingRegistry.emplace<Generator>(buildingEnt, resource, amount, interval, 0);
         }
     };
 
