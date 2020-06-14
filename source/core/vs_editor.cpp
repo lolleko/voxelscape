@@ -102,7 +102,7 @@ namespace VSEditor
                 for (int y = -worldSizeHalf.y; y < worldSizeHalf.y; y++)
                 {
                     int blockID = editorWorld->getChunkManager()->getBlock({x, y, z});
-                    if (blockID > 1 || (blockID != 0 && y != 0))
+                    if (blockID > 1 || (blockID != 0 && y != -worldSizeHalf.y))
                     {
                         xMin = std::min(xMin, x);
                         yMin = std::min(yMin, y);
