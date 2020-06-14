@@ -66,11 +66,11 @@ void updatePlacementSystem(entt::registry& mainRegistry, entt::registry& buildin
                     buildingTemplateRegistry.get<Blocks, Generator>(selectedBuildingTemplate);
 
                 const auto buildingInstance = mainRegistry.create();
-                mainRegistry.assign<Location>(buildingInstance, newBuildingLocation);
-                mainRegistry.assign<Bounds>(buildingInstance, selectedBuildingTemplateBounds);
-                mainRegistry.assign<Blocks>(buildingInstance, templateBlocks);
-                mainRegistry.assign<Generator>(buildingInstance, templateGenerator);
-                mainRegistry.assign<Hoverable>(buildingInstance, Color(255, 0, 0));
+                mainRegistry.emplace<Location>(buildingInstance, newBuildingLocation);
+                mainRegistry.emplace<Bounds>(buildingInstance, selectedBuildingTemplateBounds);
+                mainRegistry.emplace<Blocks>(buildingInstance, templateBlocks);
+                mainRegistry.emplace<Generator>(buildingInstance, templateGenerator);
+                mainRegistry.emplace<Hoverable>(buildingInstance, Color(255, 0, 0));
 
                 for (int x = 0; x < templateBlocks.size.x; x++)
                 {

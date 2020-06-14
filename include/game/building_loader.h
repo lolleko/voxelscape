@@ -32,10 +32,10 @@ namespace BuildingParser
 
         const auto blocks = VSParser::readBuildFromFile(blocksFilePath);
 
-        buildingRegistry.assign<Blocks>(buildingEnt, blocks.blocks, blocks.buildSize);
+        buildingRegistry.emplace<Blocks>(buildingEnt, blocks.blocks, blocks.buildSize);
         const glm::vec2 boundsXZ = {
             (glm::vec3(blocks.buildSize) / 2.F).x, (glm::vec3(blocks.buildSize) / 2.F).z};
-        buildingRegistry.assign<Bounds>(
+        buildingRegistry.emplace<Bounds>(
             buildingEnt,
             -glm::vec3(boundsXZ.x, 0.F, boundsXZ.y),
             glm::vec3(boundsXZ.x, blocks.buildSize.y, boundsXZ.y));
@@ -65,13 +65,13 @@ namespace BuildingParser
             return;
         }
 
-        buildingRegistry.assign<Unique>(buildingEnt, componentJson.at("uuid"));
+        buildingRegistry.emplace<Unique>(buildingEnt, componentJson.at("uuid"));
 
         if (componentJson.contains("generator"))
         {
             const auto generatorJSON = componentJson.at("generator");
 
-            buildingRegistry.assign<Generator>(
+            buildingRegistry.emplace<Generator>(
                 buildingEnt,
                 generatorJSON.at("resource"),
                 generatorJSON.at("amount"),
