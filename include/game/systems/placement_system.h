@@ -26,9 +26,9 @@ void updatePlacementSystem(entt::registry& mainRegistry, entt::registry& buildin
     {
         entt::entity selectedBuildingTemplate = entt::null;
         buildingTemplateRegistry.view<Unique>().each(
-            [&selectedBuildingTemplate](const auto ent, const Unique& unique) {
+            [&selectedBuildingTemplate, &inputs](const auto ent, const Unique& unique) {
                 // TODO comparew with inputContext selected buildings
-                if (unique.uuid == "building_lumberjack")
+                if (unique.uuid == inputs.selectedBuilding.uuid)
                 {
                     selectedBuildingTemplate = ent;
                 }

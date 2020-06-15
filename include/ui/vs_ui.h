@@ -35,9 +35,16 @@ public:
 private:
     VSUIState* uiState;
 
+    // Textures, move to struct maybe
     unsigned int minimapTexture;
     unsigned int woodResourceTexture;
     unsigned int stoneResourceTexture;
+    unsigned int lumberjackIcon;
+    const std::string lumberjackBuildingName = "building_lumberjack";
+    unsigned int stonemineIcon;
+    const std::string stonemineBuildingName = "building_stonemine";
+    ImVec4 buttonClickedColor = ImVec4(0.8F, 0.2F, 0.2F, 1.0F);
+
 
     ImFont* menuFont;
     ImFont* debugFont;

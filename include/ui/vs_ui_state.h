@@ -54,4 +54,7 @@ struct VSUIState
     VSMinimap* minimap = new VSMinimap();
     bool minimapChanged = false;
     unsigned int minimapTexture = 0;
+
+    // Selected building string
+    std::string selectedBuilding = "";
 };

@@ -8,6 +8,8 @@
 #include "core/vs_input_handler.h"
 #include "core/vs_debug_draw.h"
 #include "core/vs_cameracontroller.h"
+#include "ui/vs_ui.h"
+#include "ui/vs_ui_state.h"
 #include "game/components/inputs.h"
 #include "world/vs_world.h"
 #include "world/vs_chunk_manager.h"
@@ -32,6 +34,7 @@ InputState calculateMouseStateBasedOnPrevious(InputState previous, bool bIsClick
 void updateInputSystem(entt::registry& registry)
 {
     const auto* inputHandler = VSApp::getInstance()->getInputHandler();
+    auto* UI = VSApp::getInstance()->getUI();
 
     // at startup we wont have a previousInput -> create one
     const auto* previousInputsPtr = registry.try_ctx<Inputs>();
@@ -64,11 +67,12 @@ void updateInputSystem(entt::registry& registry)
     const auto newRightButtonState = calculateMouseStateBasedOnPrevious(
         previousInputs.rightButtonState, inputHandler->isRightMouseClicked());
 
+    const auto newSelectedBuilding = UI->getState()->selectedBuilding;
+
     registry.set<Inputs>(
         newMouseTrace,
         newLeftButtonState,
         newRightButtonState,
         previousInputs.hoverEntity,
-        // TODO get building string from UI State!
-        previousInputs.selectedBuilding);
+        newSelectedBuilding);
 }
