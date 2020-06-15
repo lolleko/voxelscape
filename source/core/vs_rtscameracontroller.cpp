@@ -26,7 +26,7 @@ VSRTSCameraController::VSRTSCameraController(
     lastYScrollOffset = radius;
 }
 
-void VSRTSCameraController::updateCamera()
+void VSRTSCameraController::updateCamera(bool handleMouseEvents)
 {
     if (!inputHandler)
     {
@@ -38,7 +38,7 @@ void VSRTSCameraController::updateCamera()
 
     // Handeling sequence must not be changed
 
-    handleScroll();
+    handleScroll(handleMouseEvents);
 
     // Calculate old sphere coordinates offset
     glm::vec3 oldSphere;
@@ -136,27 +136,30 @@ void VSRTSCameraController::setFocalPoint(glm::vec3 newFocalPoint)
     }
 }
 
-void VSRTSCameraController::handleScroll()
+void VSRTSCameraController::handleScroll(bool handleMouseEvents)
 {
     float newYOffset = inputHandler->getYScrollOffset();
-    float yOffset = lastYScrollOffset - newYOffset;
-    float oldRadius = radius;
-    if (radius >= minRadius && radius <= maxRadius && yOffset != 0)
+    if (handleMouseEvents)
     {
-        radius -= yOffset;
-    }
-    if (radius <= minRadius)
-    {
-        radius = minRadius;
-    }
-    if (radius >= maxRadius)
-    {
-        radius = maxRadius;
-    }
-    if (oldRadius != radius)
-    {
-        targetPosition -= cam->getFront() * (radius - oldRadius);
-        targetPosChanged = true;
+        float yOffset = lastYScrollOffset - newYOffset;
+        float oldRadius = radius;
+        if (radius >= minRadius && radius <= maxRadius && yOffset != 0)
+        {
+            radius -= yOffset;
+        }
+        if (radius <= minRadius)
+        {
+            radius = minRadius;
+        }
+        if (radius >= maxRadius)
+        {
+            radius = maxRadius;
+        }
+        if (oldRadius != radius)
+        {
+            targetPosition -= cam->getFront() * (radius - oldRadius);
+            targetPosChanged = true;
+        }
     }
     lastYScrollOffset = newYOffset;
 }
@@ -245,7 +248,7 @@ void VSRTSCameraController::adaptToFixpoint()
     {
         // Restrict position to map
         glm::vec3 worldSize = world->getChunkManager()->getWorldSize();
-        if (targetPosition.x <= - worldSize.x / 2)
+        if (targetPosition.x <= -worldSize.x / 2)
         {
             targetPosition.x = -worldSize.x / 2;
         }
@@ -253,7 +256,7 @@ void VSRTSCameraController::adaptToFixpoint()
         {
             targetPosition.x = worldSize.x / 2;
         }
-        if (targetPosition.z <= - worldSize.z / 2)
+        if (targetPosition.z <= -worldSize.z / 2)
         {
             targetPosition.z = -worldSize.z / 2;
         }

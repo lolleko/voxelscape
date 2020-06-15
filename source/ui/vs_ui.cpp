@@ -331,6 +331,11 @@ void VSUI::renderGameGUI()
     ImGui::SetNextWindowPos(ImVec2(0, menuBarHeight), ImGuiCond_Always, ImVec2(0.F, 0.F));
     ImGui::SetNextWindowSize(ImVec2(0.F, 0.F));
     ImGui::Begin("Select building", 0, ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove);
+    if (ImGui::IsWindowCollapsed())
+    {
+        // Do not set building if collapsed
+        uiState->selectedBuilding = "";
+    }
     // Building types
     bool styleColorPushed = false;
     if (uiState->selectedBuilding == lumberjackBuildingName)

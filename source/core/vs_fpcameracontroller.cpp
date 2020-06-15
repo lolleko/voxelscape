@@ -19,7 +19,7 @@ VSFPCameraController::VSFPCameraController(
     lastYScrollOffset = 0.F;
 }
 
-void VSFPCameraController::updateCamera()
+void VSFPCameraController::updateCamera(bool handleMouseEvents)
 {
     if (!inputHandler)
     {
@@ -29,25 +29,29 @@ void VSFPCameraController::updateCamera()
     // Handle scroll
     {
         float newYOffset = inputHandler->getYScrollOffset();
-        float yOffset = lastYScrollOffset - newYOffset;
-        float zoom = cam->getZoom();
-        if (zoom >= 1.0F && zoom <= 45.0F)
+        if (handleMouseEvents)
         {
-            zoom -= yOffset;
+            float yOffset = lastYScrollOffset - newYOffset;
+            float zoom = cam->getZoom();
+            if (zoom >= 1.0F && zoom <= 45.0F)
+            {
+                zoom -= yOffset;
+            }
+            if (zoom <= 1.0F)
+            {
+                zoom = 1.0F;
+            }
+            if (zoom >= 45.0F)
+            {
+                zoom = 45.0F;
+            }
+            cam->setZoom(zoom);
         }
-        if (zoom <= 1.0F)
-        {
-            zoom = 1.0F;
-        }
-        if (zoom >= 45.0F)
-        {
-            zoom = 45.0F;
-        }
-        cam->setZoom(zoom);
         lastYScrollOffset = newYOffset;
     }
 
     // Handle rotation
+    if (handleMouseEvents)
     {
         float xPos = inputHandler->getMouseX();
         float yPos = inputHandler->getMouseY();

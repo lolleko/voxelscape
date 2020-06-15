@@ -26,8 +26,14 @@ namespace VSEditor
         return editorWorld;
     }
 
-    void handleBlockPlacement(VSInputHandler* inputHandler, VSWorld* world)
+    void handleBlockPlacement(VSInputHandler* inputHandler, VSWorld* world, bool windowHovered)
     {
+        if (windowHovered)
+        {
+            // We do not handle the right click
+            inputHandler->handleRightClick();
+        }
+        
         glm::vec3 worldPosNear = world->getCameraController()->getCameraInWorldCoords();
         glm::vec3 worldPosFar = world->getCameraController()->getMouseFarInWorldCoords();
 
