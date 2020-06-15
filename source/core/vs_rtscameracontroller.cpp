@@ -53,6 +53,10 @@ void VSRTSCameraController::updateCamera(bool handleMouseEvents)
 
     handleRotation();
 
+    handleFramebufferResize();
+
+    handleKeyboard();
+
     float smoothedYaw = glm::lerp(cam->getYaw(), targetYaw, smoothSpeed);
 
     // Calculate new sphere coordinates
@@ -71,10 +75,6 @@ void VSRTSCameraController::updateCamera(bool handleMouseEvents)
         targetPosition += (newSphere - oldSphere);
         targetPosChanged = true;
     }
-
-    handleFramebufferResize();
-
-    handleKeyboard();
 
     // Calculate mouse coords in world space
     {
@@ -204,6 +204,17 @@ void VSRTSCameraController::handleKeyboard()
     {
         glm::vec3 right = cam->getRight();
         targetPosition += right * velocity;
+        targetPosChanged = true;
+    }
+
+    if (keyFlags & VSInputHandler::KEY_Q)
+    {
+        targetYaw += velocity;
+        targetPosChanged = true;
+    }
+    if (keyFlags & VSInputHandler::KEY_E)
+    {
+        targetYaw -= velocity;
         targetPosChanged = true;
     }
 }
