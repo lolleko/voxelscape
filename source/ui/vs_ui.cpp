@@ -310,7 +310,6 @@ void VSUI::renderGameConfigGUI()
     ImGui::PopFont();
 }
 
-#include <iostream>
 void VSUI::renderGameGUI()
 {
     float menuBarHeight = 0.F;

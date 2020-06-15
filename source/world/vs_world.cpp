@@ -3,7 +3,6 @@
 #include <cmath>
 #include <glm/fwd.hpp>
 #include <glm/geometric.hpp>
-#include <iostream>
 #include <limits>
 #include <memory>
 
