@@ -42,6 +42,7 @@ void updateInputSystem(entt::registry& registry)
     {
         registry.set<Inputs>(
             VSChunkManager::VSTraceResult{},
+            UI->getState()->anyWindowHovered,
             inputHandler->isLeftMouseClicked() ? InputState::Down : InputState::Up,
             inputHandler->isRightMouseClicked() ? InputState::Down : InputState::Up,
             entt::null,
@@ -69,8 +70,11 @@ void updateInputSystem(entt::registry& registry)
 
     const auto newSelectedBuilding = UI->getState()->selectedBuilding;
 
+    const auto isAnyWindowHovered = UI->getState()->anyWindowHovered;
+
     registry.set<Inputs>(
         newMouseTrace,
+        isAnyWindowHovered,
         newLeftButtonState,
         newRightButtonState,
         previousInputs.hoverEntity,

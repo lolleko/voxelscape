@@ -50,6 +50,7 @@ struct VSUIState
 
     // Game config
     int worldSize = 0;  // 0 = Small, 1 = Medium, 2 = Large
+    bool anyWindowHovered = false;
     // TODO: Not to sure if this belongs here
     VSMinimap* minimap = new VSMinimap();
     bool minimapChanged = false;

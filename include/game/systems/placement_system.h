@@ -22,7 +22,7 @@ void updatePlacementSystem(entt::registry& mainRegistry, entt::registry& buildin
     const auto mouseLocation = glm::floor(inputs.mouseTrace.hitLocation);
 
     if (inputs.mouseTrace.bHasHit && inputs.leftButtonState == InputState::JustUp &&
-        worldContext.bounds.isLocationInside(mouseLocation))
+        !inputs.anyWindowHovered && worldContext.bounds.isLocationInside(mouseLocation))
     {
         entt::entity selectedBuildingTemplate = entt::null;
         buildingTemplateRegistry.view<Unique>().each(

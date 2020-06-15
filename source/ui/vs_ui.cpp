@@ -102,6 +102,9 @@ void VSUI::render()
         renderDebugGUI();
     }
 
+    // Check if any window is hovered
+    uiState->anyWindowHovered = ImGui::IsWindowHovered(ImGuiHoveredFlags_AnyWindow);
+
     // Rendering
     ImGui::Render();
 }
