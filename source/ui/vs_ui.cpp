@@ -335,7 +335,7 @@ void VSUI::renderGameGUI()
         ImGui::PushStyleColor(ImGuiCol_Button, buttonClickedColor);
         styleColorPushed = true;
     }
-    if (ImGui::ImageButton((void*)(intptr_t)lumberjackIcon, ImVec2(32, 32)))
+    if (ImGui::ImageButton((void*)(intptr_t)lumberjackIcon, ImVec2(64, 64)))
     {
         // Set lumberjack building name
         uiState->selectedBuilding = lumberjackBuildingName;
@@ -351,7 +351,7 @@ void VSUI::renderGameGUI()
         ImGui::PushStyleColor(ImGuiCol_Button, buttonClickedColor);
         styleColorPushed = true;
     }
-    if (ImGui::ImageButton((void*)(intptr_t)stonemineIcon, ImVec2(32, 32)))
+    if (ImGui::ImageButton((void*)(intptr_t)stonemineIcon, ImVec2(64, 64)))
     {
         // Set stonemine building name
         uiState->selectedBuilding = stonemineBuildingName;
