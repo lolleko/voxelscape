@@ -4,6 +4,7 @@
 #include <atomic>
 #include <cstddef>
 #include <cstdint>
+#include <glm/fwd.hpp>
 #include <numeric>
 #include <array>
 #include <glm/gtx/norm.hpp>
@@ -66,9 +67,43 @@ VSChunkManager::VSChunkManager()
         glVertexAttribIPointer(
             nextAttribPointer,
             1,
-            GL_BYTE,
+            GL_UNSIGNED_BYTE,
             sizeof(VSChunk::VSVisibleBlockInfo),
             (void*)offsetof(VSChunk::VSVisibleBlockInfo, id));
+        glVertexAttribDivisor(nextAttribPointer, 1);
+
+        nextAttribPointer++;
+
+        glEnableVertexAttribArray(nextAttribPointer);
+        glVertexAttribPointer(
+            nextAttribPointer,
+            1,
+            GL_UNSIGNED_BYTE,
+            GL_TRUE,
+            sizeof(VSChunk::VSVisibleBlockInfo),
+            (void*)offsetof(VSChunk::VSVisibleBlockInfo, lightLevel));
+        glVertexAttribDivisor(nextAttribPointer, 1);
+
+        nextAttribPointer++;
+
+        glEnableVertexAttribArray(nextAttribPointer);
+        glVertexAttribIPointer(
+            nextAttribPointer,
+            1,
+            GL_UNSIGNED_INT,
+            sizeof(VSChunk::VSVisibleBlockInfo),
+            (void*)offsetof(VSChunk::VSVisibleBlockInfo, vc));
+        glVertexAttribDivisor(nextAttribPointer, 1);
+
+        nextAttribPointer++;
+
+        glEnableVertexAttribArray(nextAttribPointer);
+        glVertexAttribIPointer(
+            nextAttribPointer,
+            1,
+            GL_UNSIGNED_INT,
+            sizeof(VSChunk::VSVisibleBlockInfo),
+            (void*)offsetof(VSChunk::VSVisibleBlockInfo, vd));
         glVertexAttribDivisor(nextAttribPointer, 1);
 
         glBindVertexArray(0);
@@ -689,8 +724,10 @@ bool VSChunkManager::updateVisibleBlocks(std::size_t chunkIndex)
                                         glm::vec3(blockIndexToBlockCoordinates(blockIndex)) +
                                         glm::vec3(0.5F) - glm::vec3(chunkSize) / 2.F;
 
-                    const auto blockInfo =
-                        VSChunk::VSVisibleBlockInfo{offset, chunk->blocks[blockIndex]};
+                    const auto [vc, vd] = getAdjacencyInformation(offset);
+                    std::cout << vc << " " << vd << std::endl;
+                    const auto blockInfo = VSChunk::VSVisibleBlockInfo{
+                        offset, chunk->blocks[blockIndex], 255 /* TODO lightlevel */, vc, vd};
 
 #pragma omp critical
                     chunk->visibleBlockInfos[blockType].emplace_back(blockInfo);
@@ -780,12 +817,7 @@ std::uint8_t VSChunkManager::isBorderBlockVisible(
 {
     const auto blockWorldCoordinates =
         blockCoordinatesToWorldCoordinates(chunkIndex, blockCoordinates);
-    if (blockWorldCoordinates.x == -worldSizeHalf.x ||
-        blockWorldCoordinates.x == worldSizeHalf.x - 1 ||
-        blockWorldCoordinates.y == -worldSizeHalf.y ||
-        blockWorldCoordinates.y == worldSizeHalf.y - 1 ||
-        blockWorldCoordinates.z == -worldSizeHalf.z ||
-        blockWorldCoordinates.z == worldSizeHalf.z - 1)
+    if (isAtWorldBorder(blockWorldCoordinates))
     {
         if (blockWorldCoordinates.y + 1 < worldSizeHalf.y &&
             getBlock(blockWorldCoordinates + glm::ivec3(0, 1, 0)) == VS_DEFAULT_BLOCK_ID)
@@ -819,6 +851,101 @@ std::uint8_t VSChunkManager::isBorderBlockVisible(
     encoded |= static_cast<int>(getBlock(bottom) == VS_DEFAULT_BLOCK_ID) << VSCubeFace::Bottom;
     encoded |= static_cast<int>(getBlock(front) == VS_DEFAULT_BLOCK_ID) << VSCubeFace::Front;
     encoded |= static_cast<int>(getBlock(back) == VS_DEFAULT_BLOCK_ID) << VSCubeFace::Back;
+
+    return encoded;
+}
+
+bool VSChunkManager::isAtWorldBorder(const glm::ivec3& blockWorldCoordinates) const
+{
+    return blockWorldCoordinates.x == -worldSizeHalf.x ||
+           blockWorldCoordinates.x == worldSizeHalf.x - 1 ||
+           blockWorldCoordinates.y == -worldSizeHalf.y ||
+           blockWorldCoordinates.y == worldSizeHalf.y - 1 ||
+           blockWorldCoordinates.z == -worldSizeHalf.z ||
+           blockWorldCoordinates.z == worldSizeHalf.z - 1;
+}
+
+std::tuple<std::uint32_t, std::uint32_t>
+VSChunkManager::getAdjacencyInformation(const glm::vec3& blockCoordinates) const
+{
+    std::uint32_t vc = 0;
+    std::uint32_t vd = 0;
+
+    const auto right = getAdjacencyInformationForFace(blockCoordinates, {1, 0, 0});
+    vc |= (right[0] | right[1] << 1 | right[2] << 2 | right[3] << 3);
+    vd |= (right[4] | right[5] << 1 | right[6] << 2 | right[7] << 3);
+
+    const auto left = getAdjacencyInformationForFace(blockCoordinates, {-1, 0, 0});
+    vc |= (left[0] | left[1] << 1 | left[2] << 2 | left[3] << 3) << 4;
+    vd |= (left[4] | left[5] << 1 | left[6] << 2 | left[7] << 3) << 4;
+
+    const auto top = getAdjacencyInformationForFace(blockCoordinates, {0, 1, 0});
+    vc |= (top[0] | top[1] << 1 | top[2] << 2 | top[3] << 3) << 8;
+    vd |= (top[4] | top[5] << 1 | top[6] << 2 | top[7] << 3) << 8;
+
+    const auto bottom = getAdjacencyInformationForFace(blockCoordinates, {0, -1, 0});
+    vc |= (bottom[0] | bottom[1] << 1 | bottom[2] << 2 | bottom[3] << 3) << 12;
+    vd |= (bottom[4] | bottom[5] << 1 | bottom[6] << 2 | bottom[7] << 3) << 12;
+
+    const auto front = getAdjacencyInformationForFace(blockCoordinates, {0, 0, 1});
+    vc |= (front[0] | front[1] << 1 | front[2] << 2 | front[3] << 3) << 16;
+    vd |= (front[4] | front[5] << 1 | front[6] << 2 | front[7] << 3) << 16;
+
+    const auto back = getAdjacencyInformationForFace(blockCoordinates, {0, 0, -1});
+    vc |= (back[0] | back[1] << 1 | back[2] << 2 | back[3] << 3) << 20;
+    vd |= (back[4] | back[5] << 1 | back[6] << 2 | back[7] << 3) << 20;
+
+    return {vc, vd};
+}
+
+std::bitset<8> VSChunkManager::getAdjacencyInformationForFace(
+    const glm::vec3& blockWorldCoordinates,
+    const glm::vec3& faceDir) const
+{
+    const auto neighboublockWorldCoordinates = blockWorldCoordinates + faceDir;
+    const auto dirUnsigned = -glm::abs(faceDir);
+    if (!isLocationInBounds(neighboublockWorldCoordinates))
+    {
+        return {0};
+    }
+
+    const auto right =
+        neighboublockWorldCoordinates + glm::vec3(dirUnsigned.y, dirUnsigned.z, dirUnsigned.x);
+
+    const auto left =
+        neighboublockWorldCoordinates - glm::vec3(dirUnsigned.y, dirUnsigned.z, dirUnsigned.x);
+
+    const auto front =
+        neighboublockWorldCoordinates + glm::vec3(dirUnsigned.z, dirUnsigned.x, dirUnsigned.y);
+
+    const auto back =
+        neighboublockWorldCoordinates - glm::vec3(dirUnsigned.z, dirUnsigned.x, dirUnsigned.y);
+
+    const auto frontRight = neighboublockWorldCoordinates +
+                            glm::vec3(dirUnsigned.y, dirUnsigned.z, dirUnsigned.x) +
+                            glm::vec3(dirUnsigned.z, dirUnsigned.x, dirUnsigned.y);
+
+    const auto frontLeft = neighboublockWorldCoordinates -
+                           glm::vec3(dirUnsigned.y, dirUnsigned.z, dirUnsigned.x) +
+                           glm::vec3(dirUnsigned.z, dirUnsigned.x, dirUnsigned.y);
+
+    const auto backLeft = neighboublockWorldCoordinates -
+                          glm::vec3(dirUnsigned.y, dirUnsigned.z, dirUnsigned.x) -
+                          glm::vec3(dirUnsigned.z, dirUnsigned.x, dirUnsigned.y);
+
+    const auto backRight = neighboublockWorldCoordinates +
+                           glm::vec3(dirUnsigned.y, dirUnsigned.z, dirUnsigned.x) -
+                           glm::vec3(dirUnsigned.z, dirUnsigned.x, dirUnsigned.y);
+
+    std::bitset<8> encoded = {0};
+    encoded[0] = isLocationInBounds(right) && getBlock(right) != VS_DEFAULT_BLOCK_ID;
+    encoded[1] = isLocationInBounds(left) && getBlock(left) != VS_DEFAULT_BLOCK_ID;
+    encoded[2] = isLocationInBounds(front) && getBlock(front) != VS_DEFAULT_BLOCK_ID;
+    encoded[3] = isLocationInBounds(back) && getBlock(back) != VS_DEFAULT_BLOCK_ID;
+    encoded[4] = isLocationInBounds(frontRight) && getBlock(frontRight) != VS_DEFAULT_BLOCK_ID;
+    encoded[5] = isLocationInBounds(frontLeft) && getBlock(frontLeft) != VS_DEFAULT_BLOCK_ID;
+    encoded[6] = isLocationInBounds(backLeft) && getBlock(backLeft) != VS_DEFAULT_BLOCK_ID;
+    encoded[7] = isLocationInBounds(backRight) && getBlock(backRight) != VS_DEFAULT_BLOCK_ID;
 
     return encoded;
 }

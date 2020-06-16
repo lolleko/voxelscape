@@ -2,6 +2,8 @@
 
 #include <glad/glad.h>
 #include <atomic>
+#include <cstdint>
+#include <glm/fwd.hpp>
 #include <glm/gtx/component_wise.hpp>
 #include <glm/ext/matrix_transform.hpp>
 #include <vector>
@@ -30,6 +32,9 @@ class VSChunkManager : public IVSDrawable
         {
             glm::vec3 locationWorldSpace;
             VSBlockID id;
+            std::uint8_t lightLevel;
+            std::uint32_t vc;
+            std::uint32_t vd;
         };
 
         std::vector<VSBlockID> blocks;
@@ -184,6 +189,15 @@ private:
 
     std::uint8_t
     isBorderBlockVisible(std::size_t chunkIndex, const glm::ivec3& blockCoordinates) const;
+
+    bool isAtWorldBorder(const glm::ivec3& blockWorldCoordinates) const;
+
+    std::tuple<std::uint32_t, std::uint32_t>
+    getAdjacencyInformation(const glm::vec3& blockCoordinates) const;
+
+    std::bitset<8> getAdjacencyInformationForFace(
+        const glm::vec3& blockWorldCoordinates,
+        const glm::vec3& faceDir) const;
 
     std::size_t chunkCoordinatesToChunkIndex(const glm::ivec2& chunkCoordinates) const;
 

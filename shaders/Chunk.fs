@@ -8,6 +8,9 @@ in VertexData {
     vec3 biTangent;
     vec3 material;
     flat uint blockID;
+    float lightLevel;
+    flat uint vc;
+    flat uint vd;
 } i;
 
 out vec4 outColor;
@@ -66,18 +69,52 @@ float raymarch(in vec3 ro, in vec3 rd) {
     return clamp(res, 0.2, 1.0);
 }
 
-float calcAO( in vec3 pos, in vec3 nor )
+uint normalToFaceIndex(in vec3 n)
 {
-	float occ = 0.0;
-    float sca = 1.0;
-    for( int i=0; i<5; i++ )
-    {
-        float h = 0.3 + 0.3*float(i);
-        float d = map( pos + h*nor );
-        occ += (h-d)*sca;
-        sca *= 0.5;
+    if (n.x == 1) {
+        return 0u;
     }
-    return clamp( 1.0 - 1.5 * occ, 0.0, 1.0 );    
+    if (n.x == -1) {
+        return 1u;
+    }
+    if (n.y == 1) {
+        return 2u;
+    }
+    if (n.y == -1) {
+        return 3u;
+    }
+    if (n.z == 1) {
+        return 4u;
+    }
+    if (n.z == -1) {
+        return 5u;
+    }
+}
+
+uvec4 uintToUVec4(uint compressed, uint offset) {
+    uint k = offset;
+    return uvec4((compressed >> k) & 1u, (compressed >> (k + 1u)) & 1u, (compressed >> (k + 2u)) & 1u, (compressed >> (k + 3u)) & 1u);
+}
+
+float calcOcc(in vec3 nor )
+{
+    uint faceIndex = normalToFaceIndex(nor);
+	vec2 uv = i.texCoord;
+    uvec4 vc = uintToUVec4(i.vc, faceIndex * 4u);
+    uvec4 vd = uintToUVec4(i.vd, faceIndex * 4u);
+
+    vec2 st = 1.0 - uv;
+
+    // edges
+    vec4 wa = vec4( uv.x, st.x, uv.y, st.y ) * vc;
+
+    // corners
+    vec4 wb = vec4(uv.x*uv.y,
+                   st.x*uv.y,
+                   st.x*st.y,
+                   uv.x*st.y)*vd*(1.0-vc.xzyw)*(1.0-vc.zywx);
+    
+    return wa.x + wa.y + wa.z + wa.w + wb.x + wb.y + wb.z + wb.w;
 }
 
 void main() {
@@ -89,10 +126,18 @@ void main() {
 
     float shadowFactor = enableShadows ? raymarch(rayStart, directLightDir) : 1.0;
 
+    float occ = calcOcc(norm);
+    occ = 1.0 - occ/8.0;
+    occ = occ*occ;
+    occ = occ*occ;
+
     float sun = clamp(dot(norm, directLightDir), 0.05, 1.0 );
+    float sky = clamp(0.5 + 0.5 * norm.y, 0.0, 1.0);
+    float ind = clamp( dot( norm, normalize(directLightDir*vec3(-1.0,0.0,-1.0)) ), 0.0, 1.0 );
 
     vec3 light  = sun * vec3(1.00,0.80,0.55) * pow(vec3(shadowFactor), vec3(1.0,1.2,1.5));
-    // TODO sky light and indirect light
+    light += sky*vec3(0.16,0.20,0.28)*occ;
+    light += ind*vec3(0.40,0.28,0.20)*occ;
 
     // block material
     vec3 tex =  pow(texture(spriteTexture, vec3(i.texCoord, i.blockID)).rgb, vec3(2.2));
@@ -102,7 +147,7 @@ void main() {
     // gamma correction
     color = pow(color, vec3(1.0/2.2));
 
-    outColor = vec4(color, 1.0);
+    outColor = vec4(occ, occ, occ, 1.0);
 
     //outColor = texture(spriteTexture, vec3(i.texCoord, 4));
 
