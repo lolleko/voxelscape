@@ -11,7 +11,6 @@
 #include "ui/vs_ui.h"
 #include "ui/vs_ui_state.h"
 
-#include <iostream>
 void updateResourceSystem(entt::registry& registry)
 {
     auto* UI = VSApp::getInstance()->getUI();
