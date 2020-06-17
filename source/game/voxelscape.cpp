@@ -5,6 +5,7 @@
 #include "game/systems/input_system.h"
 #include "game/systems/hover_system.h"
 #include "game/systems/placement_system.h"
+#include "game/systems/resource_system.h"
 
 #include "game/building_loader.h"
 
@@ -21,14 +22,32 @@ void Voxelscape::update(float deltaSeconds)
     // after initailization otherwhise this could crash
     if (getApp()->getWorldName() == VSGame::WorldName)
     {
-        mainRegistry.set<WorldContext>(
-            getApp()->getWorld(),
-            deltaSeconds,
-            Bounds{
-                -getApp()->getWorld()->getChunkManager()->getWorldSize() / 2,
-                getApp()->getWorld()->getChunkManager()->getWorldSize() / 2});
-        updateInputSystem(mainRegistry);
-        updateHoverSystem(mainRegistry);
-        updatePlacementSystem(mainRegistry, buildingRegistry);
+        const auto* prevWorldContext = mainRegistry.try_ctx<WorldContext>();
+        if (prevWorldContext == nullptr)
+        {
+            mainRegistry.set<WorldContext>(
+                getApp()->getWorld(),
+                deltaSeconds,
+                /*worldAge*/ 0.F,
+                Bounds{-getApp()->getWorld()->getChunkManager()->getWorldSize() / 2,
+                       getApp()->getWorld()->getChunkManager()->getWorldSize() / 2});
+            updateInputSystem(mainRegistry);
+            updateHoverSystem(mainRegistry);
+            updatePlacementSystem(mainRegistry, buildingRegistry);
+            updateResourceSystem(mainRegistry);
+        }
+        else
+        {
+            mainRegistry.set<WorldContext>(
+                getApp()->getWorld(),
+                deltaSeconds,
+                prevWorldContext->worldAge + deltaSeconds,
+                Bounds{-getApp()->getWorld()->getChunkManager()->getWorldSize() / 2,
+                       getApp()->getWorld()->getChunkManager()->getWorldSize() / 2});
+            updateInputSystem(mainRegistry);
+            updateHoverSystem(mainRegistry);
+            updatePlacementSystem(mainRegistry, buildingRegistry);
+            updateResourceSystem(mainRegistry);
+        }
     }
 }
