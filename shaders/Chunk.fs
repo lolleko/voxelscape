@@ -27,6 +27,8 @@ uniform sampler3D shadowTexture;
 uniform bool enableShadows;
 uniform bool enableAO;
 uniform bool showAO;
+uniform bool showUV;
+uniform bool showNormals;
 
 vec3 worldSizeHalf = worldSize / 2u;
 
@@ -115,36 +117,63 @@ float calcOcc(in vec3 nor )
                    st.x*st.y,
                    uv.x*st.y)*vd*(1.0-vc.xzyw)*(1.0-vc.zywx);
     
-    return wa.x + wa.y + wa.z + wa.w;// + wb.x + wb.y + wb.z + wb.w;
-    //return (vc.x + vc.y + vc.z + vc.w) / 4.0;//wa.x + wa.y + wa.z + wa.w + wb.x + wb.y + wb.z + wb.w;
+    //return wa.x + wa.y + wa.z + wa.w;// + wb.x + wb.y + wb.z + wb.w;
+    return (vc.x + vc.y + vc.z + vc.w + vd.x + vd.y + vd.z + vd.w) / 8.0;//wa.x + wa.y + wa.z + wa.w + wb.x + wb.y + wb.z + wb.w;
 }
+
+vec3 applyFog(in vec3  rgb,
+               in float distance,
+               in vec3  rayDir,
+               in vec3  sunDir)
+{
+    float fogAmount = 1.0 - exp(-distance*0.0006);
+    float sunAmount = max(dot( rayDir, sunDir ), 0.0);
+    vec3  fogColor  = mix(vec3(0.5,0.6,0.7),
+                           vec3(1.0,0.9,0.7),
+                           pow(sunAmount,8.0) );
+    return mix( rgb, fogColor, fogAmount );
+}
+
+vec3 fog(vec3 color, vec3 fcolor, float distance, float density){
+    float f = exp(-pow(distance*density, 2));
+    return mix(fcolor, color, f);
+}       
 
 void main() {
     vec3 norm = normalize(i.normal);
 
     vec3 rayStart = i.worldPosition;
 
+    vec3 viewDir = normalize(i.worldPosition - viewPos);
+
     vec3 directLightDir = normalize(lightDir);
 
     float shadowFactor = enableShadows ? raymarch(rayStart, directLightDir) : 1.0;
 
-    float occ = calcOcc(norm);
-    occ = 1.0 - occ/8.0;
-    occ = occ*occ;
-    occ = occ*occ;
+    float occ = 1.0;
+
+    if (enableAO) {
+        occ = calcOcc(norm);
+        occ = 1.0 - occ/8.0;
+        occ = occ*occ;
+        occ = occ*occ;
+    }
 
     float sun = clamp(dot(norm, directLightDir), 0.05, 1.0 );
     float sky = clamp(0.5 + 0.5 * norm.y, 0.0, 1.0);
     float ind = clamp( dot( norm, normalize(directLightDir*vec3(-1.0,0.0,-1.0)) ), 0.0, 1.0 );
 
-    vec3 light  = sun * vec3(1.00,0.80,0.55) * pow(vec3(shadowFactor), vec3(1.0,1.2,1.5));
-    light += sky*vec3(0.16,0.20,0.28)*occ;
-    light += ind*vec3(0.40,0.28,0.20)*occ;
+    vec3 light  = sun * vec3(1.00,0.75, 0.50) * pow(vec3(shadowFactor), vec3(1.0,1.2,1.5));
+    light += sky*vec3(0.229, 0.607, 0.821)*occ;
+    light += ind*vec3(0.35,0.23,0.15)*occ;
 
     // block material
     vec3 tex =  pow(texture(spriteTexture, vec3(i.texCoord, i.blockID)).rgb, vec3(2.2));
 
     vec3 color = tex * light;
+
+    //color = applyFog(color, length(viewPos - i.worldPosition),  viewDir, directLightDir);
+    color = fog(color, vec3(0.5,0.6,0.7), length(viewPos - i.worldPosition), 0.002);
 
     // gamma correction
     color = pow(color, vec3(1.0/2.2));
@@ -154,6 +183,15 @@ void main() {
     if (showAO) {
         outColor = vec4(occ, occ, occ, 1.0);
     }
+
+    if (showUV) {
+        outColor = vec4(i.texCoord, 0, 1.0);
+    }
+
+    if (showNormals) {
+        outColor = vec4(norm, 1.0);
+    }
+
 
     //outColor = texture(spriteTexture, vec3(i.texCoord, 4));
 

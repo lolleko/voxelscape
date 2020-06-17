@@ -119,6 +119,8 @@ void VSUI::renderDebugGUI()
     ImGui::Checkbox("shadows", (bool*)&uiState->bAreShadowsEnabled);
     ImGui::Checkbox("AO", (bool*)&uiState->bIsAmbientOcclusionEnabled);
     ImGui::Checkbox("Show AO", (bool*)&uiState->bShouldShowAO);
+    ImGui::Checkbox("Show UVs", (bool*)&uiState->bShouldShowUV);
+    ImGui::Checkbox("Show Normals", (bool*)&uiState->bShouldShowNormals);
     ImGui::InputInt3("chunk size", (int*)&uiState->chunkSize);
     ImGui::InputInt2("world size", (int*)&uiState->chunkCount);
     if (ImGui::Button("Refresh chunk settings"))

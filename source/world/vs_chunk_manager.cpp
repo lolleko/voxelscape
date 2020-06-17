@@ -226,7 +226,9 @@ void VSChunkManager::draw(VSWorld* world)
         .setInt("spriteTexture", spriteTextureID)
         .setBool("enableShadows", VSApp::getInstance()->getUI()->getState()->bAreShadowsEnabled)
         .setBool("enableAO", VSApp::getInstance()->getUI()->getState()->bIsAmbientOcclusionEnabled)
-        .setBool("showAO", VSApp::getInstance()->getUI()->getState()->bShouldShowAO);
+        .setBool("showAO", VSApp::getInstance()->getUI()->getState()->bShouldShowAO)
+        .setBool("showUV", VSApp::getInstance()->getUI()->getState()->bShouldShowUV)
+        .setBool("showNormals", VSApp::getInstance()->getUI()->getState()->bShouldShowNormals);
 
     drawCallCount = 0;
 
@@ -394,7 +396,7 @@ VSChunkManager::lineTrace(const glm::vec3& start, const glm::vec3& end) const
 
     float t = 0.F;
 
-    while (t < maxRayLength)
+    while (!bShouldReinitializeChunks && t < maxRayLength)
     {
         const auto samplePos = start + rayDir * t;
         if (isLocationInBounds(samplePos))
@@ -447,7 +449,7 @@ VSChunkManager::lineTrace(const glm::vec3& start, const glm::vec3& end) const
                 return {true, interSectionPos, normal, blockSample};
             }
         }
-        t += 0.005F;
+        t += 0.0075F;
     }
 
     return {false, {}, {}, VS_DEFAULT_BLOCK_ID};
@@ -726,7 +728,6 @@ bool VSChunkManager::updateVisibleBlocks(std::size_t chunkIndex)
                                         glm::vec3(0.5F) - glm::vec3(chunkSize) / 2.F;
 
                     const auto [vc, vd] = getAdjacencyInformation(offset);
-                    std::cout << vc << " " << vd << std::endl;
                     const auto blockInfo = VSChunk::VSVisibleBlockInfo{
                         offset, chunk->blocks[blockIndex], 255 /* TODO lightlevel */, vc, vd};
 
