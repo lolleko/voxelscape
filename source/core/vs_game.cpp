@@ -3,6 +3,7 @@
 #include <ratio>
 
 #include "core/vs_app.h"
+#include "core/vs_camera.h"
 #include "core/vs_editor.h"
 #include "core/vs_cameracontroller.h"
 #include "core/vs_input_handler.h"
@@ -105,9 +106,13 @@ void VSGame::updateInternal(float deltaSeconds)
     {
         if (UI->getState()->bBiomeType == 0)
         {
-            VSTerrainGeneration::buildMountains(world);
+            VSTerrainGeneration::buildStandard(world);
         }
         else if (UI->getState()->bBiomeType == 1)
+        {
+            VSTerrainGeneration::buildMountains(world);
+        }
+        else if (UI->getState()->bBiomeType == 2)
         {
             VSTerrainGeneration::buildDesert(world);
         }
@@ -130,7 +135,8 @@ void VSGame::updateInternal(float deltaSeconds)
 
     if (UI->getState()->bEditorActive)
     {
-        VSEditor::handleBlockPlacement(app->getInputHandler(), world, UI->getState()->anyWindowHovered);
+        VSEditor::handleBlockPlacement(
+            app->getInputHandler(), world, UI->getState()->anyWindowHovered);
     }
 
     if (UI->getState()->bShouldUpdateBlockID)
@@ -172,8 +178,10 @@ VSApp* VSGame::getApp()
 VSWorld* VSGame::initWorld()
 {
     VSWorld* gameWorld = new VSWorld();
+    auto camera = gameWorld->getCamera();
+    // camera->setPosition({0.F, 50.F, 0.F});
     auto skybox = new VSSkybox();
-    auto cameraController = new VSRTSCameraController(gameWorld->getCamera(), gameWorld);
+    auto cameraController = new VSRTSCameraController(camera, gameWorld);
     gameWorld->setCameraController(cameraController);
     gameWorld->addDrawable(skybox);
     return gameWorld;
