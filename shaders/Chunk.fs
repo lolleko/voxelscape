@@ -26,6 +26,7 @@ uniform sampler3D shadowTexture;
 
 uniform bool enableShadows;
 uniform bool enableAO;
+uniform bool showAO;
 
 vec3 worldSizeHalf = worldSize / 2u;
 
@@ -106,7 +107,7 @@ float calcOcc(in vec3 nor )
     vec2 st = 1.0 - uv;
 
     // edges
-    vec4 wa = vec4( uv.x, st.x, uv.y, st.y ) * vc;
+    vec4 wa = vec4( uv.x, st.x, uv.y, st.y ) * vc; // TODO change back to vc if uvs figured out
 
     // corners
     vec4 wb = vec4(uv.x*uv.y,
@@ -114,7 +115,8 @@ float calcOcc(in vec3 nor )
                    st.x*st.y,
                    uv.x*st.y)*vd*(1.0-vc.xzyw)*(1.0-vc.zywx);
     
-    return wa.x + wa.y + wa.z + wa.w + wb.x + wb.y + wb.z + wb.w;
+    return wa.x + wa.y + wa.z + wa.w;// + wb.x + wb.y + wb.z + wb.w;
+    //return (vc.x + vc.y + vc.z + vc.w) / 4.0;//wa.x + wa.y + wa.z + wa.w + wb.x + wb.y + wb.z + wb.w;
 }
 
 void main() {
@@ -147,7 +149,11 @@ void main() {
     // gamma correction
     color = pow(color, vec3(1.0/2.2));
 
-    outColor = vec4(occ, occ, occ, 1.0);
+    outColor = vec4(color, 1.0);
+
+    if (showAO) {
+        outColor = vec4(occ, occ, occ, 1.0);
+    }
 
     //outColor = texture(spriteTexture, vec3(i.texCoord, 4));
 

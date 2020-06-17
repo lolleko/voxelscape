@@ -225,7 +225,8 @@ void VSChunkManager::draw(VSWorld* world)
         .setInt("shadowTexture", shadowTextureID)
         .setInt("spriteTexture", spriteTextureID)
         .setBool("enableShadows", VSApp::getInstance()->getUI()->getState()->bAreShadowsEnabled)
-        .setBool("enableAO", VSApp::getInstance()->getUI()->getState()->bIsAmbientOcclusionEnabled);
+        .setBool("enableAO", VSApp::getInstance()->getUI()->getState()->bIsAmbientOcclusionEnabled)
+        .setBool("showAO", VSApp::getInstance()->getUI()->getState()->bShouldShowAO);
 
     drawCallCount = 0;
 
