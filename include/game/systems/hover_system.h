@@ -22,7 +22,7 @@ void updateHoverSystem(entt::registry& registry)
                                                               const Hoverable& hoverable,
                                                               const Location& location,
                                                               const Bounds& bounds) {
-            // Move mouse trace along normal to ensure we arre inside the bounds
+            // Move mouse trace along normal to ensure we are inside the bounds
             const auto mouseLocationLocal =
                 inputs.mouseTrace.hitLocation - inputs.mouseTrace.hitNormal * 0.1F - location;
             if (bounds.isLocationInside(mouseLocationLocal))
