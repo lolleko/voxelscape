@@ -22,13 +22,13 @@ void updatePlacementSystem(entt::registry& mainRegistry, entt::registry& buildin
     const auto mouseLocation = glm::floor(inputs.mouseTrace.hitLocation);
 
     if (inputs.mouseTrace.bHasHit && inputs.leftButtonState == InputState::JustUp &&
-        worldContext.bounds.isLocationInside(mouseLocation))
+        !inputs.anyWindowHovered && worldContext.bounds.isLocationInside(mouseLocation))
     {
         entt::entity selectedBuildingTemplate = entt::null;
         buildingTemplateRegistry.view<Unique>().each(
-            [&selectedBuildingTemplate](const auto ent, const Unique& unique) {
+            [&selectedBuildingTemplate, &inputs](const auto ent, const Unique& unique) {
                 // TODO comparew with inputContext selected buildings
-                if (unique.uuid == "building_lumberjack")
+                if (unique.uuid == inputs.selectedBuilding.uuid)
                 {
                     selectedBuildingTemplate = ent;
                 }

@@ -18,6 +18,7 @@ enum class InputState
 struct Inputs
 {
     VSChunkManager::VSTraceResult mouseTrace;
+    bool anyWindowHovered;
 
     // Button/Key states
     InputState leftButtonState;

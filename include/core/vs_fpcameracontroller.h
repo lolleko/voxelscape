@@ -12,7 +12,7 @@ class VSFPCameraController : public VSCameraController
 public:
     VSFPCameraController(VSCamera* camera, VSWorld* world, VSInputHandler* inputHandler = nullptr);
 
-    void updateCamera() override;
+    void updateCamera(bool handleMouseEvents) override;
 
 private:
     float lastYScrollOffset;

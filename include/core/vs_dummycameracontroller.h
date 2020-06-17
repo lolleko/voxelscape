@@ -15,5 +15,5 @@ public:
         VSWorld* world = nullptr,
         VSInputHandler* inputHandler = nullptr);
 
-    void updateCamera() override;
+    void updateCamera(bool handleMouseEvents) override;
 };

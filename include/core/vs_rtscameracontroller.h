@@ -11,20 +11,10 @@ class VSRTSCameraController : public VSCameraController
 public:
     VSRTSCameraController(VSCamera* camera, VSWorld* world, VSInputHandler* inputHandler = nullptr);
 
-    void updateCamera() override;
+    void updateCamera(bool handleMouseEvents) override;
 
     void setFocalPoint(glm::vec3 newFocalPoint);
 
-    void handleScroll();
-
-    void handleFramebufferResize();
-
-    void handleKeyboard();
-
-    void handleRotation();
-
-    void adaptToFixpoint();
-    
     // Call this when world size has been changed
     void updateWorldBorders();
 
@@ -43,4 +33,14 @@ private:
     // float distance = 50.F;
     glm::vec3 focalPoint = {0.F, 0.F, 0.F};
     glm::vec3 targetPosition = {0.F, 0.F, 0.F};
+
+    void handleScroll(bool handleMouseEvents);
+
+    void handleFramebufferResize();
+
+    void handleKeyboard();
+
+    void handleRotation();
+
+    void adaptToFixpoint();
 };
