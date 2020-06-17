@@ -1,0 +1,8 @@
+{
+    "uuid": "building_stonemine",
+    "generator": {
+        "resource": "stone",
+        "interval": 1,
+        "amount": 2
+    }
+}

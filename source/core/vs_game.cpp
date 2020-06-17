@@ -118,26 +118,6 @@ void VSGame::updateInternal(float deltaSeconds)
             // Update Minimap
             UI->getMutableState()->minimap->updateMinimap(world);
         }
-
-        // auto* world = app->getWorld();
-
-        // VSChunkManager::VSBuildingData buildData =
-        //     VSParser::readBuildFromFile("resources/buildings/test.json");
-
-        // for (int x = 0; x < buildData.buildSize.x; x++)
-        // {
-        //     for (int y = 0; y < buildData.buildSize.y; y++)
-        //     {
-        //         for (int z = 0; x < buildData.buildSize.z; z++)
-        //         {
-        //             world->getChunkManager()->setBlock(
-        //                 {x, y, z},
-        //                 buildData.blocks
-        //                     [x + y * buildData.buildSize.x +
-        //                      z * buildData.buildSize.x * buildData.buildSize.y]);
-        //         }
-        //     }
-        // }
     }
 
     if (UI->getState()->bShouldResetEditor && !world->getChunkManager()->shouldReinitializeChunks())
@@ -146,6 +126,11 @@ void VSGame::updateInternal(float deltaSeconds)
         // world->getChunkManager()->clearBlocks();
         VSEditor::setPlaneBlocks(world);
         UI->getMutableState()->bShouldResetEditor = false;
+    }
+
+    if (UI->getState()->bEditorActive)
+    {
+        VSEditor::handleBlockPlacement(app->getInputHandler(), world, UI->getState()->anyWindowHovered);
     }
 
     if (UI->getState()->bShouldUpdateBlockID)

@@ -9,6 +9,6 @@ VSDummyCameraController::VSDummyCameraController(
 {
 }
 
-void VSDummyCameraController::updateCamera()
+void VSDummyCameraController::updateCamera(bool /*handleMouseEvents*/)
 {
 }

@@ -12,6 +12,7 @@ void Voxelscape::initializeGame(VSApp* inApp)
 {
     (void)inApp;
     BuildingParser::createBuildingFromFile("resources/buildings/lumberjack", buildingRegistry);
+    BuildingParser::createBuildingFromFile("resources/buildings/stonemine", buildingRegistry);
 }
 
 void Voxelscape::update(float deltaSeconds)

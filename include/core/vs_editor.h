@@ -12,7 +12,7 @@ namespace VSEditor
 
     void setPlaneBlocks(VSWorld* editorWorld);
 
-    void handleBlockPlacement(VSInputHandler* inputHandler, VSWorld* world);
+    void handleBlockPlacement(VSInputHandler* inputHandler, VSWorld* world, bool windowHovered = false);
 
     VSChunkManager::VSBuildingData extractBuildFromPlane(VSWorld* editorWorld);
 };  // namespace VSEditor

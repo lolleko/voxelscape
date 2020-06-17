@@ -20,7 +20,7 @@ public:
     VSCameraController(VSCamera* camera, VSWorld* world, VSInputHandler* inputHandler = nullptr);
     virtual ~VSCameraController() = default;
 
-    virtual void updateCamera() = 0;
+    virtual void updateCamera(bool handleMouseEvents) = 0;
 
     void setEditorBlockID(int blockID);
 

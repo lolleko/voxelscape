@@ -7,6 +7,7 @@
 #include <glm/ext/matrix_projection.hpp>
 #include <limits>
 #include <thread>
+#include <iostream>
 
 #include "core/vs_core.h"
 #include "core/vs_log.h"
@@ -286,15 +287,10 @@ int VSApp::mainLoop()
         world->update();
 
         // Update camera
-        world->getCameraController()->updateCamera();
+        world->getCameraController()->updateCamera(!UI->getState()->anyWindowHovered);
 
         // draw world
         world->draw(world);
-
-        if (worldName == VSEditor::WorldName)
-        {
-            VSEditor::handleBlockPlacement(inputHandler, world);
-        }
 
         // draw ui
         UI->draw();

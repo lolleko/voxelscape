@@ -60,6 +60,8 @@ void VSUI::setup(const char* glsl_version, GLFWwindow* window)
 
     woodResourceTexture = TextureFromFile("textures/tiles/4_wood.png");
     stoneResourceTexture = TextureFromFile("textures/tiles/1_stone.png");
+    lumberjackIcon = TextureFromFile("textures/icons/lumberjack_icon.png");
+    stonemineIcon = TextureFromFile("textures/icons/stonemine_icon.png");
 };
 
 void VSUI::cleanup()
@@ -99,6 +101,9 @@ void VSUI::render()
         renderGameGUI();
         renderDebugGUI();
     }
+
+    // Check if any window is hovered
+    uiState->anyWindowHovered = ImGui::IsWindowHovered(ImGuiHoveredFlags_AnyWindow);
 
     // Rendering
     ImGui::Render();
@@ -322,12 +327,47 @@ void VSUI::renderGameGUI()
     ImGui::EndMainMenuBar();
 
     // Building selection
-
+    ImGui::SetNextWindowPos(ImVec2(0, menuBarHeight), ImGuiCond_Always, ImVec2(0.F, 0.F));
+    ImGui::SetNextWindowSize(ImVec2(0.F, 0.F));
     ImGui::Begin("Select building", 0, ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove);
-    // Dummies
-    ImGui::Text("Lumberjack");
+    if (ImGui::IsWindowCollapsed())
+    {
+        // Do not set building if collapsed
+        uiState->selectedBuilding = "";
+    }
+    // Building types
+    bool styleColorPushed = false;
+    if (uiState->selectedBuilding == lumberjackBuildingName)
+    {
+        ImGui::PushStyleColor(ImGuiCol_Button, buttonClickedColor);
+        styleColorPushed = true;
+    }
+    if (ImGui::ImageButton((void*)(intptr_t)lumberjackIcon, ImVec2(64, 64)))
+    {
+        // Set lumberjack building name
+        uiState->selectedBuilding = lumberjackBuildingName;
+    }
+    if (styleColorPushed)
+    {
+        ImGui::PopStyleColor();
+        styleColorPushed = false;
+    }
     ImGui::SameLine();
-    ImGui::Text("Goldmine");
+    if (uiState->selectedBuilding == stonemineBuildingName)
+    {
+        ImGui::PushStyleColor(ImGuiCol_Button, buttonClickedColor);
+        styleColorPushed = true;
+    }
+    if (ImGui::ImageButton((void*)(intptr_t)stonemineIcon, ImVec2(64, 64)))
+    {
+        // Set stonemine building name
+        uiState->selectedBuilding = stonemineBuildingName;
+    }
+    if (styleColorPushed)
+    {
+        ImGui::PopStyleColor();
+        styleColorPushed = false;
+    }
     ImGui::End();
 
     // Minimap
@@ -335,11 +375,6 @@ void VSUI::renderGameGUI()
         ImVec2(ImGui::GetIO().DisplaySize.x, menuBarHeight), ImGuiCond_Always, ImVec2(1.F, 0.F));
     ImGui::SetNextWindowSize(ImVec2(0.F, 0.F));
     ImGui::Begin("Minimap", 0, ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove);
-    // unsigned int minimapID = TextureFromData(
-    //     uiState->minimap->getPixelData(),
-    //     uiState->minimap->getWidth(),
-    //     uiState->minimap->getHeight(),
-    //     uiState->minimap->getNrComponents());
     if (uiState->minimap->hasChanged())
     {
         minimapTexture = TextureFromData(

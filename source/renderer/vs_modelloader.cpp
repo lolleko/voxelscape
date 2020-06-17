@@ -1,6 +1,7 @@
 #include <assimp/scene.h>
 #include <assimp/postprocess.h>
 #include <assimp/Importer.hpp>
+#include <iostream>
 
 #include "renderer/vs_modelloader.h"
 #include "renderer/vs_textureloader.h"
