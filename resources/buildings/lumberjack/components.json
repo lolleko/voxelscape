@@ -1,5 +1,9 @@
 {
     "uuid": "building_lumberjack",
+    "cost": {
+        "resource": "lumber",
+        "amount": 30
+    },
     "generator": {
         "resource": "lumber",
         "interval": 1,

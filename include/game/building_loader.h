@@ -6,6 +6,7 @@
 #include <nlohmann/json.hpp>
 
 #include "core/vs_log.h"
+#include "game/components/cost.h"
 #include "ui/vs_parser.h"
 #include "world/vs_chunk_manager.h"
 
@@ -76,6 +77,16 @@ namespace BuildingParser
             float interval = generatorJSON.at("interval");
 
             buildingRegistry.emplace<Generator>(buildingEnt, resource, amount, interval, 0.F);
+        }
+
+        if (componentJson.contains("cost"))
+        {
+            const auto generatorJSON = componentJson.at("cost");
+
+            std::string resource = generatorJSON.at("resource");
+            std::uint32_t amount = generatorJSON.at("amount");
+
+            buildingRegistry.emplace<Cost>(buildingEnt, resource, amount);
         }
     };
 

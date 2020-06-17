@@ -5,6 +5,9 @@
 #include <entt/entt.hpp>
 #include <glm/fwd.hpp>
 #include "core/vs_log.h"
+#include "core/vs_app.h"
+#include "ui/vs_ui.h"
+#include "ui/vs_ui_state.h"
 #include "game/components/blocks.h"
 #include "game/components/generator.h"
 #include "game/components/hoverable.h"
@@ -12,12 +15,15 @@
 #include "game/components/bounds.h"
 #include "game/components/unique.h"
 #include "game/components/world_context.h"
+#include "game/components/cost.h"
 
 void updatePlacementSystem(entt::registry& mainRegistry, entt::registry& buildingTemplateRegistry)
 {
     auto& inputs = mainRegistry.ctx<Inputs>();
 
     const auto& worldContext = mainRegistry.ctx<WorldContext>();
+
+    auto* UI = VSApp::getInstance()->getUI();
 
     const auto mouseLocation = glm::floor(inputs.mouseTrace.hitLocation);
 
@@ -37,6 +43,46 @@ void updatePlacementSystem(entt::registry& mainRegistry, entt::registry& buildin
         if (selectedBuildingTemplate != entt::null)
         {
             // TODO check and spend resource
+            {
+                bool resourcesSufficient = true;
+
+                unsigned int woodCount = UI->getState()->woodCount;
+                unsigned int stoneCount = UI->getState()->stoneCount;
+
+                const auto& cost = buildingTemplateRegistry.try_get<Cost>(selectedBuildingTemplate);
+
+                if (cost != nullptr)
+                {
+                    if (cost->resource.uuid == "lumber")
+                    {
+                        if (cost->amount > woodCount)
+                        {
+                            resourcesSufficient = false;
+                        }
+                        else
+                        {
+                            UI->getMutableState()->woodCount = woodCount - cost->amount;
+                        }
+                    }
+                    else if (cost->resource.uuid == "stone")
+                    {
+                        if (cost->amount > stoneCount)
+                        {
+                            resourcesSufficient = false;
+                        }
+                        else
+                        {
+                            UI->getMutableState()->stoneCount = stoneCount - cost->amount;
+                        }
+                    }
+                }
+
+                if (!resourcesSufficient)
+                {
+                    return;
+                }
+            }
+
             auto intersect = false;
 
             const auto& selectedBuildingTemplateBounds =

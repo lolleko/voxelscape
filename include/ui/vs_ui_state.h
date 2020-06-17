@@ -60,7 +60,7 @@ struct VSUIState
     // Selected building string
     std::string selectedBuilding = "";
 
-    // Resource counters;
-    int woodCount = 0;
-    int stoneCount = 0;
+    // Resource counters
+    unsigned int woodCount = 200;
+    unsigned int stoneCount = 100;
 };
