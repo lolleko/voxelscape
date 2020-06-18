@@ -8,6 +8,7 @@
 #include <glm/ext/matrix_transform.hpp>
 #include <vector>
 #include <array>
+#include <bitset>
 #include <renderer/vs_shader.h>
 #include <future>
 
