@@ -117,7 +117,7 @@ float calcOcc(in vec3 nor )
                    st.x*st.y,
                    uv.x*st.y)*vd*(1.0-vc.xzyw)*(1.0-vc.zywx);
     
-    //return wa.x + wa.y + wa.z + wa.w;// + wb.x + wb.y + wb.z + wb.w;
+    //return wa.x + wa.y + wa.z + wa.w + wb.x + wb.y + wb.z + wb.w;
     return (vc.x + vc.y + vc.z + vc.w + vd.x + vd.y + vd.z + vd.w) / 8.0;//wa.x + wa.y + wa.z + wa.w + wb.x + wb.y + wb.z + wb.w;
 }
 
@@ -163,9 +163,9 @@ void main() {
     float sky = clamp(0.5 + 0.5 * norm.y, 0.0, 1.0);
     float ind = clamp( dot( norm, normalize(directLightDir*vec3(-1.0,0.0,-1.0)) ), 0.0, 1.0 );
 
-    vec3 light  = sun * vec3(1.00,0.75, 0.50) * pow(vec3(shadowFactor), vec3(1.0,1.2,1.5));
-    light += sky*vec3(0.229, 0.607, 0.821)*occ;
-    light += ind*vec3(0.35,0.23,0.15)*occ;
+    vec3 light  = sun * vec3(1.3,0.70, 0.45) * vec3(1.05) * pow(vec3(shadowFactor), vec3(1.0,1.2,1.5));
+    light += sky*vec3(0.229, 0.607, 0.821)*vec3(0.4)*occ;
+    light += ind*vec3(0.35,0.23,0.15)*vec3(0.8)*occ;
 
     // block material
     vec3 tex =  pow(texture(spriteTexture, vec3(i.texCoord, i.blockID)).rgb, vec3(2.2));
@@ -173,7 +173,7 @@ void main() {
     vec3 color = tex * light;
 
     //color = applyFog(color, length(viewPos - i.worldPosition),  viewDir, directLightDir);
-    color = fog(color, vec3(0.5,0.6,0.7), length(viewPos - i.worldPosition), 0.002);
+    color = fog(color, vec3(0.5,0.6,0.7), length(viewPos - i.worldPosition), 0.0022);
 
     // gamma correction
     color = pow(color, vec3(1.0/2.2));
@@ -189,7 +189,7 @@ void main() {
     }
 
     if (showNormals) {
-        outColor = vec4(norm, 1.0);
+        outColor = vec4((norm + 1) / 2, 1.0);
     }
 
 

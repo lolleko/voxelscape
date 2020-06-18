@@ -26,12 +26,12 @@
 
 enum VSCubeFace : std::uint8_t
 {
-    Front = 0,
-    Back = 1,
-    Bottom = 2,
     Right = 3,
-    Top = 4,
-    Left = 5
+    Left = 5,
+    Bottom = 1,
+    Top = 0,
+    Front = 2,
+    Back = 4
 };
 
 VSChunkManager::VSChunkManager()
