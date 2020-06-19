@@ -248,10 +248,11 @@ void VSChunkManager::draw(VSWorld* world)
 
         const auto chunkCenterInP = VP * glm::vec4(chunk->chunkLocation, 1.f);
 
-        const auto radius = glm::sqrt(chunkSize.x * chunkSize.x + chunkSize.z * chunkSize.z);
+        const auto radius = glm::sqrt(
+            chunkSize.x * chunkSize.x + chunkSize.y * chunkSize.y + chunkSize.z * chunkSize.z);
 
         if ((glm::abs(chunkCenterInP.x) - radius) < (chunkCenterInP.w * 1.F) &&
-            (glm::abs(chunkCenterInP.y) - chunkSize.y) < (chunkCenterInP.w * 1.F))
+            (glm::abs(chunkCenterInP.y) - radius) < (chunkCenterInP.w * 1.F))
         {
             for (std::size_t i = 0; i < chunk->visibleBlockInfos.size(); i++)
             {
