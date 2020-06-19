@@ -281,17 +281,17 @@ void VSUI::renderGameConfigGUI()
         if (uiState->worldSize == 0)
         {
             // Small
-            uiState->chunkCount = {4, 4};
+            uiState->chunkCount = {32, 32};
         }
         else if (uiState->worldSize == 1)
         {
             // Medium
-            uiState->chunkCount = {8, 8};
+            uiState->chunkCount = {64, 64};
         }
         else if (uiState->worldSize == 2)
         {
             // Large
-            uiState->chunkCount = {16, 16};
+            uiState->chunkCount = {128, 128};
         }
         else if (uiState->worldSize == 3)
         {
@@ -388,10 +388,17 @@ void VSUI::renderGameGUI()
             uiState->minimap->getNrComponents());
         uiState->minimap->changeNotified();
     }
-    if (ImGui::ImageButton((void*)(intptr_t)minimapTexture, ImVec2(256, 256), ImVec2(0, 0), ImVec2(1, 1), /*frame_padding*/1))
+    if (ImGui::ImageButton(
+            (void*)(intptr_t)minimapTexture,
+            ImVec2(256, 256),
+            ImVec2(0, 0),
+            ImVec2(1, 1),
+            /*frame_padding*/ 1))
     {
-        float relativeX = (ImGui::GetMousePos().x  - ImGui::GetItemRectMin().x) / (ImGui::GetItemRectMax().x - ImGui::GetItemRectMin().x);
-        float relativeY = (ImGui::GetMousePos().y  - ImGui::GetItemRectMin().y) / (ImGui::GetItemRectMax().y - ImGui::GetItemRectMin().y);
+        float relativeX = (ImGui::GetMousePos().x - ImGui::GetItemRectMin().x) /
+                          (ImGui::GetItemRectMax().x - ImGui::GetItemRectMin().x);
+        float relativeY = (ImGui::GetMousePos().y - ImGui::GetItemRectMin().y) /
+                          (ImGui::GetItemRectMax().y - ImGui::GetItemRectMin().y);
         uiState->minimapRelativePosition = {relativeX, relativeY};
         uiState->minimapClick = true;
     }

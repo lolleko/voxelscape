@@ -12,7 +12,7 @@ struct VSUIState
     glm::vec4 clearColor = glm::vec4(0.45f, 0.55f, 0.60f, 1.00f);
     bool isWireframeModeEnabled = false;
     bool bShouldDrawChunkBorder = false;
-    glm::ivec3 chunkSize = {32, 64, 32};
+    glm::ivec3 chunkSize = {16, 128, 16};
     glm::ivec2 chunkCount = {4, 4};
     bool bShouldUpdateChunks = false;
     bool bShouldGenerateTerrain = false;

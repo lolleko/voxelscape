@@ -28,7 +28,7 @@ private:
     float lastYScrollOffset;
 
     float radius = 50.F;
-    float maxRadius = 200.F;
+    float maxRadius = 250.F;
     float minRadius = 5.F;
 
     float smoothSpeed = 0.125F;
