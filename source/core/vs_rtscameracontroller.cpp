@@ -299,10 +299,28 @@ void VSRTSCameraController::adaptToFixpoint()
             targetPosition.y =
                 result.hitLocation.y + radius * std::sin(-targetPitch * (M_PI / 180.F));
         }
-        else
+    }
+}
+
+void VSRTSCameraController::setCameraRelativeXZ(float relativeX, float relativeZ)
+{
+    const auto worldSize = world->getChunkManager()->getWorldSize();
+
+    float absoluteX = (relativeX - 0.5) * worldSize.x;
+    float absoluteZ = (relativeZ - 0.5) * worldSize.z;
+    int blockX = std::round(absoluteX);
+    int blockZ = std::round(absoluteZ);
+    for (int y = -worldSize.y / 2; y < worldSize.y / 2; y++)
+    {
+        glm::ivec3 blockCoordinates = {blockX, y, blockZ};
+        if (world->getChunkManager()->getBlock(blockCoordinates) > 0)
         {
-            // Focal point has left the world
-            // TODO: set back to closest point in the world
+            const auto newPosition =
+                glm::vec3({absoluteX, y, absoluteZ}) -
+                cam->getFront() * radius;
+            targetPosition = newPosition;
+            adaptToFixpoint();
+            cam->setPosition(targetPosition);
         }
     }
 }

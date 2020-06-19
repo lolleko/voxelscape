@@ -388,7 +388,13 @@ void VSUI::renderGameGUI()
             uiState->minimap->getNrComponents());
         uiState->minimap->changeNotified();
     }
-    ImGui::Image((void*)(intptr_t)minimapTexture, ImVec2(256, 256));
+    if (ImGui::ImageButton((void*)(intptr_t)minimapTexture, ImVec2(256, 256), ImVec2(0, 0), ImVec2(1, 1), /*frame_padding*/1))
+    {
+        float relativeX = (ImGui::GetMousePos().x  - ImGui::GetItemRectMin().x) / (ImGui::GetItemRectMax().x - ImGui::GetItemRectMin().x);
+        float relativeY = (ImGui::GetMousePos().y  - ImGui::GetItemRectMin().y) / (ImGui::GetItemRectMax().y - ImGui::GetItemRectMin().y);
+        uiState->minimapRelativePosition = {relativeX, relativeY};
+        uiState->minimapClick = true;
+    }
     ImGui::End();
 }
 

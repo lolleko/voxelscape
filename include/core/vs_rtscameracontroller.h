@@ -13,6 +13,8 @@ public:
 
     void updateCamera(bool handleMouseEvents) override;
 
+    void setCameraRelativeXZ(float relativeX, float relativeZ) override;
+
     void setFocalPoint(glm::vec3 newFocalPoint);
 
     // Call this when world size has been changed
@@ -22,7 +24,7 @@ private:
     bool targetPosChanged = false;
 
     float targetPitch = -45.F;
-    float targetYaw = 0.F;
+    float targetYaw = -90.F;
     float lastYScrollOffset;
 
     float radius = 50.F;
