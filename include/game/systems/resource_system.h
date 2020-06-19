@@ -6,38 +6,29 @@
 
 #include "core/vs_app.h"
 #include "game/components/generator.h"
+#include "game/components/player.h"
 #include "game/components/unique.h"
 #include "game/components/world_context.h"
-#include "ui/vs_ui.h"
-#include "ui/vs_ui_state.h"
 
 void updateResourceSystem(entt::registry& registry)
 {
-    auto* UI = VSApp::getInstance()->getUI();
-
     const auto& worldContext = registry.ctx<WorldContext>();
 
-    int woodCount = UI->getState()->woodCount;
-    int stoneCount = UI->getState()->stoneCount;
+    auto& player = registry.ctx<Player>();
 
     // Iterate over all instances, if generator is attached than increment resource
-    registry.view<Generator>().each(
-        [&worldContext, &woodCount, &stoneCount](Generator& generator) {
-            // Only look for lumber and stone for now
-            if (worldContext.worldAge - generator.lastGeneration > generator.interval)
+    registry.view<Generator>().each([&worldContext, &player](Generator& generator) {
+        // Only look for lumber and stone for now
+        if (worldContext.worldAge - generator.lastGeneration > generator.interval)
+        {
+            for (auto& resourceAmount : player.resources.resourceVector)
             {
-                if (generator.resource.uuid == "lumber")
+                if (generator.resource.uuid == resourceAmount.resource.uuid)
                 {
-                    woodCount += generator.amount;
+                    resourceAmount.amount += generator.amount;
                 }
-                else if (generator.resource.uuid == "stone")
-                {
-                    stoneCount += generator.amount;
-                }
-                generator.lastGeneration = worldContext.worldAge;
             }
-        });
-
-    UI->getMutableState()->woodCount = woodCount;
-    UI->getMutableState()->stoneCount = stoneCount;
+            generator.lastGeneration = worldContext.worldAge;
+        }
+    });
 }

@@ -6,24 +6,21 @@
 #include <glm/fwd.hpp>
 #include "core/vs_log.h"
 #include "core/vs_app.h"
-#include "ui/vs_ui.h"
-#include "ui/vs_ui_state.h"
 #include "game/components/blocks.h"
 #include "game/components/generator.h"
 #include "game/components/hoverable.h"
 #include "game/components/inputs.h"
 #include "game/components/bounds.h"
+#include "game/components/player.h"
+#include "game/components/resourceamount.h"
 #include "game/components/unique.h"
 #include "game/components/world_context.h"
-#include "game/components/cost.h"
 
 void updatePlacementSystem(entt::registry& mainRegistry, entt::registry& buildingTemplateRegistry)
 {
     auto& inputs = mainRegistry.ctx<Inputs>();
 
     const auto& worldContext = mainRegistry.ctx<WorldContext>();
-
-    auto* UI = VSApp::getInstance()->getUI();
 
     const auto mouseLocation = glm::floor(inputs.mouseTrace.hitLocation);
 
@@ -46,33 +43,21 @@ void updatePlacementSystem(entt::registry& mainRegistry, entt::registry& buildin
             {
                 bool resourcesSufficient = true;
 
-                unsigned int woodCount = UI->getState()->woodCount;
-                unsigned int stoneCount = UI->getState()->stoneCount;
+                auto& player = mainRegistry.ctx<Player>();
+                const auto& cost =
+                    buildingTemplateRegistry.try_get<ResourceAmount>(selectedBuildingTemplate);
 
-                const auto& cost = buildingTemplateRegistry.try_get<Cost>(selectedBuildingTemplate);
-
-                if (cost != nullptr)
+                for (auto& resourceAmount : player.resources.resourceVector)
                 {
-                    if (cost->resource.uuid == "lumber")
+                    if (cost->resource.uuid == resourceAmount.resource.uuid)
                     {
-                        if (cost->amount > woodCount)
+                        if (cost->amount > resourceAmount.amount)
                         {
                             resourcesSufficient = false;
                         }
                         else
                         {
-                            UI->getMutableState()->woodCount = woodCount - cost->amount;
-                        }
-                    }
-                    else if (cost->resource.uuid == "stone")
-                    {
-                        if (cost->amount > stoneCount)
-                        {
-                            resourcesSufficient = false;
-                        }
-                        else
-                        {
-                            UI->getMutableState()->stoneCount = stoneCount - cost->amount;
+                            resourceAmount.amount -= cost->amount;
                         }
                     }
                 }

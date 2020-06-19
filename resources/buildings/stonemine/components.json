@@ -1,6 +1,6 @@
 {
     "uuid": "building_stonemine",
-    "cost": {
+    "resourceamount": {
         "resource": "lumber",
         "amount": 50
     },

@@ -1,6 +1,6 @@
 {
     "uuid": "building_lumberjack",
-    "cost": {
+    "resourceamount": {
         "resource": "lumber",
         "amount": 30
     },

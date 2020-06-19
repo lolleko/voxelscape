@@ -1,9 +1,8 @@
 #pragma once
 
-#include <cstdint>
 #include "game/components/unique.h"
 
-struct Cost
+struct ResourceAmount
 {
     Unique resource;
     std::uint32_t amount;
