@@ -29,6 +29,7 @@ uniform bool enableAO;
 uniform bool showAO;
 uniform bool showUV;
 uniform bool showNormals;
+uniform bool showLight;
 
 vec3 worldSizeHalf = worldSize / 2u;
 
@@ -164,6 +165,7 @@ void main() {
     float ind = clamp( dot( norm, normalize(directLightDir*vec3(-1.0,0.0,-1.0)) ), 0.0, 1.0 );
 
     vec3 light  = sun * vec3(1.3,0.70, 0.45) * vec3(1.05) * pow(vec3(shadowFactor), vec3(1.0,1.2,1.5));
+    light += i.lightLevel * vec3(1.3, 0.9, 0.3);
     light += sky*vec3(0.229, 0.607, 0.821)*vec3(0.4)*occ;
     light += ind*vec3(0.35,0.23,0.15)*vec3(0.8)*occ;
 
@@ -192,6 +194,9 @@ void main() {
         outColor = vec4((norm + 1) / 2, 1.0);
     }
 
+    if (showLight) {
+        outColor = vec4(i.lightLevel);
+    }
 
     //outColor = texture(spriteTexture, vec3(i.texCoord, 4));
 

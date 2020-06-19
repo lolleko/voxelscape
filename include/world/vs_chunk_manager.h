@@ -40,6 +40,8 @@ class VSChunkManager : public IVSDrawable
 
         std::vector<VSBlockID> blocks;
 
+        std::vector<float> lightLevel;
+
         std::vector<bool> bIsBlockVisible;
 
         std::atomic<bool> bIsDirty;
@@ -79,6 +81,8 @@ public:
     VSBlockID getBlock(const glm::vec3& location) const;
 
     void setBlock(const glm::vec3& location, VSBlockID blockID);
+
+    void addEmission(const glm::vec3& location, float emission);
 
     glm::ivec3 getWorldSize() const;
 
@@ -165,6 +169,16 @@ private:
     std::map<VSChunk*, std::shared_ptr<VSShadwoChunkUpdate>> activeShadowBuildTasks;
 
     static inline auto maxShadowUpdateThreads = std::thread::hardware_concurrency();
+
+    static inline std::vector<float> blockEmission = {
+        /*Air=0*/ 0.F,
+        /*Stone=1*/ 0.F,
+        /*Water=2*/ 0.F,
+        /*Grass=3*/ 0.F,
+        /*Wood=4*/ 0.F,
+        /*Sand=5*/ 0.F,
+        /*Leaf=6*/ 0.F,
+        /*Lava=7*/ 16.F};
 
     void initializeChunks();
 

@@ -151,7 +151,7 @@ int VSApp::initializeGLFW()
     glfwMakeContextCurrent(window);
 
     glfwSetWindowUserPointer(window, (void*)this);
-    glfwSetFramebufferSizeCallback(window, [](GLFWwindow* window, int width, int height) {
+    glfwSetWindowSizeCallback(window, [](GLFWwindow* window, int width, int height) {
         glViewport(0, 0, width, height);
         auto* app = static_cast<VSApp*>(glfwGetWindowUserPointer(window));
         app->getInputHandler()->processFramebufferResize(window, width, height);

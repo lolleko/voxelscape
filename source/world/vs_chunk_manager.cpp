@@ -116,7 +116,9 @@ VSChunkManager::VSChunkManager()
         /*Grass=3*/ {0.F, 0.3F, 0.F},
         /*Wood=4*/ {0.5F, 0.25F, 0.1F},
         /*Sand=5*/ {1.F, 0.9F, 0.5F},
-        /*Leaf=6*/ {0.F, 0.5F, 0.F}};
+        /*Leaf=6*/ {0.F, 0.5F, 0.F},
+        /*Lava=7*/ {1.F, 0.0F, 0.F}};
+
     spriteTexture = TextureAtlasFromFile("textures/tiles");
 
     chunkShader.uniforms()
@@ -134,11 +136,49 @@ VSBlockID VSChunkManager::getBlock(const glm::vec3& location) const
 void VSChunkManager::setBlock(const glm::vec3& location, VSBlockID blockID)
 {
     assert(!bShouldReinitializeChunks);
-    const auto zeroBaseLocation = glm::ivec3(glm::floor(location)) + worldSizeHalf;
+    const auto locationFloored = glm::ivec3(glm::floor(location));
+    const auto zeroBaseLocation = locationFloored + worldSizeHalf;
     const auto [chunkCoordinates, blockIndex] =
         worldCoordinatesToChunkCoordinatesAndBlockIndex(zeroBaseLocation);
 
     const auto chunkIndex = chunkCoordinatesToChunkIndex(chunkCoordinates);
+
+    // If new block has emssion or removed block had emission
+    if (blockEmission[blockID] != 0.F ||
+        blockEmission[chunks[chunkIndex]->blocks[blockIndex]] != 0.F)
+    {
+        const auto emission = blockEmission[blockID] != 0
+                                  ? blockEmission[blockID]
+                                  : blockEmission[chunks[chunkIndex]->blocks[blockIndex]];
+        // add emission or remove emission
+        const float addOrRemove = blockEmission[blockID] != 0.F ? 1 : -1;
+        const int ceiledEmission = glm::ceil(emission);
+
+        for (int x = locationFloored.x - ceiledEmission; x <= locationFloored.x + ceiledEmission;
+             x++)
+        {
+            for (int y = locationFloored.y - ceiledEmission;
+                 y <= locationFloored.y + ceiledEmission;
+                 y++)
+            {
+                for (int z = locationFloored.z - ceiledEmission;
+                     z <= locationFloored.z + ceiledEmission;
+                     z++)
+                {
+                    const auto neighbourLocation = glm::vec3(x, y, z);
+
+                    if (isLocationInBounds(neighbourLocation))
+                    {
+                        const auto distance =
+                            glm::length(glm::vec3(locationFloored) - neighbourLocation) + 0.0001F;
+                        addEmission(
+                            neighbourLocation,
+                            addOrRemove * 255.F * (1 / (distance * (distance / 6.F))));
+                    }
+                }
+            }
+        }
+    }
 
     chunks[chunkIndex]->blocks[blockIndex] = blockID;
     chunks[chunkIndex]->bIsDirty = true;
@@ -153,6 +193,16 @@ void VSChunkManager::setBlock(const glm::vec3& location, VSBlockID blockID)
     chunks[chunkCoordinatesToChunkIndex(left)]->bIsDirty = true;
     chunks[chunkCoordinatesToChunkIndex(top)]->bIsDirty = true;
     chunks[chunkCoordinatesToChunkIndex(down)]->bIsDirty = true;
+}
+
+void VSChunkManager::addEmission(const glm::vec3& location, float emission)
+{
+    const auto locationFloored = glm::ivec3(glm::floor(location));
+    const auto zeroBaseLocation = locationFloored + worldSizeHalf;
+    const auto [chunkIndex, blockIndex] = worldCoordinatesToChunkAndBlockIndex(zeroBaseLocation);
+
+    chunks[chunkIndex]->bIsDirty = true;
+    chunks[chunkIndex]->lightLevel[blockIndex] += emission;
 }
 
 glm::ivec3 VSChunkManager::getWorldSize() const
@@ -228,7 +278,8 @@ void VSChunkManager::draw(VSWorld* world)
         .setBool("enableAO", VSApp::getInstance()->getUI()->getState()->bIsAmbientOcclusionEnabled)
         .setBool("showAO", VSApp::getInstance()->getUI()->getState()->bShouldShowAO)
         .setBool("showUV", VSApp::getInstance()->getUI()->getState()->bShouldShowUV)
-        .setBool("showNormals", VSApp::getInstance()->getUI()->getState()->bShouldShowNormals);
+        .setBool("showNormals", VSApp::getInstance()->getUI()->getState()->bShouldShowNormals)
+        .setBool("showLight", VSApp::getInstance()->getUI()->getState()->bShouldShowLight);
 
     drawCallCount = 0;
 
@@ -300,7 +351,8 @@ void VSChunkManager::updateChunks()
     for (std::size_t chunkIndex = 0; chunkIndex < getTotalChunkCount(); ++chunkIndex)
     {
         // to avoid stutter we only update approx. 64*256*64 blocks per frame
-        // this could be moved ot a thread as well, but is fast enough to run on the main thread.
+        // this could be moved ot a thread as well, but is fast enough to run on the main
+        // thread.
         if (updateVisibleBlocks(chunkIndex))
         {
             blocksUpdated += getChunkBlockCount();
@@ -551,6 +603,7 @@ VSChunkManager::VSChunk* VSChunkManager::createChunk() const
 
     chunk->blocks.resize(getChunkBlockCount(), VS_DEFAULT_BLOCK_ID);
     chunk->bIsBlockVisible.resize(getChunkBlockCount(), false);
+    chunk->lightLevel.resize(getChunkBlockCount(), 0.F);
 
     return chunk;
 }
@@ -729,8 +782,11 @@ bool VSChunkManager::updateVisibleBlocks(std::size_t chunkIndex)
 
                     const auto [vc, vd] = getAdjacencyInformation(offset);
                     const auto blockInfo = VSChunk::VSVisibleBlockInfo{
-                        offset, chunk->blocks[blockIndex], 255 /* TODO lightlevel */, vc, vd};
-
+                        offset,
+                        chunk->blocks[blockIndex],
+                        static_cast<uint8_t>(glm::clamp(chunk->lightLevel[blockIndex], 0.F, 255.F)),
+                        vc,
+                        vd};
 #pragma omp critical
                     chunk->visibleBlockInfos[blockType].emplace_back(blockInfo);
                     chunk->bIsBlockVisible[blockIndex] = true;
