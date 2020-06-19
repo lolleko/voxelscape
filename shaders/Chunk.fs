@@ -31,6 +31,8 @@ uniform bool showUV;
 uniform bool showNormals;
 uniform bool showLight;
 
+uniform float time;
+
 vec3 worldSizeHalf = worldSize / 2u;
 
 float map(in vec3 pos) {
@@ -171,6 +173,10 @@ void main() {
 
     // block material
     vec3 tex =  pow(texture(spriteTexture, vec3(i.texCoord, i.blockID)).rgb, vec3(2.2));
+    // Hack, test texture panning todo find better way to get block specific info here
+    if (i.blockID == 7u || i.blockID == 2u) {
+        tex = pow(texture(spriteTexture, vec3(i.texCoord.x + time, i.texCoord.y, i.blockID)).rgb, vec3(2.2));
+    }
 
     vec3 color = tex * light;
 

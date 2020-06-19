@@ -2,6 +2,7 @@
 
 #include <algorithm>
 #include <atomic>
+#include <chrono>
 #include <cstddef>
 #include <cstdint>
 #include <glm/fwd.hpp>
@@ -171,9 +172,12 @@ void VSChunkManager::setBlock(const glm::vec3& location, VSBlockID blockID)
                     {
                         const auto distance =
                             glm::length(glm::vec3(locationFloored) - neighbourLocation) + 0.0001F;
-                        addEmission(
-                            neighbourLocation,
-                            addOrRemove * 255.F * (1 / (distance * (distance / 6.F))));
+                        if (distance < ceiledEmission)
+                        {
+                            addEmission(
+                                neighbourLocation,
+                                addOrRemove * 255.F * (1 / (distance * (distance / 6.F))));
+                        }
                     }
                 }
             }
@@ -244,13 +248,10 @@ void VSChunkManager::draw(VSWorld* world)
 
         const auto chunkCenterInP = VP * glm::vec4(chunk->chunkLocation, 1.f);
 
-        const auto radius = glm::sqrt(
-            chunkSize.x * chunkSize.x + chunkSize.y * chunkSize.y + chunkSize.z * chunkSize.z);
+        const auto radius = glm::sqrt(chunkSize.x * chunkSize.x + chunkSize.z * chunkSize.z);
 
-        if ((chunkCenterInP.z - radius) < world->getCamera()->getZFar() * 1.F &&
-            (chunkCenterInP.z + radius) > world->getCamera()->getZNear() * 1.F &&
-            (glm::abs(chunkCenterInP.x) - radius) < (chunkCenterInP.w * 1.F) &&
-            (glm::abs(chunkCenterInP.y) - radius) < (chunkCenterInP.w * 1.F))
+        if ((glm::abs(chunkCenterInP.x) - radius) < (chunkCenterInP.w * 1.F) &&
+            (glm::abs(chunkCenterInP.y) - chunkSize.y) < (chunkCenterInP.w * 1.F))
         {
             for (std::size_t i = 0; i < chunk->visibleBlockInfos.size(); i++)
             {
@@ -274,6 +275,12 @@ void VSChunkManager::draw(VSWorld* world)
         .setUVec3("worldSize", getWorldSize())
         .setInt("shadowTexture", shadowTextureID)
         .setInt("spriteTexture", spriteTextureID)
+        .setFloat(
+            "time",
+            std::chrono::duration_cast<std::chrono::duration<float>>(
+                VSApp::getInstance()->getInstance()->getStartTime() -
+                std::chrono::high_resolution_clock::now())
+                .count())
         .setBool("enableShadows", VSApp::getInstance()->getUI()->getState()->bAreShadowsEnabled)
         .setBool("enableAO", VSApp::getInstance()->getUI()->getState()->bIsAmbientOcclusionEnabled)
         .setBool("showAO", VSApp::getInstance()->getUI()->getState()->bShouldShowAO)

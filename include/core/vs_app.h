@@ -1,5 +1,6 @@
 #pragma once
 
+#include <chrono>
 #include <map>
 #include <string>
 #include <thread>
@@ -34,6 +35,8 @@ public:
 
     [[nodiscard]] GLFWwindow* getWindow() const;
 
+    [[nodiscard]] std::chrono::high_resolution_clock::time_point getStartTime() const;
+
     static VSApp* getInstance();
 
 private:
@@ -50,6 +53,8 @@ private:
     GLFWwindow* window;
 
     std::string glslVersion;
+
+    std::chrono::high_resolution_clock::time_point appStart;
 
     static VSApp* instance;
 

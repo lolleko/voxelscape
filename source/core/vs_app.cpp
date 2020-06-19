@@ -48,6 +48,8 @@ int VSApp::initialize()
 {
     debug_setMainThread();
 
+    appStart = std::chrono::high_resolution_clock::now();
+
     const auto glfwError = initializeGLFW();
     if (glfwError != 0)
     {
@@ -228,6 +230,11 @@ VSUI* VSApp::getUI() const
 GLFWwindow* VSApp::getWindow() const
 {
     return window;
+}
+
+std::chrono::high_resolution_clock::time_point VSApp::getStartTime() const
+{
+    return appStart;
 }
 
 VSApp* VSApp::getInstance()
