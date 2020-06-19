@@ -117,7 +117,11 @@ void VSUI::renderDebugGUI()
     ImGui::Checkbox("draw chunk border", (bool*)&uiState->bShouldDrawChunkBorder);
     ImGui::Checkbox("freeze frustum", (bool*)&uiState->bShouldFreezeFrustum);
     ImGui::Checkbox("shadows", (bool*)&uiState->bAreShadowsEnabled);
-    // TODO ImGui::Checkbox("AO", (bool*)&uiState->bIsAmbientOcclusionEnabled);
+    ImGui::Checkbox("AO", (bool*)&uiState->bIsAmbientOcclusionEnabled);
+    ImGui::Checkbox("Show AO", (bool*)&uiState->bShouldShowAO);
+    ImGui::Checkbox("Show UVs", (bool*)&uiState->bShouldShowUV);
+    ImGui::Checkbox("Show Normals", (bool*)&uiState->bShouldShowNormals);
+    ImGui::Checkbox("Show Light", (bool*)&uiState->bShouldShowLight);
     ImGui::InputInt3("chunk size", (int*)&uiState->chunkSize);
     ImGui::InputInt2("world size", (int*)&uiState->chunkCount);
     if (ImGui::Button("Refresh chunk settings"))
@@ -186,7 +190,7 @@ void VSUI::renderEditorGUI()
     // Select block type to set
     // This needs to be adapted to the new block types obviously
     ImGui::Begin("Editor");
-    const char* blockTypes[] = {"Stone", "Water", "Grass", "Wood", "Sand", "Leaf"};
+    const char* blockTypes[] = {"Stone", "Water", "Grass", "Wood", "Sand", "Leaf", "Lava"};
     if (ImGui::Combo(
             "Select block type", (int*)&uiState->bSetBlockID, blockTypes, IM_ARRAYSIZE(blockTypes)))
     {

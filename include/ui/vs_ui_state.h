@@ -21,7 +21,11 @@ struct VSUIState
     int activeBlockCount = 0;
     bool bShouldFreezeFrustum = false;
     bool bAreShadowsEnabled = false;
-    bool bIsAmbientOcclusionEnabled = true;
+    bool bIsAmbientOcclusionEnabled = false;
+    bool bShouldShowAO = false;
+    bool bShouldShowUV = false;
+    bool bShouldShowNormals = false;
+    bool bShouldShowLight = false;
     int totalBlockCount = 0;
     int visibleBlockCount = 0;
     int drawnBlockCount = 0;

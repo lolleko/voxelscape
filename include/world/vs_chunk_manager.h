@@ -2,10 +2,13 @@
 
 #include <glad/glad.h>
 #include <atomic>
+#include <cstdint>
+#include <glm/fwd.hpp>
 #include <glm/gtx/component_wise.hpp>
 #include <glm/ext/matrix_transform.hpp>
 #include <vector>
 #include <array>
+#include <bitset>
 #include <renderer/vs_shader.h>
 #include <future>
 
@@ -30,9 +33,14 @@ class VSChunkManager : public IVSDrawable
         {
             glm::vec3 locationWorldSpace;
             VSBlockID id;
+            std::uint8_t lightLevel;
+            std::uint32_t vc;
+            std::uint32_t vd;
         };
 
         std::vector<VSBlockID> blocks;
+
+        std::vector<float> lightLevel;
 
         std::vector<bool> bIsBlockVisible;
 
@@ -73,6 +81,8 @@ public:
     VSBlockID getBlock(const glm::vec3& location) const;
 
     void setBlock(const glm::vec3& location, VSBlockID blockID);
+
+    void addEmission(const glm::vec3& location, float emission);
 
     glm::ivec3 getWorldSize() const;
 
@@ -160,6 +170,16 @@ private:
 
     static inline auto maxShadowUpdateThreads = std::thread::hardware_concurrency();
 
+    static inline std::vector<float> blockEmission = {
+        /*Air=0*/ 0.F,
+        /*Stone=1*/ 0.F,
+        /*Water=2*/ 0.F,
+        /*Grass=3*/ 0.F,
+        /*Wood=4*/ 0.F,
+        /*Sand=5*/ 0.F,
+        /*Leaf=6*/ 0.F,
+        /*Lava=7*/ 16.F};
+
     void initializeChunks();
 
     glm::ivec2 getChunkCount() const;
@@ -184,6 +204,15 @@ private:
 
     std::uint8_t
     isBorderBlockVisible(std::size_t chunkIndex, const glm::ivec3& blockCoordinates) const;
+
+    bool isAtWorldBorder(const glm::ivec3& blockWorldCoordinates) const;
+
+    std::tuple<std::uint32_t, std::uint32_t>
+    getAdjacencyInformation(const glm::vec3& blockCoordinates) const;
+
+    std::bitset<8> getAdjacencyInformationForFace(
+        const glm::vec3& blockWorldCoordinates,
+        const glm::vec3& faceDir) const;
 
     std::size_t chunkCoordinatesToChunkIndex(const glm::ivec2& chunkCoordinates) const;
 

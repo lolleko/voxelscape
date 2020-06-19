@@ -4,6 +4,7 @@
 #include <atomic>
 #include <cstddef>
 #include <cstdint>
+#include <glm/fwd.hpp>
 #include <numeric>
 #include <array>
 #include <glm/gtx/norm.hpp>
@@ -25,12 +26,12 @@
 
 enum VSCubeFace : std::uint8_t
 {
-    Front = 0,
-    Back = 1,
-    Bottom = 2,
     Right = 3,
-    Top = 4,
-    Left = 5
+    Left = 5,
+    Bottom = 1,
+    Top = 0,
+    Front = 2,
+    Back = 4
 };
 
 VSChunkManager::VSChunkManager()
@@ -66,9 +67,43 @@ VSChunkManager::VSChunkManager()
         glVertexAttribIPointer(
             nextAttribPointer,
             1,
-            GL_BYTE,
+            GL_UNSIGNED_BYTE,
             sizeof(VSChunk::VSVisibleBlockInfo),
             (void*)offsetof(VSChunk::VSVisibleBlockInfo, id));
+        glVertexAttribDivisor(nextAttribPointer, 1);
+
+        nextAttribPointer++;
+
+        glEnableVertexAttribArray(nextAttribPointer);
+        glVertexAttribPointer(
+            nextAttribPointer,
+            1,
+            GL_UNSIGNED_BYTE,
+            GL_TRUE,
+            sizeof(VSChunk::VSVisibleBlockInfo),
+            (void*)offsetof(VSChunk::VSVisibleBlockInfo, lightLevel));
+        glVertexAttribDivisor(nextAttribPointer, 1);
+
+        nextAttribPointer++;
+
+        glEnableVertexAttribArray(nextAttribPointer);
+        glVertexAttribIPointer(
+            nextAttribPointer,
+            1,
+            GL_UNSIGNED_INT,
+            sizeof(VSChunk::VSVisibleBlockInfo),
+            (void*)offsetof(VSChunk::VSVisibleBlockInfo, vc));
+        glVertexAttribDivisor(nextAttribPointer, 1);
+
+        nextAttribPointer++;
+
+        glEnableVertexAttribArray(nextAttribPointer);
+        glVertexAttribIPointer(
+            nextAttribPointer,
+            1,
+            GL_UNSIGNED_INT,
+            sizeof(VSChunk::VSVisibleBlockInfo),
+            (void*)offsetof(VSChunk::VSVisibleBlockInfo, vd));
         glVertexAttribDivisor(nextAttribPointer, 1);
 
         glBindVertexArray(0);
@@ -81,7 +116,9 @@ VSChunkManager::VSChunkManager()
         /*Grass=3*/ {0.F, 0.3F, 0.F},
         /*Wood=4*/ {0.5F, 0.25F, 0.1F},
         /*Sand=5*/ {1.F, 0.9F, 0.5F},
-        /*Leaf=6*/ {0.F, 0.5F, 0.F}};
+        /*Leaf=6*/ {0.F, 0.5F, 0.F},
+        /*Lava=7*/ {1.F, 0.0F, 0.F}};
+
     spriteTexture = TextureAtlasFromFile("textures/tiles");
 
     chunkShader.uniforms()
@@ -99,11 +136,49 @@ VSBlockID VSChunkManager::getBlock(const glm::vec3& location) const
 void VSChunkManager::setBlock(const glm::vec3& location, VSBlockID blockID)
 {
     assert(!bShouldReinitializeChunks);
-    const auto zeroBaseLocation = glm::ivec3(glm::floor(location)) + worldSizeHalf;
+    const auto locationFloored = glm::ivec3(glm::floor(location));
+    const auto zeroBaseLocation = locationFloored + worldSizeHalf;
     const auto [chunkCoordinates, blockIndex] =
         worldCoordinatesToChunkCoordinatesAndBlockIndex(zeroBaseLocation);
 
     const auto chunkIndex = chunkCoordinatesToChunkIndex(chunkCoordinates);
+
+    // If new block has emssion or removed block had emission
+    if (blockEmission[blockID] != 0.F ||
+        blockEmission[chunks[chunkIndex]->blocks[blockIndex]] != 0.F)
+    {
+        const auto emission = blockEmission[blockID] != 0
+                                  ? blockEmission[blockID]
+                                  : blockEmission[chunks[chunkIndex]->blocks[blockIndex]];
+        // add emission or remove emission
+        const float addOrRemove = blockEmission[blockID] != 0.F ? 1 : -1;
+        const int ceiledEmission = glm::ceil(emission);
+
+        for (int x = locationFloored.x - ceiledEmission; x <= locationFloored.x + ceiledEmission;
+             x++)
+        {
+            for (int y = locationFloored.y - ceiledEmission;
+                 y <= locationFloored.y + ceiledEmission;
+                 y++)
+            {
+                for (int z = locationFloored.z - ceiledEmission;
+                     z <= locationFloored.z + ceiledEmission;
+                     z++)
+                {
+                    const auto neighbourLocation = glm::vec3(x, y, z);
+
+                    if (isLocationInBounds(neighbourLocation))
+                    {
+                        const auto distance =
+                            glm::length(glm::vec3(locationFloored) - neighbourLocation) + 0.0001F;
+                        addEmission(
+                            neighbourLocation,
+                            addOrRemove * 255.F * (1 / (distance * (distance / 6.F))));
+                    }
+                }
+            }
+        }
+    }
 
     chunks[chunkIndex]->blocks[blockIndex] = blockID;
     chunks[chunkIndex]->bIsDirty = true;
@@ -118,6 +193,16 @@ void VSChunkManager::setBlock(const glm::vec3& location, VSBlockID blockID)
     chunks[chunkCoordinatesToChunkIndex(left)]->bIsDirty = true;
     chunks[chunkCoordinatesToChunkIndex(top)]->bIsDirty = true;
     chunks[chunkCoordinatesToChunkIndex(down)]->bIsDirty = true;
+}
+
+void VSChunkManager::addEmission(const glm::vec3& location, float emission)
+{
+    const auto locationFloored = glm::ivec3(glm::floor(location));
+    const auto zeroBaseLocation = locationFloored + worldSizeHalf;
+    const auto [chunkIndex, blockIndex] = worldCoordinatesToChunkAndBlockIndex(zeroBaseLocation);
+
+    chunks[chunkIndex]->bIsDirty = true;
+    chunks[chunkIndex]->lightLevel[blockIndex] += emission;
 }
 
 glm::ivec3 VSChunkManager::getWorldSize() const
@@ -190,7 +275,11 @@ void VSChunkManager::draw(VSWorld* world)
         .setInt("shadowTexture", shadowTextureID)
         .setInt("spriteTexture", spriteTextureID)
         .setBool("enableShadows", VSApp::getInstance()->getUI()->getState()->bAreShadowsEnabled)
-        .setBool("enableAO", VSApp::getInstance()->getUI()->getState()->bIsAmbientOcclusionEnabled);
+        .setBool("enableAO", VSApp::getInstance()->getUI()->getState()->bIsAmbientOcclusionEnabled)
+        .setBool("showAO", VSApp::getInstance()->getUI()->getState()->bShouldShowAO)
+        .setBool("showUV", VSApp::getInstance()->getUI()->getState()->bShouldShowUV)
+        .setBool("showNormals", VSApp::getInstance()->getUI()->getState()->bShouldShowNormals)
+        .setBool("showLight", VSApp::getInstance()->getUI()->getState()->bShouldShowLight);
 
     drawCallCount = 0;
 
@@ -262,7 +351,8 @@ void VSChunkManager::updateChunks()
     for (std::size_t chunkIndex = 0; chunkIndex < getTotalChunkCount(); ++chunkIndex)
     {
         // to avoid stutter we only update approx. 64*256*64 blocks per frame
-        // this could be moved ot a thread as well, but is fast enough to run on the main thread.
+        // this could be moved ot a thread as well, but is fast enough to run on the main
+        // thread.
         if (updateVisibleBlocks(chunkIndex))
         {
             blocksUpdated += getChunkBlockCount();
@@ -358,7 +448,7 @@ VSChunkManager::lineTrace(const glm::vec3& start, const glm::vec3& end) const
 
     float t = 0.F;
 
-    while (t < maxRayLength)
+    while (!bShouldReinitializeChunks && t < maxRayLength)
     {
         const auto samplePos = start + rayDir * t;
         if (isLocationInBounds(samplePos))
@@ -411,7 +501,7 @@ VSChunkManager::lineTrace(const glm::vec3& start, const glm::vec3& end) const
                 return {true, interSectionPos, normal, blockSample};
             }
         }
-        t += 0.005F;
+        t += 0.0075F;
     }
 
     return {false, {}, {}, VS_DEFAULT_BLOCK_ID};
@@ -513,6 +603,7 @@ VSChunkManager::VSChunk* VSChunkManager::createChunk() const
 
     chunk->blocks.resize(getChunkBlockCount(), VS_DEFAULT_BLOCK_ID);
     chunk->bIsBlockVisible.resize(getChunkBlockCount(), false);
+    chunk->lightLevel.resize(getChunkBlockCount(), 0.F);
 
     return chunk;
 }
@@ -689,9 +780,13 @@ bool VSChunkManager::updateVisibleBlocks(std::size_t chunkIndex)
                                         glm::vec3(blockIndexToBlockCoordinates(blockIndex)) +
                                         glm::vec3(0.5F) - glm::vec3(chunkSize) / 2.F;
 
-                    const auto blockInfo =
-                        VSChunk::VSVisibleBlockInfo{offset, chunk->blocks[blockIndex]};
-
+                    const auto [vc, vd] = getAdjacencyInformation(offset);
+                    const auto blockInfo = VSChunk::VSVisibleBlockInfo{
+                        offset,
+                        chunk->blocks[blockIndex],
+                        static_cast<uint8_t>(glm::clamp(chunk->lightLevel[blockIndex], 0.F, 255.F)),
+                        vc,
+                        vd};
 #pragma omp critical
                     chunk->visibleBlockInfos[blockType].emplace_back(blockInfo);
                     chunk->bIsBlockVisible[blockIndex] = true;
@@ -780,12 +875,7 @@ std::uint8_t VSChunkManager::isBorderBlockVisible(
 {
     const auto blockWorldCoordinates =
         blockCoordinatesToWorldCoordinates(chunkIndex, blockCoordinates);
-    if (blockWorldCoordinates.x == -worldSizeHalf.x ||
-        blockWorldCoordinates.x == worldSizeHalf.x - 1 ||
-        blockWorldCoordinates.y == -worldSizeHalf.y ||
-        blockWorldCoordinates.y == worldSizeHalf.y - 1 ||
-        blockWorldCoordinates.z == -worldSizeHalf.z ||
-        blockWorldCoordinates.z == worldSizeHalf.z - 1)
+    if (isAtWorldBorder(blockWorldCoordinates))
     {
         if (blockWorldCoordinates.y + 1 < worldSizeHalf.y &&
             getBlock(blockWorldCoordinates + glm::ivec3(0, 1, 0)) == VS_DEFAULT_BLOCK_ID)
@@ -819,6 +909,101 @@ std::uint8_t VSChunkManager::isBorderBlockVisible(
     encoded |= static_cast<int>(getBlock(bottom) == VS_DEFAULT_BLOCK_ID) << VSCubeFace::Bottom;
     encoded |= static_cast<int>(getBlock(front) == VS_DEFAULT_BLOCK_ID) << VSCubeFace::Front;
     encoded |= static_cast<int>(getBlock(back) == VS_DEFAULT_BLOCK_ID) << VSCubeFace::Back;
+
+    return encoded;
+}
+
+bool VSChunkManager::isAtWorldBorder(const glm::ivec3& blockWorldCoordinates) const
+{
+    return blockWorldCoordinates.x == -worldSizeHalf.x ||
+           blockWorldCoordinates.x == worldSizeHalf.x - 1 ||
+           blockWorldCoordinates.y == -worldSizeHalf.y ||
+           blockWorldCoordinates.y == worldSizeHalf.y - 1 ||
+           blockWorldCoordinates.z == -worldSizeHalf.z ||
+           blockWorldCoordinates.z == worldSizeHalf.z - 1;
+}
+
+std::tuple<std::uint32_t, std::uint32_t>
+VSChunkManager::getAdjacencyInformation(const glm::vec3& blockCoordinates) const
+{
+    std::uint32_t vc = 0;
+    std::uint32_t vd = 0;
+
+    const auto right = getAdjacencyInformationForFace(blockCoordinates, {1, 0, 0});
+    vc |= (right[0] | right[1] << 1 | right[2] << 2 | right[3] << 3);
+    vd |= (right[4] | right[5] << 1 | right[6] << 2 | right[7] << 3);
+
+    const auto left = getAdjacencyInformationForFace(blockCoordinates, {-1, 0, 0});
+    vc |= (left[0] | left[1] << 1 | left[2] << 2 | left[3] << 3) << 4;
+    vd |= (left[4] | left[5] << 1 | left[6] << 2 | left[7] << 3) << 4;
+
+    const auto top = getAdjacencyInformationForFace(blockCoordinates, {0, 1, 0});
+    vc |= (top[0] | top[1] << 1 | top[2] << 2 | top[3] << 3) << 8;
+    vd |= (top[4] | top[5] << 1 | top[6] << 2 | top[7] << 3) << 8;
+
+    const auto bottom = getAdjacencyInformationForFace(blockCoordinates, {0, -1, 0});
+    vc |= (bottom[0] | bottom[1] << 1 | bottom[2] << 2 | bottom[3] << 3) << 12;
+    vd |= (bottom[4] | bottom[5] << 1 | bottom[6] << 2 | bottom[7] << 3) << 12;
+
+    const auto front = getAdjacencyInformationForFace(blockCoordinates, {0, 0, 1});
+    vc |= (front[0] | front[1] << 1 | front[2] << 2 | front[3] << 3) << 16;
+    vd |= (front[4] | front[5] << 1 | front[6] << 2 | front[7] << 3) << 16;
+
+    const auto back = getAdjacencyInformationForFace(blockCoordinates, {0, 0, -1});
+    vc |= (back[0] | back[1] << 1 | back[2] << 2 | back[3] << 3) << 20;
+    vd |= (back[4] | back[5] << 1 | back[6] << 2 | back[7] << 3) << 20;
+
+    return {vc, vd};
+}
+
+std::bitset<8> VSChunkManager::getAdjacencyInformationForFace(
+    const glm::vec3& blockWorldCoordinates,
+    const glm::vec3& faceDir) const
+{
+    const auto neighboublockWorldCoordinates = blockWorldCoordinates + faceDir;
+    const auto dirUnsigned = -glm::abs(faceDir);
+    if (!isLocationInBounds(neighboublockWorldCoordinates))
+    {
+        return {0};
+    }
+
+    const auto right =
+        neighboublockWorldCoordinates + glm::vec3(dirUnsigned.y, dirUnsigned.z, dirUnsigned.x);
+
+    const auto left =
+        neighboublockWorldCoordinates - glm::vec3(dirUnsigned.y, dirUnsigned.z, dirUnsigned.x);
+
+    const auto front =
+        neighboublockWorldCoordinates + glm::vec3(dirUnsigned.z, dirUnsigned.x, dirUnsigned.y);
+
+    const auto back =
+        neighboublockWorldCoordinates - glm::vec3(dirUnsigned.z, dirUnsigned.x, dirUnsigned.y);
+
+    const auto frontRight = neighboublockWorldCoordinates +
+                            glm::vec3(dirUnsigned.y, dirUnsigned.z, dirUnsigned.x) +
+                            glm::vec3(dirUnsigned.z, dirUnsigned.x, dirUnsigned.y);
+
+    const auto frontLeft = neighboublockWorldCoordinates -
+                           glm::vec3(dirUnsigned.y, dirUnsigned.z, dirUnsigned.x) +
+                           glm::vec3(dirUnsigned.z, dirUnsigned.x, dirUnsigned.y);
+
+    const auto backLeft = neighboublockWorldCoordinates -
+                          glm::vec3(dirUnsigned.y, dirUnsigned.z, dirUnsigned.x) -
+                          glm::vec3(dirUnsigned.z, dirUnsigned.x, dirUnsigned.y);
+
+    const auto backRight = neighboublockWorldCoordinates +
+                           glm::vec3(dirUnsigned.y, dirUnsigned.z, dirUnsigned.x) -
+                           glm::vec3(dirUnsigned.z, dirUnsigned.x, dirUnsigned.y);
+
+    std::bitset<8> encoded = {0};
+    encoded[0] = isLocationInBounds(right) && getBlock(right) != VS_DEFAULT_BLOCK_ID;
+    encoded[1] = isLocationInBounds(left) && getBlock(left) != VS_DEFAULT_BLOCK_ID;
+    encoded[2] = isLocationInBounds(front) && getBlock(front) != VS_DEFAULT_BLOCK_ID;
+    encoded[3] = isLocationInBounds(back) && getBlock(back) != VS_DEFAULT_BLOCK_ID;
+    encoded[4] = isLocationInBounds(frontRight) && getBlock(frontRight) != VS_DEFAULT_BLOCK_ID;
+    encoded[5] = isLocationInBounds(frontLeft) && getBlock(frontLeft) != VS_DEFAULT_BLOCK_ID;
+    encoded[6] = isLocationInBounds(backLeft) && getBlock(backLeft) != VS_DEFAULT_BLOCK_ID;
+    encoded[7] = isLocationInBounds(backRight) && getBlock(backRight) != VS_DEFAULT_BLOCK_ID;
 
     return encoded;
 }
