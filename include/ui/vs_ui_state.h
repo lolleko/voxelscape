@@ -56,10 +56,13 @@ struct VSUIState
     // Game config
     int worldSize = 0;  // 0 = Small, 1 = Medium, 2 = Large
     bool anyWindowHovered = false;
-    // TODO: Not to sure if this belongs here
+
+    // Minimap
     VSMinimap* minimap = new VSMinimap();
     bool minimapChanged = false;
     unsigned int minimapTexture = 0;
+    bool minimapClick = false;
+    glm::vec2 minimapRelativePosition = {0.F, 0.F};
 
     // Selected building string
     std::string selectedBuilding = "";

@@ -2,6 +2,7 @@
 
 #include "core/vs_cameracontroller.h"
 #include "core/vs_camera.h"
+#include "world/vs_chunk_manager.h"
 
 VSCameraController::VSCameraController(
     VSCamera* camera,
@@ -43,4 +44,12 @@ glm::vec3 VSCameraController::getMouseFarInWorldCoords() const
 void VSCameraController::setInputHandler(VSInputHandler* inputHandler)
 {
     this->inputHandler = inputHandler;
+}
+
+void VSCameraController::setCameraRelativeXZ(float relativeX, float relativeZ)
+{
+    const auto worldSize = world->getChunkManager()->getWorldSize();
+    float oldCameraY = cam->getPosition().y;
+    glm::vec3 newPosition = {worldSize.x * relativeX, oldCameraY, worldSize.z * relativeZ};
+    cam->setPosition(newPosition);
 }
