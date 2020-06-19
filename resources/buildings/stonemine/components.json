@@ -1,5 +1,9 @@
 {
     "uuid": "building_stonemine",
+    "resourceamount": {
+        "resource": "lumber",
+        "amount": 50
+    },
     "generator": {
         "resource": "stone",
         "interval": 1,

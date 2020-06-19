@@ -1,3 +1,4 @@
+#pragma once
 #include <filesystem>
 #include <glm/ext/vector_float4.hpp>
 #include <glm/ext/vector_float3.hpp>
@@ -58,4 +59,8 @@ struct VSUIState
 
     // Selected building string
     std::string selectedBuilding = "";
+
+    // Resource counters
+    unsigned int woodCount = 200;
+    unsigned int stoneCount = 100;
 };

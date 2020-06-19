@@ -9,5 +9,6 @@ struct WorldContext
 {
     VSWorld* world;
     float deltaSeconds;
+    float worldAge;
     Bounds bounds;
 };

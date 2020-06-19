@@ -5,11 +5,14 @@
 #include <entt/entt.hpp>
 #include <glm/fwd.hpp>
 #include "core/vs_log.h"
+#include "core/vs_app.h"
 #include "game/components/blocks.h"
 #include "game/components/generator.h"
 #include "game/components/hoverable.h"
 #include "game/components/inputs.h"
 #include "game/components/bounds.h"
+#include "game/components/player.h"
+#include "game/components/resourceamount.h"
 #include "game/components/unique.h"
 #include "game/components/world_context.h"
 
@@ -37,6 +40,34 @@ void updatePlacementSystem(entt::registry& mainRegistry, entt::registry& buildin
         if (selectedBuildingTemplate != entt::null)
         {
             // TODO check and spend resource
+            {
+                bool resourcesSufficient = true;
+
+                auto& player = mainRegistry.ctx<Player>();
+                const auto& cost =
+                    buildingTemplateRegistry.try_get<ResourceAmount>(selectedBuildingTemplate);
+
+                for (auto& resourceAmount : player.resources.resourceVector)
+                {
+                    if (cost->resource.uuid == resourceAmount.resource.uuid)
+                    {
+                        if (cost->amount > resourceAmount.amount)
+                        {
+                            resourcesSufficient = false;
+                        }
+                        else
+                        {
+                            resourceAmount.amount -= cost->amount;
+                        }
+                    }
+                }
+
+                if (!resourcesSufficient)
+                {
+                    return;
+                }
+            }
+
             auto intersect = false;
 
             const auto& selectedBuildingTemplateBounds =

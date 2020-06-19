@@ -318,10 +318,10 @@ void VSUI::renderGameGUI()
         ImGui::MenuItem("Dummy");
         ImGui::Separator();
         ImGui::Image((void*)(intptr_t)woodResourceTexture, ImVec2(20, 20));
-        ImGui::Text("%i", 10);
+        ImGui::Text("%i", uiState->woodCount);
 
         ImGui::Image((void*)(intptr_t)stoneResourceTexture, ImVec2(20, 20));
-        ImGui::Text("%i", 70);
+        ImGui::Text("%i", uiState->stoneCount);
         menuBarHeight = ImGui::GetFontSize() + 2 * ImGui::GetStyle().FramePadding.y;
     }
     ImGui::EndMainMenuBar();
