@@ -146,6 +146,14 @@ void VSGame::updateInternal(float deltaSeconds)
         UI->getMutableState()->bShouldUpdateBlockID = false;
     }
 
+    if (UI->getState()->minimapClick)
+    {
+        float relativeX = UI->getState()->minimapRelativePosition.x;
+        float relativeZ = UI->getState()->minimapRelativePosition.y;
+        world->getCameraController()->setCameraRelativeXZ(relativeX, relativeZ);
+        UI->getMutableState()->minimapClick = false;
+    }
+
     // TODO dont pass window as param make abstract input more
     // to make thread separation clearer
     if (!UI->getState()->bFileBrowserActive)

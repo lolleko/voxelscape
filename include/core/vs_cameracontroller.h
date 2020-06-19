@@ -30,6 +30,10 @@ public:
 
     void setInputHandler(VSInputHandler* inputHandler);
 
+    // This method is used for handling a click on the minimap, relative coordinates should be in
+    // [0,1] and will be translated to [-worldSize/2, worldsize/2]
+    virtual void setCameraRelativeXZ(float relativeX, float relativeZ);
+
     [[nodiscard]] glm::vec3 getCameraInWorldCoords() const;
 
     [[nodiscard]] glm::vec3 getMouseFarInWorldCoords() const;
