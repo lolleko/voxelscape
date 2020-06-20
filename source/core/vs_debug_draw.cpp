@@ -6,8 +6,7 @@
 #include <glm/trigonometric.hpp>
 #include <vector>
 
-#define _USE_MATH_DEFINES
-#include <cmath>
+constexpr double PI = 3.14159265358979323846;
 
 #include "core/vs_camera.h"
 #include "renderer/vs_shader.h"
@@ -158,7 +157,7 @@ void VSDebugDraw::drawSphere(
     glm::vec3 vertex2;
     glm::vec3 vertex3;
     glm::vec3 vertex4;
-    const float angleInc = 2.f * M_PI / float(segments);
+    const float angleInc = 2.f * PI / float(segments);
     std::int32_t numSegmentsY = segments;
     float latitude = angleInc;
     std::int32_t numSegmentsX;
