@@ -84,6 +84,9 @@ target_link_libraries("${CMAKE_PROJECT_NAME}" PRIVATE nlohmann_json::nlohmann_js
 find_package(EnTT CONFIG REQUIRED)
 target_link_libraries("${CMAKE_PROJECT_NAME}" PRIVATE EnTT::EnTT)
 
+find_package(unofficial-concurrentqueue CONFIG REQUIRED)
+target_link_libraries("${CMAKE_PROJECT_NAME}" PRIVATE unofficial::concurrentqueue::concurrentqueue)
+
 # Resources
 add_custom_command(TARGET "${CMAKE_PROJECT_NAME}" PRE_BUILD COMMAND ${CMAKE_COMMAND} -E create_symlink  ${CMAKE_SOURCE_DIR}/shaders/ ${CMAKE_BINARY_DIR}/shaders)
 

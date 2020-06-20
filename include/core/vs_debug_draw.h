@@ -8,6 +8,7 @@
 #include <vector>
 #include <set>
 #include <glm/vector_relational.hpp>
+#include <concurrentqueue/concurrentqueue.h>
 
 #include "renderer/vs_drawable.h"
 #include "core/vs_box.h"
@@ -40,33 +41,29 @@ public:
     void draw(VSWorld* world) override;
 
 private:
-    struct VSDebugPrimitive
-    {
-        float thickness = 1.F;
-        GLuint primitiveMode = GL_LINES;
-        std::size_t startIndex = -1;
-        std::size_t vertexCount = -1;
-    };
-
-    std::vector<VSDebugPrimitive> primitives;
-
-    std::shared_ptr<VSShader> primitiveShader;
-
-    GLuint vertexArrayObject = 0;
-
     struct VSDebugVertexData
     {
         glm::vec3 position;
         glm::vec<3, std::byte> color;
     };
 
+    struct VSDebugPrimitive
+    {
+        float thickness = 1.F;
+        GLuint primitiveMode = GL_LINES;
+        GLuint startIndex = -1;
+        std::vector<VSDebugVertexData> vertices;
+    };
+
+    moodycamel::ConcurrentQueue<VSDebugPrimitive> primitives;
+
+    std::shared_ptr<VSShader> primitiveShader;
+
+    GLuint vertexArrayObject = 0;
+
     std::vector<VSDebugVertexData> vertexData;
 
     GLuint vertexBuffer;
 
     void drawPrimitive(const VSDebugPrimitive& primitive) const;
-
-    void addPrimitiveVertices(
-        VSDebugPrimitive& inPrimitive,
-        const std::vector<VSDebugVertexData>& vertices);
 };

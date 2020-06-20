@@ -1,8 +1,10 @@
 #include "core/vs_debug_draw.h"
+#include <concurrentqueue/concurrentqueue.h>
 
 #include <cstdint>
 #include <glm/matrix.hpp>
 #include <glm/trigonometric.hpp>
+#include <vector>
 
 #define _USE_MATH_DEFINES
 #include <cmath>
@@ -14,6 +16,8 @@
 VSDebugDraw::VSDebugDraw()
 {
     primitiveShader = std::make_shared<VSShader>("DebugDraw");
+
+    primitives = moodycamel::ConcurrentQueue<VSDebugPrimitive>(256);
 
     glGenVertexArrays(1, &vertexArrayObject);
     glBindVertexArray(vertexArrayObject);
@@ -44,33 +48,38 @@ VSDebugDraw::VSDebugDraw()
 
 void VSDebugDraw::drawBox(const VSBox& box, glm::vec<3, std::byte> color, float thickness)
 {
-    VSDebugPrimitive topRectangle;
-    topRectangle.startIndex = vertexData.size();
-    addPrimitiveVertices(
-        topRectangle,
-        {{{box.mins.x, box.mins.y, box.mins.z}, color},
+    VSDebugPrimitive boxPrimitive;
+
+    boxPrimitive.vertices.insert(
+        boxPrimitive.vertices.end(),
+        {// Top
+         {{box.mins.x, box.mins.y, box.mins.z}, color},
+         {{box.maxs.x, box.mins.y, box.mins.z}, color},
+
          {{box.maxs.x, box.mins.y, box.mins.z}, color},
          {{box.maxs.x, box.mins.y, box.maxs.z}, color},
-         {{box.mins.x, box.mins.y, box.maxs.z}, color}});
-    topRectangle.thickness = thickness;
-    topRectangle.primitiveMode = GL_LINE_LOOP;
 
-    VSDebugPrimitive botRectangle;
-    botRectangle.startIndex = vertexData.size();
-    addPrimitiveVertices(
-        botRectangle,
-        {{{box.maxs.x, box.maxs.y, box.maxs.z}, color},
+         {{box.maxs.x, box.mins.y, box.maxs.z}, color},
+         {{box.mins.x, box.mins.y, box.maxs.z}, color},
+
+         {{box.mins.x, box.mins.y, box.maxs.z}, color},
+         {{box.mins.x, box.mins.y, box.mins.z}, color},
+
+         // botom
+         {{box.mins.x, box.maxs.y, box.mins.z}, color},
+         {{box.maxs.x, box.maxs.y, box.mins.z}, color},
+
+         {{box.maxs.x, box.maxs.y, box.mins.z}, color},
+         {{box.maxs.x, box.maxs.y, box.maxs.z}, color},
+
+         {{box.maxs.x, box.maxs.y, box.maxs.z}, color},
+         {{box.mins.x, box.maxs.y, box.maxs.z}, color},
+
          {{box.mins.x, box.maxs.y, box.maxs.z}, color},
          {{box.mins.x, box.maxs.y, box.mins.z}, color},
-         {{box.maxs.x, box.maxs.y, box.mins.z}, color}});
-    botRectangle.thickness = thickness;
-    botRectangle.primitiveMode = GL_LINE_LOOP;
 
-    VSDebugPrimitive connections;
-    connections.startIndex = vertexData.size();
-    addPrimitiveVertices(
-        connections,
-        {{{box.maxs.x, box.maxs.y, box.maxs.z}, color},
+         // connections
+         {{box.maxs.x, box.maxs.y, box.maxs.z}, color},
          {{box.maxs.x, box.mins.y, box.maxs.z}, color},
          {{box.maxs.x, box.maxs.y, box.mins.z}, color},
          {{box.maxs.x, box.mins.y, box.mins.z}, color},
@@ -78,12 +87,10 @@ void VSDebugDraw::drawBox(const VSBox& box, glm::vec<3, std::byte> color, float 
          {{box.mins.x, box.mins.y, box.maxs.z}, color},
          {{box.mins.x, box.maxs.y, box.mins.z}, color},
          {{box.mins.x, box.mins.y, box.mins.z}, color}});
-    connections.thickness = thickness;
-    connections.primitiveMode = GL_LINES;
+    boxPrimitive.thickness = thickness;
+    boxPrimitive.primitiveMode = GL_LINES;
 
-    primitives.push_back(topRectangle);
-    primitives.push_back(botRectangle);
-    primitives.push_back(connections);
+    primitives.enqueue(boxPrimitive);
 }
 
 void VSDebugDraw::drawLine(
@@ -93,12 +100,11 @@ void VSDebugDraw::drawLine(
     float thickness)
 {
     VSDebugPrimitive line;
-    line.startIndex = vertexData.size();
-    addPrimitiveVertices(line, {{start, color}, {end, color}});
+    line.vertices.insert(line.vertices.end(), {{start, color}, {end, color}});
     line.thickness = thickness;
     line.primitiveMode = GL_LINES;
 
-    primitives.push_back(line);
+    primitives.enqueue(line);
 }
 
 void VSDebugDraw::drawFrustum(const glm::mat4& VP, glm::vec<3, std::byte> color, float thickness)
@@ -119,20 +125,26 @@ void VSDebugDraw::drawFrustum(const glm::mat4& VP, glm::vec<3, std::byte> color,
         }
     }
 
-    drawLine(vertices[0][0][0], vertices[0][0][1], color, thickness);
-    drawLine(vertices[1][0][0], vertices[1][0][1], color, thickness);
-    drawLine(vertices[0][1][0], vertices[0][1][1], color, thickness);
-    drawLine(vertices[1][1][0], vertices[1][1][1], color, thickness);
+    VSDebugPrimitive frustumPrimitive;
+    frustumPrimitive.thickness = thickness;
+    frustumPrimitive.primitiveMode = GL_LINES;
+    frustumPrimitive.vertices.insert(
+        frustumPrimitive.vertices.end(),
+        {
+            {vertices[0][0][0], color}, {vertices[0][0][1], color}, {vertices[1][0][0], color},
+            {vertices[1][0][1], color}, {vertices[0][1][0], color}, {vertices[0][1][1], color},
+            {vertices[1][1][0], color}, {vertices[1][1][1], color},
 
-    drawLine(vertices[0][0][0], vertices[0][1][0], color, thickness);
-    drawLine(vertices[1][0][0], vertices[1][1][0], color, thickness);
-    drawLine(vertices[0][0][1], vertices[0][1][1], color, thickness);
-    drawLine(vertices[1][0][1], vertices[1][1][1], color, thickness);
+            {vertices[0][0][0], color}, {vertices[0][1][0], color}, {vertices[1][0][0], color},
+            {vertices[1][1][0], color}, {vertices[0][0][1], color}, {vertices[0][1][1], color},
+            {vertices[1][0][1], color}, {vertices[1][1][1], color},
 
-    drawLine(vertices[0][0][0], vertices[1][0][0], color, thickness);
-    drawLine(vertices[0][1][0], vertices[1][1][0], color, thickness);
-    drawLine(vertices[0][0][1], vertices[1][0][1], color, thickness);
-    drawLine(vertices[0][1][1], vertices[1][1][1], color, thickness);
+            {vertices[0][0][0], color}, {vertices[1][0][0], color}, {vertices[0][1][0], color},
+            {vertices[1][1][0], color}, {vertices[0][0][1], color}, {vertices[1][0][1], color},
+            {vertices[0][1][1], color}, {vertices[1][1][1], color},
+        });
+
+    primitives.enqueue(frustumPrimitive);
 }
 
 void VSDebugDraw::drawSphere(
@@ -159,7 +171,6 @@ void VSDebugDraw::drawSphere(
     float cosX;
 
     VSDebugPrimitive sphere;
-    sphere.startIndex = vertexData.size();
     sphere.thickness = thickness;
     sphere.primitiveMode = GL_LINES;
 
@@ -181,8 +192,8 @@ void VSDebugDraw::drawSphere(
             vertex2 = glm::vec3((cosX * sinY1), cosY1, (sinX * sinY1)) * radius + center;
             vertex4 = glm::vec3((cosX * sinY2), cosY2, (sinX * sinY2)) * radius + center;
 
-            addPrimitiveVertices(sphere, {{vertex1, color}, {vertex2, color}});
-            addPrimitiveVertices(sphere, {{vertex1, color}, {vertex3, color}});
+            sphere.vertices.insert(sphere.vertices.end(), {{vertex1, color}, {vertex2, color}});
+            sphere.vertices.insert(sphere.vertices.end(), {{vertex1, color}, {vertex3, color}});
 
             vertex1 = vertex2;
             vertex3 = vertex4;
@@ -193,7 +204,7 @@ void VSDebugDraw::drawSphere(
         latitude += angleInc;
     }
 
-    primitives.push_back(sphere);
+    primitives.enqueue(sphere);
 }
 
 void VSDebugDraw::drawPoint(
@@ -202,18 +213,30 @@ void VSDebugDraw::drawPoint(
     float thickness)
 {
     VSDebugPrimitive point;
-    point.startIndex = vertexData.size();
-    addPrimitiveVertices(point, {{center, color}});
+    point.vertices.push_back({center, color});
     point.thickness = thickness;
     point.primitiveMode = GL_POINTS;
 
-    primitives.push_back(point);
+    primitives.enqueue(point);
 }
 
 void VSDebugDraw::draw(VSWorld* world)
 {
     (void)world;
     primitiveShader->uniforms().setMat4("VP", world->getCamera()->getVPMatrix());
+
+    // Get current set of vertices
+    const auto primitveApproxCount = primitives.size_approx();
+    std::vector<VSDebugPrimitive> currentPrimitives(primitveApproxCount);
+    size_t primitiveActualcount =
+        primitives.try_dequeue_bulk(currentPrimitives.begin(), primitveApproxCount);
+    for (size_t i = 0; i != primitiveActualcount; ++i)
+    {
+        auto& currentPrimitive = currentPrimitives[i];
+        currentPrimitive.startIndex = vertexData.size();
+        vertexData.insert(
+            vertexData.end(), currentPrimitive.vertices.begin(), currentPrimitive.vertices.end());
+    }
 
     glBindVertexArray(vertexArrayObject);
 
@@ -224,14 +247,13 @@ void VSDebugDraw::draw(VSWorld* world)
         vertexData.data(),
         GL_STATIC_DRAW);
 
-    for (const auto& primitive : primitives)
+    for (size_t i = 0; i != primitiveActualcount; ++i)
     {
-        drawPrimitive(primitive);
+        drawPrimitive(currentPrimitives[i]);
     }
 
     glBindVertexArray(0);
 
-    primitives.clear();
     vertexData.clear();
 }
 
@@ -245,13 +267,5 @@ void VSDebugDraw::drawPrimitive(const VSDebugDraw::VSDebugPrimitive& primitive) 
     {
         glLineWidth(primitive.thickness);
     }
-    glDrawArrays(primitive.primitiveMode, primitive.startIndex, primitive.vertexCount);
-}
-
-void VSDebugDraw::addPrimitiveVertices(
-    VSDebugPrimitive& inPrimitive,
-    const std::vector<VSDebugVertexData>& vertices)
-{
-    vertexData.insert(vertexData.end(), vertices.begin(), vertices.end());
-    inPrimitive.vertexCount = vertexData.size() - inPrimitive.startIndex;
+    glDrawArrays(primitive.primitiveMode, primitive.startIndex, primitive.vertices.size());
 }

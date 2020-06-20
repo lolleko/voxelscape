@@ -7,3 +7,4 @@ assimp
 stb
 nlohmann-json
 entt
+concurrentqueue
