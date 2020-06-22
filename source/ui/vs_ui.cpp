@@ -129,7 +129,7 @@ void VSUI::renderDebugGUI()
         uiState->bShouldUpdateChunks = true;
     }
     // This needs to be adapted to available biome types
-    const char* biomeTypes[] = {"Standard", "Mountains", "Desert"};
+    const char* biomeTypes[] = {"Standard", "Mountains", "Desert", "Biomes"};
     ImGui::Combo("Select biome", (int*)&uiState->bBiomeType, biomeTypes, IM_ARRAYSIZE(biomeTypes));
     if (ImGui::Button("Generate Terrain"))
     {
@@ -281,12 +281,12 @@ void VSUI::renderGameConfigGUI()
         if (uiState->worldSize == 0)
         {
             // Small
-            uiState->chunkCount = {32, 32};
+            uiState->chunkCount = {8, 8};
         }
         else if (uiState->worldSize == 1)
         {
             // Medium
-            uiState->chunkCount = {64, 64};
+            uiState->chunkCount = {32, 32};
         }
         else if (uiState->worldSize == 2)
         {
@@ -300,7 +300,7 @@ void VSUI::renderGameConfigGUI()
         }
     }
     // This needs to be adapted to available biome types
-    const char* biomeTypes[] = {"Standard", "Mountains", "Desert"};
+    const char* biomeTypes[] = {"Standard", "Mountains", "Desert", "Biomes"};
     ImGui::Combo("Select biome", (int*)&uiState->bBiomeType, biomeTypes, IM_ARRAYSIZE(biomeTypes));
 
     if (ImGui::Button("Start Game", ImVec2(ImGui::GetWindowContentRegionWidth(), 0.F)))

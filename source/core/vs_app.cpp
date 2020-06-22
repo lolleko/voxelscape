@@ -134,6 +134,7 @@ int VSApp::initializeGLFW()
 #endif
 
     // anti Aliasing
+    // Disable Multisampling for shadow mapping
     glfwWindowHint(GLFW_SAMPLES, 8);
 
     // Create window with graphics context

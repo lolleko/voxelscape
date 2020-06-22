@@ -6,8 +6,85 @@
 #include "world/vs_block.h"
 #include "world/vs_chunk_manager.h"
 
+#include <iostream>
 namespace VSTerrainGeneration
 {
+    void buildBiomes(VSWorld* world)
+    {
+        auto chunkManager = world->getChunkManager();
+        glm::ivec3 worldSize = chunkManager->getWorldSize();
+        glm::ivec3 worldSizeHalf = worldSize / 2;
+        VSHeightmap flatHM = VSHeightmap(42, worldSizeHalf.y, 2, 0.001F, 1.F, 4.F, 0.25F);
+        VSHeightmap mountainHM = VSHeightmap(42, worldSize.y, 2, 0.01F, worldSize.y, 4.F, 0.125F);
+
+        int numBiomes = 30;
+        VSHeightmap biomeMap = VSHeightmap(42, numBiomes, 1, 0.03F, 1.F, 4.F, 0.125F);
+
+        std::random_device rd;   // Will be used to obtain a seed for the random number engine
+        std::mt19937 gen(rd());  // Standard mersenne_twister_engine seeded with rd()
+        std::uniform_int_distribution<> dis(0, 300);  // For tree map
+
+        // int grassLine = worldSize.y / 2;
+        // int sandLine = -worldSize.y / 4;
+        // int waterLine = -worldSize.y / 3;
+
+        for (int x = -worldSizeHalf.x; x < worldSizeHalf.x; x++)
+        {
+            for (int z = -worldSizeHalf.z; z < worldSizeHalf.z; z++)
+            {
+                int biome = biomeMap.getVoxelHeight(x, z);
+                int height = flatHM.getVoxelHeight(x, z);
+                int blockID = 3;
+                if (biome > numBiomes / 2)
+                {
+                    // Interpolate
+                    height = ((biome - numBiomes / 2) * (mountainHM.getVoxelHeight(x, z) + worldSize.y / 4) + (numBiomes - (biome - numBiomes / 2)) * flatHM.getVoxelHeight(x, z)) / numBiomes;
+                    blockID = 1;
+                }
+
+                // if (height > grassLine)
+                // {
+                //     // Stone
+                //     blockID = 1;
+                // }
+                // else if (height > sandLine)
+                // {
+                //     // Grass
+                //     blockID = 3;
+                // }
+                // else if (height > waterLine)
+                // {
+                //     // Sand
+                //     blockID = 5;
+                // }
+                // else
+                // {
+                //     // Water for now
+                //     blockID = 2;
+                //     height = waterLine;
+                // }
+
+                for (int y = -worldSizeHalf.y; y < height; y++)
+                {
+                    chunkManager->setBlock({x, y, z}, blockID);
+                }
+
+                // int tree = dis(gen);
+                // if (tree == 0)
+                // {
+                //     if (height < 2 * worldSize.y / 3 && height > worldSize.y / 4)
+                //     {
+                //         if (x > -worldSizeHalf.x + 1 && z > -worldSizeHalf.z + 1 &&
+                //             x < worldSizeHalf.x - 3 && z < worldSizeHalf.z - 3)
+                //         {
+                //             treeAt(world, x, height - worldSizeHalf.y, z);
+                //         }
+                //     }
+                // }
+            }
+        }
+    }
+
     void buildStandard(VSWorld* world)
     {
         auto chunkManager = world->getChunkManager();
@@ -48,7 +125,7 @@ namespace VSTerrainGeneration
                     height = worldSize.y / 5;
                 }
 
-                for (int y = -worldSizeHalf.y; y < height - worldSizeHalf.y; y++)
+                for (int y = -worldSizeHalf.y; y < height; y++)
                 {
                     chunkManager->setBlock({x, y, z}, blockID);
                 }

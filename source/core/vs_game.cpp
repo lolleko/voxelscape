@@ -116,6 +116,10 @@ void VSGame::updateInternal(float deltaSeconds)
         {
             VSTerrainGeneration::buildDesert(world);
         }
+        else if (UI->getState()->bBiomeType == 3)
+        {
+            VSTerrainGeneration::buildBiomes(world);
+        }
         UI->getMutableState()->bShouldGenerateTerrain = false;
 
         if (!UI->getState()->bEditorActive)
