@@ -21,7 +21,7 @@ void updateHoverSystem(entt::registry& registry)
     if (inputs.mouseTrace.bHasHit)
     {
         registry.view<Hoverable, Location, Bounds>().each([&inputs, &worldContext](
-                                                              auto entity,
+                                                              const auto entity,
                                                               const Hoverable& hoverable,
                                                               const Location& location,
                                                               const Bounds& bounds) {
