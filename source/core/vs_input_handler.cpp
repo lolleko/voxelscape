@@ -1,6 +1,8 @@
 #include "core/vs_input_handler.h"
 #include <GLFW/glfw3.h>
 #include <glm/fwd.hpp>
+#include <iostream>
+#include <ostream>
 #include "core/vs_log.h"
 
 VSInputHandler::VSInputHandler(int displayWidth, int displayHeight)
@@ -138,13 +140,18 @@ void VSInputHandler::processKeyboardInput(GLFWwindow* window, float deltaTime)
     {
         keyFlags = KEY_FLAGS(keyFlags | KEY_D);
     }
+    if (glfwGetKey(window, GLFW_KEY_Q) == GLFW_PRESS)
+    {
+        keyFlags = KEY_FLAGS(keyFlags | KEY_Q);
+    }
     if (glfwGetKey(window, GLFW_KEY_E) == GLFW_PRESS)
     {
         keyFlags = KEY_FLAGS(keyFlags | KEY_E);
     }
-    if (glfwGetKey(window, GLFW_KEY_Q) == GLFW_PRESS)
+    if (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS ||
+        glfwGetKey(window, GLFW_KEY_RIGHT_SHIFT) == GLFW_PRESS)
     {
-        keyFlags = KEY_FLAGS(keyFlags | KEY_Q);
+        keyFlags = KEY_FLAGS(keyFlags | KEY_SHIFT);
     }
 
     // Release
@@ -164,13 +171,18 @@ void VSInputHandler::processKeyboardInput(GLFWwindow* window, float deltaTime)
     {
         keyFlags = KEY_FLAGS(keyFlags & ~KEY_D);
     }
+    if (glfwGetKey(window, GLFW_KEY_Q) == GLFW_RELEASE)
+    {
+        keyFlags = KEY_FLAGS(keyFlags & ~KEY_Q);
+    }
     if (glfwGetKey(window, GLFW_KEY_E) == GLFW_RELEASE)
     {
         keyFlags = KEY_FLAGS(keyFlags & ~KEY_E);
     }
-    if (glfwGetKey(window, GLFW_KEY_Q) == GLFW_RELEASE)
+    if (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_RELEASE &&
+        glfwGetKey(window, GLFW_KEY_RIGHT_SHIFT) == GLFW_RELEASE)
     {
-        keyFlags = KEY_FLAGS(keyFlags & ~KEY_Q);
+        keyFlags = KEY_FLAGS(keyFlags & ~KEY_SHIFT);
     }
 }
 

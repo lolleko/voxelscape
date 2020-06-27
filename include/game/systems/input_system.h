@@ -45,8 +45,15 @@ void updateInputSystem(entt::registry& registry)
             UI->getState()->anyWindowHovered,
             inputHandler->isLeftMouseClicked() ? InputState::Down : InputState::Up,
             inputHandler->isRightMouseClicked() ? InputState::Down : InputState::Up,
+            VSInputHandler::KEY_FLAGS(~inputHandler->getKeyFlags()),
+            VSInputHandler::NONE,
+            inputHandler->getKeyFlags(),
+            VSInputHandler::NONE,
             entt::null,
-            "null");
+            "null",
+            false,
+            false,
+            false);
     }
 
     const auto& previousInputs = registry.ctx<Inputs>();
@@ -68,6 +75,11 @@ void updateInputSystem(entt::registry& registry)
     const auto newRightButtonState = calculateMouseStateBasedOnPrevious(
         previousInputs.rightButtonState, inputHandler->isRightMouseClicked());
 
+    if (previousInputs.bShouldResetSelection)
+    {
+        UI->getMutableState()->selectedBuilding = "";
+    }
+
     const auto newSelectedBuilding = UI->getState()->selectedBuilding;
 
     const auto isAnyWindowHovered = UI->getState()->anyWindowHovered;
@@ -77,6 +89,13 @@ void updateInputSystem(entt::registry& registry)
         isAnyWindowHovered,
         newLeftButtonState,
         newRightButtonState,
+        VSInputHandler::KEY_FLAGS(~inputHandler->getKeyFlags()),
+        VSInputHandler::KEY_FLAGS(previousInputs.Up & inputHandler->getKeyFlags()),
+        VSInputHandler::KEY_FLAGS(inputHandler->getKeyFlags()),
+        VSInputHandler::KEY_FLAGS(previousInputs.Down & (~inputHandler->getKeyFlags())),
         previousInputs.hoverEntity,
-        newSelectedBuilding);
+        newSelectedBuilding,
+        false,
+        previousInputs.bIsBuildingPreviewInitialized,
+        previousInputs.bIsBuildingPreviewConstructed);
 }

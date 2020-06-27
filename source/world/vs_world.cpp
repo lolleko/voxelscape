@@ -17,6 +17,8 @@ VSWorld::VSWorld()
     camera = new VSCamera(glm::vec3(0.0F, 30.0F, 0.0F));
     cameraController = new VSFPCameraController(camera, this);
     chunkManager = new VSChunkManager();
+    previewChunkManager = new VSChunkManager();
+    previewChunkManager->setIsFrustumCullingEnabled(false);
     debugDraw = new VSDebugDraw();
     addDrawable(debugDraw);
 }
@@ -35,6 +37,7 @@ void VSWorld::removeDrawable(IVSDrawable* drawable)
 void VSWorld::update()
 {
     chunkManager->updateChunks();
+    previewChunkManager->updateChunks();
 }
 
 void VSWorld::draw(VSWorld* world)
@@ -45,6 +48,7 @@ void VSWorld::draw(VSWorld* world)
     }
 
     chunkManager->draw(world);
+    previewChunkManager->draw(world);
 }
 
 VSCamera* VSWorld::getCamera() const
@@ -62,7 +66,8 @@ void VSWorld::setCameraController(VSCameraController* newCameraController)
     cameraController = newCameraController;
 }
 
-glm::ivec3 VSWorld::intersectRayWithBlock(glm::vec3 rayOrigin, glm::vec3 rayDirection, bool returnPrev)
+glm::ivec3
+VSWorld::intersectRayWithBlock(glm::vec3 rayOrigin, glm::vec3 rayDirection, bool returnPrev)
 {
     // Map to block coordinates
     rayOrigin += getChunkManager()->getWorldSize() / 2;
@@ -86,20 +91,24 @@ glm::ivec3 VSWorld::intersectRayWithBlock(glm::vec3 rayOrigin, glm::vec3 rayDire
     float nextVoxelZ = location.z + stepZ;
 
     // The value of t at which the ray crosses the first vertical voxel boundary
-    float tMaxX =
-        (rayDirection.x != 0) ? (nextVoxelX - rayOrigin.x) / rayDirection.x : std::numeric_limits<float>::max();
-    float tMaxY =
-        (rayDirection.y != 0) ? (nextVoxelY - rayOrigin.y) / rayDirection.y : std::numeric_limits<float>::max();
-    float tMaxZ =
-        (rayDirection.z != 0) ? (nextVoxelZ - rayOrigin.z) / rayDirection.z : std::numeric_limits<float>::max();
+    float tMaxX = (rayDirection.x != 0) ? (nextVoxelX - rayOrigin.x) / rayDirection.x
+                                        : std::numeric_limits<float>::max();
+    float tMaxY = (rayDirection.y != 0) ? (nextVoxelY - rayOrigin.y) / rayDirection.y
+                                        : std::numeric_limits<float>::max();
+    float tMaxZ = (rayDirection.z != 0) ? (nextVoxelZ - rayOrigin.z) / rayDirection.z
+                                        : std::numeric_limits<float>::max();
 
-    float tDeltaX = (rayDirection.x != 0) ? stepX / rayDirection.x : std::numeric_limits<float>::max();
-    float tDeltaY = (rayDirection.y != 0) ? stepY / rayDirection.y : std::numeric_limits<float>::max();
-    float tDeltaZ = (rayDirection.z != 0) ? stepZ / rayDirection.z : std::numeric_limits<float>::max();
+    float tDeltaX =
+        (rayDirection.x != 0) ? stepX / rayDirection.x : std::numeric_limits<float>::max();
+    float tDeltaY =
+        (rayDirection.y != 0) ? stepY / rayDirection.y : std::numeric_limits<float>::max();
+    float tDeltaZ =
+        (rayDirection.z != 0) ? stepZ / rayDirection.z : std::numeric_limits<float>::max();
 
     while (i++ < 100)
     {
-        location = glm::ivec3(std::floor(rayOrigin.x), std::floor(rayOrigin.y), std::floor(rayOrigin.z));
+        location =
+            glm::ivec3(std::floor(rayOrigin.x), std::floor(rayOrigin.y), std::floor(rayOrigin.z));
         if (location.x >= size.x || location.y >= size.y || location.z >= size.z)
         {
             // do nothing
@@ -117,8 +126,8 @@ glm::ivec3 VSWorld::intersectRayWithBlock(glm::vec3 rayOrigin, glm::vec3 rayDire
                 if (returnPrev)
                 {
                     return (previous - getChunkManager()->getWorldSize() / 2);
-                } 
-                else 
+                }
+                else
                 {
                     return (location - getChunkManager()->getWorldSize() / 2);
                 }
@@ -175,6 +184,11 @@ glm::vec3 VSWorld::getDirectLightColor() const
 VSChunkManager* VSWorld::getChunkManager() const
 {
     return chunkManager;
+}
+
+VSChunkManager* VSWorld::getPreviewChunkManager() const
+{
+    return previewChunkManager;
 }
 
 VSDebugDraw* VSWorld::getDebugDraw() const

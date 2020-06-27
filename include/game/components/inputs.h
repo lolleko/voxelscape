@@ -6,6 +6,7 @@
 #include "game/components/location.h"
 #include "game/components/unique.h"
 #include "world/vs_chunk_manager.h"
+#include "core/vs_input_handler.h"
 
 enum class InputState
 {
@@ -24,7 +25,18 @@ struct Inputs
     InputState leftButtonState;
     InputState rightButtonState;
 
+    VSInputHandler::KEY_FLAGS Up;
+    VSInputHandler::KEY_FLAGS JustDown;
+    VSInputHandler::KEY_FLAGS Down;
+    VSInputHandler::KEY_FLAGS JustUp;
+
     entt::entity hoverEntity;
 
     Unique selectedBuilding;
+
+    bool bShouldResetSelection;
+
+    bool bIsBuildingPreviewInitialized;
+
+    bool bIsBuildingPreviewConstructed;
 };

@@ -90,6 +90,18 @@ public:
 
     void updateChunks();
 
+    [[nodiscard]] glm::vec3 getOrigin() const;
+
+    void setOrigin(const glm::vec3& newOrigin);
+
+    bool isFrustumCullingEnabled() const;
+
+    void setIsFrustumCullingEnabled(bool state);
+
+    glm::vec3 getColorOverride() const;
+
+    void setColorOverride(const glm::vec3& newColorOverride);
+
     void setChunkDimensions(const glm::ivec3& inChunkSize, const glm::ivec2& inChunkCount);
 
     void setWorldData(const VSWorldData& worldData);
@@ -120,6 +132,8 @@ public:
 private:
     std::vector<VSChunk*> chunks;
 
+    glm::vec3 origin{};
+
     glm::ivec3 chunkSize{};
 
     glm::ivec2 chunkCount{};
@@ -141,6 +155,10 @@ private:
     std::atomic<bool> bShouldReinitializeChunks = false;
 
     std::atomic<bool> bShouldInitializeFromData = false;
+
+    bool bIsFrustumCullingEnabled = true;
+
+    glm::vec3 colorOverride{1.F, 1.F, 1.F};
 
     VSWorldData worldDataFromFile;
 

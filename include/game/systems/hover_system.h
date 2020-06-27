@@ -7,18 +7,21 @@
 #include "game/components/inputs.h"
 #include "game/components/hoverable.h"
 #include "game/components/bounds.h"
+#include "game/components/world_context.h"
 #include "world/vs_world.h"
 
 void updateHoverSystem(entt::registry& registry)
 {
     auto& inputs = registry.ctx<Inputs>();
 
+    const auto& worldContext = registry.ctx<WorldContext>();
+
     inputs.hoverEntity = entt::null;
 
     if (inputs.mouseTrace.bHasHit)
     {
-        registry.view<Hoverable, Location, Bounds>().each([&inputs](
-                                                              auto entity,
+        registry.view<Hoverable, Location, Bounds>().each([&inputs, &worldContext](
+                                                              const auto entity,
                                                               const Hoverable& hoverable,
                                                               const Location& location,
                                                               const Bounds& bounds) {
@@ -29,7 +32,7 @@ void updateHoverSystem(entt::registry& registry)
             {
                 inputs.hoverEntity = entity;
                 // Add visual indicator
-                VSApp::getInstance()->getWorld()->getDebugDraw()->drawBox(
+                worldContext.world->getDebugDraw()->drawBox(
                     {location + bounds.min, location + bounds.max}, hoverable.hoverColor);
                 // For now stop on the first intersection
                 return;
