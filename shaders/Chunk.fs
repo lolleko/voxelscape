@@ -21,6 +21,8 @@ uniform vec3 viewPos;
 
 uniform uvec3 worldSize;
 
+uniform vec3 colorOverride;
+
 uniform sampler2DArray spriteTexture;
 uniform sampler3D shadowTexture;
 
@@ -182,6 +184,8 @@ void main() {
 
     //color = applyFog(color, length(viewPos - i.worldPosition),  viewDir, directLightDir);
     color = fog(color, vec3(0.5,0.6,0.7), length(viewPos - i.worldPosition), 0.0022);
+
+    color = color * colorOverride;
 
     // gamma correction
     color = pow(color, vec3(1.0/2.2));

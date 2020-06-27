@@ -49,6 +49,8 @@ public:
 
     [[nodiscard]] VSChunkManager* getChunkManager() const;
 
+    [[nodiscard]] VSChunkManager* getPreviewChunkManager() const;
+
     [[nodiscard]] VSDebugDraw* getDebugDraw() const;
 
 private:
@@ -56,6 +58,8 @@ private:
     VSCameraController* cameraController;
 
     VSChunkManager* chunkManager;
+
+    VSChunkManager* previewChunkManager;
 
     VSDebugDraw* debugDraw;
 

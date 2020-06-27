@@ -18,6 +18,7 @@ public:
         KEY_W = (1 << 3),
         KEY_Q = (1 << 4),
         KEY_E = (1 << 5),
+        KEY_SHIFT = (1 << 6)
     };
 
     [[nodiscard]] double getYScrollOffset() const;

@@ -19,6 +19,8 @@ layout (location = 10) in uint vd;
 
 uniform vec3[7] blockColors;
 
+uniform vec3 origin;
+
 out VertexData {
     vec3 worldPosition;
     vec3 normal;
@@ -36,7 +38,7 @@ uniform mat4 VP;
 
 void main()
 {
-    o.worldPosition = vec3(blockLocation + inPosition);
+    o.worldPosition = origin + vec3(blockLocation + inPosition);
     o.normal = inNormal;
     o.texCoord = inTexCoord;
     o.tangent = inTangent;

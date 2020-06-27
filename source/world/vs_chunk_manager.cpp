@@ -251,8 +251,9 @@ void VSChunkManager::draw(VSWorld* world)
         const auto radius = glm::sqrt(
             chunkSize.x * chunkSize.x + chunkSize.y * chunkSize.y + chunkSize.z * chunkSize.z);
 
-        if ((glm::abs(chunkCenterInP.x) - radius) < (chunkCenterInP.w * 1.F) &&
-            (glm::abs(chunkCenterInP.y) - radius) < (chunkCenterInP.w * 1.F))
+        if (!bIsFrustumCullingEnabled ||
+            ((glm::abs(chunkCenterInP.x) - radius) < (chunkCenterInP.w * 1.F) &&
+             (glm::abs(chunkCenterInP.y) - radius) < (chunkCenterInP.w * 1.F)))
         {
             for (std::size_t i = 0; i < chunk->visibleBlockInfos.size(); i++)
             {
@@ -272,6 +273,8 @@ void VSChunkManager::draw(VSWorld* world)
         .setVec3("lightDir", world->getDirectLightDir())
         .setVec3("lightColor", world->getDirectLightColor())
         .setVec3("viewPos", world->getCamera()->getPosition())
+        .setVec3("origin", origin)
+        .setVec3("colorOverride", colorOverride)
         .setMat4("VP", world->getCamera()->getVPMatrix())
         .setUVec3("worldSize", getWorldSize())
         .setInt("shadowTexture", shadowTextureID)
@@ -378,6 +381,36 @@ void VSChunkManager::updateChunks()
             updateShadows(chunkIndex);
         }
     }
+}
+
+glm::vec3 VSChunkManager::getOrigin() const
+{
+    return origin;
+}
+
+void VSChunkManager::setOrigin(const glm::vec3& newOrigin)
+{
+    origin = newOrigin;
+}
+
+bool VSChunkManager::isFrustumCullingEnabled() const
+{
+    return bIsFrustumCullingEnabled;
+}
+
+void VSChunkManager::setIsFrustumCullingEnabled(bool state)
+{
+    bIsFrustumCullingEnabled = state;
+}
+
+glm::vec3 VSChunkManager::getColorOverride() const
+{
+    return colorOverride;
+}
+
+void VSChunkManager::setColorOverride(const glm::vec3& newColorOverride)
+{
+    colorOverride = newColorOverride;
 }
 
 void VSChunkManager::setChunkDimensions(
