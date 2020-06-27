@@ -9,7 +9,6 @@ namespace VSTerrainGeneration
     void buildDesert(VSWorld* world);
     void buildMountains(VSWorld* world);
     void buildStandard(VSWorld* world);
-    void buildBiomes(VSWorld* world);
 
     void treeAt(VSWorld* world, int x, int y, int z);
     void cactusAt(VSWorld* world, int x, int y, int z);
