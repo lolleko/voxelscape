@@ -35,7 +35,6 @@ float VSHeightmap::getHeight(int x, int y)
         frequency *= mLacunarity;
         amplitude *= mPersistence;
     }
-
     return (output / denom);
 }
 
@@ -46,6 +45,6 @@ void VSHeightmap::setMaxHeight(int maxHeight)
 
 int VSHeightmap::getVoxelHeight(int x, int y)
 {
-    float height = getHeight(x, y) * (float)mMaxHeight;
-    return static_cast<int>(std::round(height))/* + mMaxHeight / 2*/;
+    float height = getHeight(x, y) * (float)mMaxHeight / 2 + (mMaxHeight / 2);
+    return static_cast<int>(std::round(height));
 }

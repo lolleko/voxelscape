@@ -1,5 +1,7 @@
 #include "world/generator/vs_terrain.h"
+#include <algorithm>
 #include <glm/fwd.hpp>
+#include <glm/gtx/easing.hpp>
 #include <random>
 #include <vector>
 #include "world/generator/vs_heightmap.h"
@@ -14,19 +16,21 @@ namespace VSTerrainGeneration
         auto chunkManager = world->getChunkManager();
         glm::ivec3 worldSize = chunkManager->getWorldSize();
         glm::ivec3 worldSizeHalf = worldSize / 2;
-        VSHeightmap flatHM = VSHeightmap(42, worldSizeHalf.y, 2, 0.001F, 1.F, 4.F, 0.25F);
-        VSHeightmap mountainHM = VSHeightmap(42, worldSize.y, 2, 0.01F, worldSize.y, 4.F, 0.125F);
+        VSHeightmap flatHM =
+            VSHeightmap(42, worldSize.y / 4, 3, 0.005F, worldSize.y / 4, 2.F, 0.5F);
+        VSHeightmap mountainHM = VSHeightmap(42, worldSize.y / 2, 2, 0.02F, worldSize.y / 2, 2.F, 0.125F);
 
-        int numBiomes = 30;
-        VSHeightmap biomeMap = VSHeightmap(42, numBiomes, 1, 0.03F, 1.F, 4.F, 0.125F);
+        int numBiomes = 1000;
+        VSHeightmap biomeMap = VSHeightmap(42, numBiomes, 1, 0.005F, 1.F, 2.F, 0.125F);
 
         std::random_device rd;   // Will be used to obtain a seed for the random number engine
         std::mt19937 gen(rd());  // Standard mersenne_twister_engine seeded with rd()
         std::uniform_int_distribution<> dis(0, 300);  // For tree map
+        std::uniform_int_distribution<> disEdge(0, 1);
 
-        // int grassLine = worldSize.y / 2;
-        // int sandLine = -worldSize.y / 4;
-        // int waterLine = -worldSize.y / 3;
+        int grassLine = worldSize.y / 3;
+        int waterLine = worldSize.y / 16;
+        int sandLine = waterLine + 1;
 
         for (int x = -worldSizeHalf.x; x < worldSizeHalf.x; x++)
         {
@@ -34,53 +38,54 @@ namespace VSTerrainGeneration
             {
                 int biome = biomeMap.getVoxelHeight(x, z);
                 int height = flatHM.getVoxelHeight(x, z);
+                int mountainHeight = mountainHM.getVoxelHeight(x, z) + worldSizeHalf.y;
+
+                // interpolate
+                float weight = glm::quarticEaseIn((float)biome/numBiomes);
+                height = ((1 - weight) * height +
+                          (weight) * mountainHeight);
+
                 int blockID = 3;
-                if (biome > numBiomes / 2)
+
+                if (height > grassLine + disEdge(gen))
                 {
-                    // Interpolate
-                    height = ((biome - numBiomes / 2) * (mountainHM.getVoxelHeight(x, z) + worldSize.y / 4) + (numBiomes - (biome - numBiomes / 2)) * flatHM.getVoxelHeight(x, z)) / numBiomes;
+                    // Stone
                     blockID = 1;
                 }
+                else if (height > sandLine)
+                {
+                    // Grass
+                    blockID = 3;
+                }
+                else if (height > waterLine)
+                {
+                    // Sand
+                    blockID = 5;
+                }
+                else
+                {
+                    // Water for now
+                    blockID = 2;
+                    height = waterLine;
+                }
 
-                // if (height > grassLine)
-                // {
-                //     // Stone
-                //     blockID = 1;
-                // }
-                // else if (height > sandLine)
-                // {
-                //     // Grass
-                //     blockID = 3;
-                // }
-                // else if (height > waterLine)
-                // {
-                //     // Sand
-                //     blockID = 5;
-                // }
-                // else
-                // {
-                //     // Water for now
-                //     blockID = 2;
-                //     height = waterLine;
-                // }
-
-                for (int y = -worldSizeHalf.y; y < height; y++)
+                for (int y = -worldSizeHalf.y; y < height - worldSizeHalf.y; y++)
                 {
                     chunkManager->setBlock({x, y, z}, blockID);
                 }
 
-                // int tree = dis(gen);
-                // if (tree == 0)
-                // {
-                //     if (height < 2 * worldSize.y / 3 && height > worldSize.y / 4)
-                //     {
-                //         if (x > -worldSizeHalf.x + 1 && z > -worldSizeHalf.z + 1 &&
-                //             x < worldSizeHalf.x - 3 && z < worldSizeHalf.z - 3)
-                //         {
-                //             treeAt(world, x, height - worldSizeHalf.y, z);
-                //         }
-                //     }
-                // }
+                int tree = dis(gen);
+                if (tree == 0)
+                {
+                    if (height < grassLine && height > sandLine)
+                    {
+                        if (x > -worldSizeHalf.x + 1 && z > -worldSizeHalf.z + 1 &&
+                            x < worldSizeHalf.x - 3 && z < worldSizeHalf.z - 3)
+                        {
+                            treeAt(world, x, height - worldSizeHalf.y, z);
+                        }
+                    }
+                }
             }
         }
     }
@@ -90,7 +95,7 @@ namespace VSTerrainGeneration
         auto chunkManager = world->getChunkManager();
         glm::ivec3 worldSize = chunkManager->getWorldSize();
         glm::ivec3 worldSizeHalf = worldSize / 2;
-        VSHeightmap hm = VSHeightmap(42, worldSize.y, 2, 0.01F, worldSize.y, 4.F, 0.125F);
+        VSHeightmap hm = VSHeightmap(42, worldSize.y, 2, 0.01F, worldSize.y, 2.F, 0.125F);
 
         std::random_device rd;   // Will be used to obtain a seed for the random number engine
         std::mt19937 gen(rd());  // Standard mersenne_twister_engine seeded with rd()
