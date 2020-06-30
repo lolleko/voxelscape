@@ -1,6 +1,5 @@
 #pragma once
 
-#include <_types/_uint32_t.h>
 #include <glad/glad.h>
 #include <atomic>
 #include <cstdint>
