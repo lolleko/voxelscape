@@ -1,5 +1,6 @@
 #pragma once
 
+#include <_types/_uint32_t.h>
 #include <glad/glad.h>
 #include <atomic>
 #include <cstdint>
@@ -33,9 +34,12 @@ class VSChunkManager : public IVSDrawable
         {
             glm::vec3 locationWorldSpace;
             VSBlockID id;
-            std::uint8_t lightLevel;
-            std::uint32_t vc;
-            std::uint32_t vd;
+            std::uint32_t lightRight;
+            std::uint32_t lightLeft;
+            std::uint32_t lightTop;
+            std::uint32_t lightBottom;
+            std::uint32_t lightFront;
+            std::uint32_t lightBack;
         };
 
         std::vector<VSBlockID> blocks;
@@ -196,7 +200,7 @@ private:
         /*Wood=4*/ 0.F,
         /*Sand=5*/ 0.F,
         /*Leaf=6*/ 0.F,
-        /*Lava=7*/ 32.F};
+        /*Lava=7*/ 16.F};
 
     void initializeChunks();
 
@@ -225,12 +229,11 @@ private:
 
     bool isAtWorldBorder(const glm::ivec3& blockWorldCoordinates) const;
 
-    std::tuple<std::uint32_t, std::uint32_t>
-    getAdjacencyInformation(const glm::vec3& blockCoordinates) const;
+    std::array<std::uint32_t, 6> getLightInformation(const glm::vec3& blockCoordinates) const;
 
-    std::bitset<8> getAdjacencyInformationForFace(
+    std::uint32_t getLightInformationForFace(
         const glm::vec3& blockWorldCoordinates,
-        const glm::vec3& faceDir) const;
+        const std::array<glm::vec3, 4>& corners) const;
 
     std::size_t chunkCoordinatesToChunkIndex(const glm::ivec2& chunkCoordinates) const;
 

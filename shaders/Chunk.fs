@@ -9,8 +9,6 @@ in VertexData {
     vec3 material;
     flat uint blockID;
     float lightLevel;
-    flat uint vc;
-    flat uint vd;
 } i;
 
 out vec4 outColor;
@@ -77,55 +75,6 @@ float raymarch(in vec3 ro, in vec3 rd) {
     return clamp(res, 0.2, 1.0);
 }
 
-uint normalToFaceIndex(in vec3 n)
-{
-    if (n.x == 1) {
-        return 0u;
-    }
-    if (n.x == -1) {
-        return 1u;
-    }
-    if (n.y == 1) {
-        return 2u;
-    }
-    if (n.y == -1) {
-        return 3u;
-    }
-    if (n.z == 1) {
-        return 4u;
-    }
-    if (n.z == -1) {
-        return 5u;
-    }
-}
-
-uvec4 uintToUVec4(uint compressed, uint offset) {
-    uint k = offset;
-    return uvec4((compressed >> k) & 1u, (compressed >> (k + 1u)) & 1u, (compressed >> (k + 2u)) & 1u, (compressed >> (k + 3u)) & 1u);
-}
-
-float calcOcc(in vec3 nor )
-{
-    uint faceIndex = normalToFaceIndex(nor);
-	vec2 uv = i.texCoord;
-    uvec4 vc = uintToUVec4(i.vc, faceIndex * 4u);
-    uvec4 vd = uintToUVec4(i.vd, faceIndex * 4u);
-
-    vec2 st = 1.0 - uv;
-
-    // edges
-    vec4 wa = vec4( uv.x, st.x, uv.y, st.y ) * vc; // TODO change back to vc if uvs figured out
-
-    // corners
-    vec4 wb = vec4(uv.x*uv.y,
-                   st.x*uv.y,
-                   st.x*st.y,
-                   uv.x*st.y)*vd*(1.0-vc.xzyw)*(1.0-vc.zywx);
-    
-    //return wa.x + wa.y + wa.z + wa.w + wb.x + wb.y + wb.z + wb.w;
-    return (vc.x + vc.y + vc.z + vc.w + vd.x + vd.y + vd.z + vd.w) / 8.0;//wa.x + wa.y + wa.z + wa.w + wb.x + wb.y + wb.z + wb.w;
-}
-
 vec3 applyFog(in vec3  rgb,
                in float distance,
                in vec3  rayDir,
@@ -158,10 +107,8 @@ void main() {
     float occ = 1.0;
 
     if (enableAO) {
-        occ = calcOcc(norm);
-        occ = 1.0 - occ/8.0;
-        occ = occ*occ;
-        occ = occ*occ;
+        occ = clamp(pow(16, i.lightLevel) - 1.0, 0.0, 1.0);
+        occ = occ * occ;
     }
 
     float sun = clamp(dot(norm, directLightDir), 0.05, 1.0 );

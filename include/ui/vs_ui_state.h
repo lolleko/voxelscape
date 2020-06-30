@@ -21,7 +21,7 @@ struct VSUIState
     int activeBlockCount = 0;
     bool bShouldFreezeFrustum = false;
     bool bAreShadowsEnabled = false;
-    bool bIsAmbientOcclusionEnabled = false;
+    bool bIsAmbientOcclusionEnabled = true;
     bool bShouldShowAO = false;
     bool bShouldShowUV = false;
     bool bShouldShowNormals = false;
