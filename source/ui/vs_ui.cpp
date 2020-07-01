@@ -58,10 +58,10 @@ void VSUI::setup(const char* glsl_version, GLFWwindow* window)
     debugFont = io.Fonts->AddFontDefault();
     menuFont = io.Fonts->AddFontFromFileTTF("resources/arial.ttf", 40.F);
 
-    woodResourceTexture = TextureFromFile("textures/tiles/4_wood.png");
-    stoneResourceTexture = TextureFromFile("textures/tiles/1_stone.png");
-    lumberjackIcon = TextureFromFile("textures/icons/lumberjack_icon.png");
-    stonemineIcon = TextureFromFile("textures/icons/stonemine_icon.png");
+    woodResourceTexture = TextureFromFile("resources/textures/tiles/4_wood.png");
+    stoneResourceTexture = TextureFromFile("resources/textures/tiles/1_stone.png");
+    lumberjackIcon = TextureFromFile("resources/textures/icons/lumberjack_icon.png");
+    stonemineIcon = TextureFromFile("resources/textures/icons/stonemine_icon.png");
 };
 
 void VSUI::cleanup()

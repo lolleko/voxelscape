@@ -53,23 +53,25 @@ unsigned int loadCubemap(std::vector<std::string> faces)
 
 unsigned int loadDebugCubemap()
 {
-    std::vector<std::string> faces{"textures/cubemapDebug/right.jpg",
-                                   "textures/cubemapDebug/left.jpg",
-                                   "textures/cubemapDebug/top.jpg",
-                                   "textures/cubemapDebug/bottom.jpg",
-                                   "textures/cubemapDebug/front.jpg",
-                                   "textures/cubemapDebug/back.jpg"};
+    std::vector<std::string> faces{
+        "resources/textures/cubemapDebug/right.jpg",
+        "resources/textures/cubemapDebug/left.jpg",
+        "resources/textures/cubemapDebug/top.jpg",
+        "resources/textures/cubemapDebug/bottom.jpg",
+        "resources/textures/cubemapDebug/front.jpg",
+        "resources/textures/cubemapDebug/back.jpg"};
     return loadCubemap(faces);
 }
 
 unsigned int loadSkyboxCubemap()
 {
-    std::vector<std::string> faces{"textures/skybox/right.jpg",
-                                   "textures/skybox/left.jpg",
-                                   "textures/skybox/top.jpg",
-                                   "textures/skybox/bottom.jpg",
-                                   "textures/skybox/front.jpg",
-                                   "textures/skybox/back.jpg"};
+    std::vector<std::string> faces{
+        "resources/textures/skybox/right.jpg",
+        "resources/textures/skybox/left.jpg",
+        "resources/textures/skybox/top.jpg",
+        "resources/textures/skybox/bottom.jpg",
+        "resources/textures/skybox/front.jpg",
+        "resources/textures/skybox/back.jpg"};
     return loadCubemap(faces);
 }
 
@@ -217,10 +219,7 @@ unsigned int TextureFromData(unsigned char* data, int width, int height, int nrC
     }
     else
     {
-        VSLog::Log(
-            VSLog::Category::Core,
-            VSLog::Level::err,
-            "Data pointer is null");
+        VSLog::Log(VSLog::Category::Core, VSLog::Level::err, "Data pointer is null");
     }
 
     return textureID;

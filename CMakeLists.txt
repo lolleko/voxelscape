@@ -1,5 +1,9 @@
 cmake_minimum_required(VERSION 3.5 FATAL_ERROR)
 
+set(VERSION_MAJOR 0)
+set(VERSION_MINOR 1)
+set(VERSION_PATCH 0)
+
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 set(CMAKE_CXX_VISIBILITY_PRESET hidden)
@@ -88,10 +92,18 @@ find_package(unofficial-concurrentqueue CONFIG REQUIRED)
 target_link_libraries("${CMAKE_PROJECT_NAME}" PRIVATE unofficial::concurrentqueue::concurrentqueue)
 
 # Resources
-add_custom_command(TARGET "${CMAKE_PROJECT_NAME}" PRE_BUILD COMMAND ${CMAKE_COMMAND} -E create_symlink  ${CMAKE_SOURCE_DIR}/shaders/ ${CMAKE_BINARY_DIR}/shaders)
-
-add_custom_command(TARGET "${CMAKE_PROJECT_NAME}" PRE_BUILD COMMAND ${CMAKE_COMMAND} -E create_symlink  ${CMAKE_SOURCE_DIR}/textures/ ${CMAKE_BINARY_DIR}/textures)
-
 add_custom_command(TARGET "${CMAKE_PROJECT_NAME}" PRE_BUILD COMMAND ${CMAKE_COMMAND} -E create_symlink ${CMAKE_SOURCE_DIR}/resources/ ${CMAKE_BINARY_DIR}/resources)
 
-add_custom_command(TARGET "${CMAKE_PROJECT_NAME}" PRE_BUILD COMMAND ${CMAKE_COMMAND} -E create_symlink  ${CMAKE_SOURCE_DIR}/models/ ${CMAKE_BINARY_DIR}/models)
+install(TARGETS "${CMAKE_PROJECT_NAME}" RUNTIME DESTINATION . COMPONENT App)
+install(DIRECTORY ${CMAKE_SOURCE_DIR}/resources DESTINATION . COMPONENT Resources)
+
+set(CPACK_PACKAGE_DESCRIPTION "Just another CPacke example")
+set(CPACK_PACKAGE_VERSION_MAJOR "${VERSION_MAJOR}")
+set(CPACK_PACKAGE_VERSION_MINOR "${VERSION_MINOR}")
+set(CPACK_PACKAGE_VERSION_PATCH "${VERSION_PATCH}")
+set(CPACK_PACKAGE_FILE_NAME "${CMAKE_PROJECT_NAME}")
+set(CPACK_BUNDLE_NAME "${CMAKE_PROJECT_NAME}")
+set(CPACK_BUNDLE_NAME "${CMAKE_PROJECT_NAME}")
+set(CPACK_GENERATOR "ZIP")
+
+include (CPack)

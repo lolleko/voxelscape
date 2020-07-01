@@ -44,7 +44,8 @@ VSChunkManager::VSChunkManager()
 
     for (std::size_t i = 1; i < 64; i++)
     {
-        auto* vertexContext = loadVertexContext("models/cubes/" + std::to_string(i) + ".obj");
+        auto* vertexContext =
+            loadVertexContext("resources/models/cubes/" + std::to_string(i) + ".obj");
         vertexContexts[i] = vertexContext;
 
         glBindVertexArray(vertexContext->vertexArrayObject);
@@ -157,7 +158,7 @@ VSChunkManager::VSChunkManager()
         /*Leaf=6*/ {0.F, 0.5F, 0.F},
         /*Lava=7*/ {1.F, 0.0F, 0.F}};
 
-    spriteTexture = TextureAtlasFromFile("textures/tiles");
+    spriteTexture = TextureAtlasFromFile("resources/textures/tiles");
 
     chunkShader.uniforms()
         .setVec3Array("blockColors", blockColors)

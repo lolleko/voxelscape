@@ -83,7 +83,7 @@ public:
 private:
     GLuint ID;
 
-    inline static const auto shaderDirectory = std::filesystem::path("shaders");
+    inline static const auto shaderDirectory = std::filesystem::path("resources/shaders");
 
     static bool checkShaderCompileErrors(unsigned int shaderID);
 

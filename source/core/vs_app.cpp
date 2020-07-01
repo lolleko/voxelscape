@@ -38,7 +38,7 @@ VSApp::VSApp()
 {
     // singleton dont construct more than once
     assert(!VSApp::instance);
-    if (!VSApp::instance)
+    if (VSApp::instance == nullptr)
     {
         VSApp::instance = this;
     }
