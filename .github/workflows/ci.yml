@@ -48,31 +48,11 @@ jobs:
         if: steps.vcpkg-installed-cache.outputs.cache-hit != 'true' || steps.vcpkg-packages-cache.outputs.cache-hit != 'true'
       - run: cmake -Bbuild -DCMAKE_BUILD_TYPE=Release
       - run: cmake --build build
-      - name: Upload build artifacts for release
-        uses: actions/upload-artifact@v1
-        if: startsWith(github.ref, 'refs/tags')
-        with:
-          name: build-${{matrix.os}}
-          path: build/
-
-  release:
-    name: Release ${{ matrix.os }}
-    runs-on: ${{ matrix.os }}
-    strategy:
-      matrix:
-        os: [ubuntu-latest, windows-latest, macos-latest]
-    needs: build
-    if: startsWith(github.ref, 'refs/tags')
-    steps:
-      - uses: actions/checkout@v2
-      - name: Download build artifacts
-        uses: actions/download-artifact@v1
-        with:
-          name: build-${{matrix.os}}
-      - run: mv build-${{matrix.os}} build
       - name: Package
+        if: startsWith(github.ref, 'refs/tags')
         run: cmake --build build --target package
       - name: Create Release
+        if: startsWith(github.ref, 'refs/tags')
         id: create_release
         uses: actions/create-release@v1
         env:
@@ -83,6 +63,7 @@ jobs:
           draft: false
           prerelease: false
       - name: Upload Release Asset
+        if: startsWith(github.ref, 'refs/tags')
         id: upload-release-asset
         uses: actions/upload-release-asset@v1
         env:
