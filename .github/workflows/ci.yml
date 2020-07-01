@@ -69,6 +69,7 @@ jobs:
         uses: actions/download-artifact@v1
         with:
           name: build-${{matrix.os}}
+      - run: mv build-${{matrix.os}} build
       - name: Package
         run: cmake --build build --target package
       - name: Create Release
