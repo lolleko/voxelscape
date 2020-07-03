@@ -19,11 +19,11 @@ enum class InputState
 struct Inputs
 {
     VSChunkManager::VSTraceResult mouseTrace;
-    bool anyWindowHovered;
 
     // Button/Key states
     InputState leftButtonState;
     InputState rightButtonState;
+    InputState middleButtonState;
 
     VSInputHandler::KEY_FLAGS Up;
     VSInputHandler::KEY_FLAGS JustDown;
@@ -31,12 +31,4 @@ struct Inputs
     VSInputHandler::KEY_FLAGS JustUp;
 
     entt::entity hoverEntity;
-
-    Unique selectedBuilding;
-
-    bool bShouldResetSelection;
-
-    bool bIsBuildingPreviewInitialized;
-
-    bool bIsBuildingPreviewConstructed;
 };

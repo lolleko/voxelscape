@@ -3,22 +3,25 @@
 #include <iostream>
 #include <ostream>
 #include "core/vs_input_handler.h"
+#include "game/components/ui_context.h"
 
 void updatePlacementSystem(entt::registry& mainRegistry, entt::registry& buildingTemplateRegistry)
 {
-    auto& inputs = mainRegistry.ctx<Inputs>();
+    const auto& inputs = mainRegistry.ctx<Inputs>();
 
     const auto& worldContext = mainRegistry.ctx<WorldContext>();
 
+    auto& uiContext = mainRegistry.ctx<UIContext>();
+
     const auto mouseLocation = glm::floor(inputs.mouseTrace.hitLocation);
 
-    if (inputs.mouseTrace.bHasHit && !inputs.anyWindowHovered &&
+    if (inputs.mouseTrace.bHasHit && !uiContext.anyWindowHovered &&
         worldContext.bounds.isLocationInside(mouseLocation))
     {
         entt::entity selectedBuildingTemplate = entt::null;
         buildingTemplateRegistry.view<Unique>().each(
-            [&selectedBuildingTemplate, &inputs](const auto ent, const Unique& unique) {
-                if (unique.uuid == inputs.selectedBuilding.uuid)
+            [&selectedBuildingTemplate, &uiContext](const auto ent, const Unique& unique) {
+                if (unique.uuid == uiContext.selectedBuilding.uuid)
                 {
                     selectedBuildingTemplate = ent;
                 }
@@ -38,15 +41,15 @@ void updatePlacementSystem(entt::registry& mainRegistry, entt::registry& buildin
 
             auto* previewChunkManager = worldContext.world->getPreviewChunkManager();
 
-            if (!inputs.bIsBuildingPreviewInitialized)
+            if (!uiContext.bIsBuildingPreviewInitialized)
             {
                 previewChunkManager->setChunkDimensions(templateBlocks.size * 3, {2, 2});
-                inputs.bIsBuildingPreviewInitialized = true;
+                uiContext.bIsBuildingPreviewInitialized = true;
             }
 
-            if (inputs.bIsBuildingPreviewInitialized &&
+            if (uiContext.bIsBuildingPreviewInitialized &&
                 !previewChunkManager->shouldReinitializeChunks() &&
-                !inputs.bIsBuildingPreviewConstructed)
+                !uiContext.bIsBuildingPreviewConstructed)
             {
                 for (int x = 0; x < templateBlocks.size.x; x++)
                 {
@@ -66,10 +69,10 @@ void updatePlacementSystem(entt::registry& mainRegistry, entt::registry& buildin
                         }
                     }
                 }
-                inputs.bIsBuildingPreviewConstructed = true;
+                uiContext.bIsBuildingPreviewConstructed = true;
             }
 
-            if (inputs.bIsBuildingPreviewConstructed)
+            if (uiContext.bIsBuildingPreviewConstructed)
             {
                 previewChunkManager->setOrigin(glm::ceil(mouseLocation) + glm::vec3{1, 0, 1});
             }
@@ -90,11 +93,11 @@ void updatePlacementSystem(entt::registry& mainRegistry, entt::registry& buildin
 
             if (intersect)
             {
-                previewChunkManager->setColorOverride(glm::vec3{1.F, 0.5F, 0.5F});
+                previewChunkManager->setColorOverride(glm::vec3{1.F, 0.3F, 0.3F});
             }
             else
             {
-                previewChunkManager->setColorOverride(glm::vec3{0.5F, 1.F, 0.5F});
+                previewChunkManager->setColorOverride(glm::vec3{0.3F, 1.F, 0.3F});
             }
 
             // TODO intersection test with blocks
@@ -129,15 +132,17 @@ void updatePlacementSystem(entt::registry& mainRegistry, entt::registry& buildin
 
                 if ((inputs.Up & VSInputHandler::KEY_SHIFT) != 0)
                 {
-                    inputs.bShouldResetSelection = true;
+                    uiContext.selectedBuilding = {""};
                 }
+
+                uiContext.minimap.bShouldUpdate = true;
             }
         }
         else
         {
             worldContext.world->getPreviewChunkManager()->setChunkDimensions({}, {});
-            inputs.bIsBuildingPreviewInitialized = false;
-            inputs.bIsBuildingPreviewConstructed = false;
+            uiContext.bIsBuildingPreviewInitialized = false;
+            uiContext.bIsBuildingPreviewConstructed = false;
         }
     }
 }

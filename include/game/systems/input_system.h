@@ -34,29 +34,18 @@ InputState calculateMouseStateBasedOnPrevious(InputState previous, bool bIsClick
 void updateInputSystem(entt::registry& registry)
 {
     const auto* inputHandler = VSApp::getInstance()->getInputHandler();
-    auto* UI = VSApp::getInstance()->getUI();
 
     // at startup we wont have a previousInput -> create one
-    const auto* previousInputsPtr = registry.try_ctx<Inputs>();
-    if (previousInputsPtr == nullptr)
-    {
-        registry.set<Inputs>(
-            VSChunkManager::VSTraceResult{},
-            UI->getState()->anyWindowHovered,
-            inputHandler->isLeftMouseClicked() ? InputState::Down : InputState::Up,
-            inputHandler->isRightMouseClicked() ? InputState::Down : InputState::Up,
-            VSInputHandler::KEY_FLAGS(~inputHandler->getKeyFlags()),
-            VSInputHandler::NONE,
-            inputHandler->getKeyFlags(),
-            VSInputHandler::NONE,
-            entt::null,
-            "null",
-            false,
-            false,
-            false);
-    }
-
-    const auto& previousInputs = registry.ctx<Inputs>();
+    const auto& previousInputs = registry.ctx_or_set<Inputs>(
+        VSChunkManager::VSTraceResult{},
+        inputHandler->isLeftMouseClicked() ? InputState::Down : InputState::Up,
+        inputHandler->isRightMouseClicked() ? InputState::Down : InputState::Up,
+        inputHandler->isMiddleMouseClicked() ? InputState::Down : InputState::Up,
+        VSInputHandler::KEY_FLAGS(~inputHandler->getKeyFlags()),
+        VSInputHandler::NONE,
+        inputHandler->getKeyFlags(),
+        VSInputHandler::NONE,
+        entt::null);
 
     const auto* world = registry.ctx<WorldContext>().world;
 
@@ -74,28 +63,17 @@ void updateInputSystem(entt::registry& registry)
         previousInputs.leftButtonState, inputHandler->isLeftMouseClicked());
     const auto newRightButtonState = calculateMouseStateBasedOnPrevious(
         previousInputs.rightButtonState, inputHandler->isRightMouseClicked());
-
-    if (previousInputs.bShouldResetSelection)
-    {
-        UI->getMutableState()->selectedBuilding = "";
-    }
-
-    const auto newSelectedBuilding = UI->getState()->selectedBuilding;
-
-    const auto isAnyWindowHovered = UI->getState()->anyWindowHovered;
+    const auto newMiddleButtonState = calculateMouseStateBasedOnPrevious(
+        previousInputs.middleButtonState, inputHandler->isMiddleMouseClicked());
 
     registry.set<Inputs>(
         newMouseTrace,
-        isAnyWindowHovered,
         newLeftButtonState,
         newRightButtonState,
+        newMiddleButtonState,
         VSInputHandler::KEY_FLAGS(~inputHandler->getKeyFlags()),
         VSInputHandler::KEY_FLAGS(previousInputs.Up & inputHandler->getKeyFlags()),
         VSInputHandler::KEY_FLAGS(inputHandler->getKeyFlags()),
         VSInputHandler::KEY_FLAGS(previousInputs.Down & (~inputHandler->getKeyFlags())),
-        previousInputs.hoverEntity,
-        newSelectedBuilding,
-        false,
-        previousInputs.bIsBuildingPreviewInitialized,
-        previousInputs.bIsBuildingPreviewConstructed);
+        previousInputs.hoverEntity);
 }

@@ -13,13 +13,11 @@
 #include "core/vs_log.h"
 #include "core/vs_cameracontroller.h"
 // TODO: Remove and find better position to set camera cantroller
-#include "core/vs_menu.h"
 #include "core/vs_rtscameracontroller.h"
 #include "core/vs_dummycameracontroller.h"
 #include "core/vs_camera.h"
 #include "core/vs_game.h"
 #include "core/vs_debug_draw.h"
-#include "core/vs_editor.h"
 #include "core/vs_input_handler.h"
 
 #include "world/vs_chunk_manager.h"
@@ -91,13 +89,6 @@ int VSApp::initialize()
     // If we have time not that important
     game = new Voxelscape();
     game->initialize(this);
-
-    addWorld(VSMenu::WorldName, VSMenu::initWorld());
-    addWorld(VSEditor::WorldName, VSEditor::initWorld());
-    addWorld(VSGame::WorldName, game->initWorld());
-
-    // Set menu active on application start
-    setWorldActive(VSMenu::WorldName);
 
     VSLog::Log(VSLog::Category::Core, VSLog::Level::info, "Successfully initialized game thread");
 
@@ -253,7 +244,14 @@ int VSApp::mainLoop()
         glfwPollEvents();
 
         // Start the Dear ImGui frame
+        UI->startRender();
+
         UI->render();
+
+        game->renderUI();
+
+        // Rendering
+        UI->endRender();
 
         // TODO one ui for game one for rendering debug
         if (UI->getState()->isWireframeModeEnabled)

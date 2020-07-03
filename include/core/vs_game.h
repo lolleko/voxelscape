@@ -12,17 +12,15 @@ class VSWorld;
 class VSGame
 {
 public:
-    static const std::string WorldName;
-
     void initialize(VSApp* inApp);
 
     virtual void initializeGame(VSApp* inApp);
 
-    [[nodiscard]] VSWorld* initWorld();
-
     void gameLoop();
 
     virtual void update(float deltaSeconds);
+
+    virtual void renderUI();
 
     void handleEditor();
 

@@ -17,9 +17,6 @@ void VSUI::setup(const char* glsl_version, GLFWwindow* window)
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();
     ImGuiIO& io = ImGui::GetIO();
-    (void)io;
-    // io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;     // Enable Keyboard Controls
-    // io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;      // Enable Gamepad Controls
 
     // Setup Dear ImGui style
     ImGui::StyleColorsDark();
@@ -40,28 +37,12 @@ void VSUI::setup(const char* glsl_version, GLFWwindow* window)
     style->GrabRounding = 3.0f;
     style->WindowTitleAlign = ImVec2(0.5F, 0.5F);
 
-    // Init file browsers
-    loadFileDialog = new ImGui::FileBrowser();
-    loadFileDialog->SetTitle("Load scene file");
-    // TODO: Define file ending
-    loadFileDialog->SetTypeFilters({".json"});
-    saveFileDialog = new ImGui::FileBrowser(ImGuiFileBrowserFlags_EnterNewFilename);
-    saveFileDialog->SetTitle("Save scene file");
-    saveBuildingDialog = new ImGui::FileBrowser(ImGuiFileBrowserFlags_EnterNewFilename);
-    saveBuildingDialog->SetTitle("Save building");
+    // Prepare Fonts
+    debugFont = io.Fonts->AddFontDefault();
 
     // Setup Platform/Renderer bindings
     ImGui_ImplGlfw_InitForOpenGL(window, true);
     ImGui_ImplOpenGL3_Init(glsl_version);
-
-    // Prepare Fonts
-    debugFont = io.Fonts->AddFontDefault();
-    menuFont = io.Fonts->AddFontFromFileTTF("resources/arial.ttf", 40.F);
-
-    woodResourceTexture = TextureFromFile("resources/textures/tiles/4_wood.png");
-    stoneResourceTexture = TextureFromFile("resources/textures/tiles/1_stone.png");
-    lumberjackIcon = TextureFromFile("resources/textures/icons/lumberjack_icon.png");
-    stonemineIcon = TextureFromFile("resources/textures/icons/stonemine_icon.png");
 };
 
 void VSUI::cleanup()
@@ -71,41 +52,23 @@ void VSUI::cleanup()
     ImGui::DestroyContext();
 }
 
-void VSUI::render()
+void VSUI::startRender()
 {
     ImGui_ImplOpenGL3_NewFrame();
     ImGui_ImplGlfw_NewFrame();
     ImGui::NewFrame();
+}
 
-    // 2. Show a simple window that we create ourselves. We use a Begin/End pair to created a
-    // named window.
-    if (uiState->bEditorActive)
-    {
-        renderEditorGUI();
-        renderDebugGUI();
-    }
-    else if (uiState->bMenuActive)
-    {
-        renderMainMenu();
-    }
-    else if (uiState->bGameConfigActive)
-    {
-        renderGameConfigGUI();
-    }
-    else if (uiState->bShouldUpdateChunks)
-    {
-        renderLoading();
-    }
-    else
-    {
-        renderGameGUI();
-        renderDebugGUI();
-    }
+void VSUI::render()
+{
+    renderDebugGUI();
 
     // Check if any window is hovered
     uiState->anyWindowHovered = ImGui::IsWindowHovered(ImGuiHoveredFlags_AnyWindow);
+}
 
-    // Rendering
+void VSUI::endRender()
+{
     ImGui::Render();
 }
 
@@ -122,26 +85,6 @@ void VSUI::renderDebugGUI()
     ImGui::Checkbox("Show UVs", (bool*)&uiState->bShouldShowUV);
     ImGui::Checkbox("Show Normals", (bool*)&uiState->bShouldShowNormals);
     ImGui::Checkbox("Show Light", (bool*)&uiState->bShouldShowLight);
-    ImGui::InputInt3("chunk size", (int*)&uiState->chunkSize);
-    ImGui::InputInt2("world size", (int*)&uiState->chunkCount);
-    if (ImGui::Button("Refresh chunk settings"))
-    {
-        uiState->bShouldUpdateChunks = true;
-    }
-    // This needs to be adapted to available biome types
-    const char* biomeTypes[] = {"Standard", "Mountains", "Desert"};
-    ImGui::Combo("Select biome", (int*)&uiState->bBiomeType, biomeTypes, IM_ARRAYSIZE(biomeTypes));
-    if (ImGui::Button("Generate Terrain"))
-    {
-        uiState->bShouldGenerateTerrain = true;
-    }
-    if (ImGui::Button("Show Editor"))
-    {
-        uiState->bShouldUpdateChunks = true;
-        uiState->bShouldResetEditor = true;
-        uiState->bShouldSetEditorActive = true;
-        uiState->bEditorActive = true;
-    }
     ImGui::Text(
         "Blocks Total; Visible; Drawn: %d; %d; %d",
         uiState->totalBlockCount,
@@ -157,272 +100,6 @@ void VSUI::renderDebugGUI()
     ImGui::BeginChild("Scrolling");
     ImGui::Text("%s", uiState->logStream.str().c_str());
     ImGui::EndChild();
-}
-
-void VSUI::renderEditorGUI()
-{
-    if (ImGui::BeginMainMenuBar())
-    {
-        if (ImGui::BeginMenu("File..."))
-        {
-            if (ImGui::MenuItem("Load world..."))
-            {
-                // Open File dialog
-                uiState->bFileBrowserActive = true;
-                loadFileDialog->Open();
-            }
-            if (ImGui::MenuItem("Save world..."))
-            {
-                // Open File dialog
-                uiState->bFileBrowserActive = true;
-                saveFileDialog->Open();
-            }
-            if (ImGui::MenuItem("Save Building..."))
-            {
-                // Open File dialog
-                uiState->bFileBrowserActive = true;
-                saveBuildingDialog->Open();
-            }
-            ImGui::EndMenu();
-        }
-    }
-    ImGui::EndMainMenuBar();
-    // Select block type to set
-    // This needs to be adapted to the new block types obviously
-    ImGui::Begin("Editor");
-    const char* blockTypes[] = {"Stone", "Water", "Grass", "Wood", "Sand", "Leaf", "Lava"};
-    if (ImGui::Combo(
-            "Select block type", (int*)&uiState->bSetBlockID, blockTypes, IM_ARRAYSIZE(blockTypes)))
-    {
-        uiState->bShouldUpdateBlockID = true;
-    }
-    ImGui::End();
-
-    // Handle file browsers
-    loadFileDialog->Display();
-    if (loadFileDialog->HasSelected())
-    {
-        // Load scene
-        uiState->loadFilePath = loadFileDialog->GetSelected();
-        uiState->bShouldLoadFromFile = true;
-        uiState->bFileBrowserActive = false;
-        loadFileDialog->ClearSelected();
-    }
-    saveFileDialog->Display();
-    if (saveFileDialog->HasSelected())
-    {
-        // Save scene
-        uiState->saveFilePath = saveFileDialog->GetSelected();
-        uiState->bShouldSaveToFile = true;
-        uiState->bFileBrowserActive = false;
-        saveFileDialog->ClearSelected();
-    }
-    saveBuildingDialog->Display();
-    if (saveBuildingDialog->HasSelected())
-    {
-        // Save building
-        uiState->saveBuildingPath = saveBuildingDialog->GetSelected();
-        uiState->bShouldSaveBuilding = true;
-        uiState->bFileBrowserActive = false;
-        saveBuildingDialog->ClearSelected();
-    }
-}
-
-void VSUI::renderMainMenu()
-{
-    ImGui::PushFont(menuFont);
-    ImGui::SetNextWindowPos(
-        ImVec2(ImGui::GetIO().DisplaySize.x * 0.5F, ImGui::GetIO().DisplaySize.y * 0.5F),
-        ImGuiCond_Always,
-        ImVec2(0.5F, 0.5F));
-    ImGui::SetNextWindowSize(ImVec2(0.F, 0.F));
-    ImGui::Begin(
-        "Voxelscape",
-        0,
-        ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoCollapse);
-    ImGui::Dummy(
-        ImVec2(ImGui::GetIO().DisplaySize.x * 0.75F, ImGui::GetIO().DisplaySize.y * 0.05F));
-    if (ImGui::Button("New Game", ImVec2(ImGui::GetWindowContentRegionWidth(), 0.F)))
-    {
-        uiState->bGameConfigActive = true;
-        uiState->bMenuActive = false;
-    }
-    if (ImGui::Button("Start Editor", ImVec2(ImGui::GetWindowContentRegionWidth(), 0.F)))
-    {
-        uiState->bShouldUpdateChunks = true;
-        uiState->bShouldResetEditor = true;
-        uiState->bShouldSetEditorActive = true;
-        uiState->bEditorActive = true;
-        uiState->bMenuActive = false;
-    }
-    ImGui::End();
-    ImGui::PopFont();
-}
-
-void VSUI::renderGameConfigGUI()
-{
-    ImGui::PushFont(menuFont);
-    ImGui::SetNextWindowPos(
-        ImVec2(ImGui::GetIO().DisplaySize.x * 0.5F, ImGui::GetIO().DisplaySize.y * 0.5F),
-        ImGuiCond_Always,
-        ImVec2(0.5F, 0.5F));
-    ImGui::SetNextWindowSize(ImVec2(0.F, 0.F));
-    ImGui::Begin(
-        "Configure Game",
-        0,
-        ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoCollapse);
-
-    ImGui::Dummy(
-        ImVec2(ImGui::GetIO().DisplaySize.x * 0.75F, ImGui::GetIO().DisplaySize.y * 0.05F));
-
-    const char* worldSizes[] = {"Small", "Medium", "Large", "Debug"};
-    if (ImGui::Combo("World size", (int*)&uiState->worldSize, worldSizes, IM_ARRAYSIZE(worldSizes)))
-    {
-        if (uiState->worldSize == 0)
-        {
-            // Small
-            uiState->chunkCount = {32, 32};
-        }
-        else if (uiState->worldSize == 1)
-        {
-            // Medium
-            uiState->chunkCount = {64, 64};
-        }
-        else if (uiState->worldSize == 2)
-        {
-            // Large
-            uiState->chunkCount = {128, 128};
-        }
-        else if (uiState->worldSize == 3)
-        {
-            // Tiny for debug
-            uiState->chunkCount = {2, 2};
-        }
-    }
-    // This needs to be adapted to available biome types
-    const char* biomeTypes[] = {"Standard", "Mountains", "Desert"};
-    ImGui::Combo("Select biome", (int*)&uiState->bBiomeType, biomeTypes, IM_ARRAYSIZE(biomeTypes));
-
-    if (ImGui::Button("Start Game", ImVec2(ImGui::GetWindowContentRegionWidth(), 0.F)))
-    {
-        uiState->bShouldSetGameActive = true;
-        uiState->bShouldUpdateChunks = true;
-        uiState->bShouldGenerateTerrain = true;
-        uiState->bGameConfigActive = false;
-    }
-    ImGui::End();
-    ImGui::PopFont();
-}
-
-void VSUI::renderGameGUI()
-{
-    float menuBarHeight = 0.F;
-    if (ImGui::BeginMainMenuBar())
-    {
-        ImGui::MenuItem("Dummy");
-        ImGui::Separator();
-        ImGui::Image((void*)(intptr_t)woodResourceTexture, ImVec2(20, 20));
-        ImGui::Text("%i", uiState->woodCount);
-
-        ImGui::Image((void*)(intptr_t)stoneResourceTexture, ImVec2(20, 20));
-        ImGui::Text("%i", uiState->stoneCount);
-        menuBarHeight = ImGui::GetFontSize() + 2 * ImGui::GetStyle().FramePadding.y;
-    }
-    ImGui::EndMainMenuBar();
-
-    // Building selection
-    ImGui::SetNextWindowPos(ImVec2(0, menuBarHeight), ImGuiCond_Always, ImVec2(0.F, 0.F));
-    ImGui::SetNextWindowSize(ImVec2(0.F, 0.F));
-    ImGui::Begin("Select building", 0, ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove);
-    if (ImGui::IsWindowCollapsed())
-    {
-        // Do not set building if collapsed
-        uiState->selectedBuilding = "";
-    }
-    // Building types
-    bool styleColorPushed = false;
-    if (uiState->selectedBuilding == lumberjackBuildingName)
-    {
-        ImGui::PushStyleColor(ImGuiCol_Button, buttonClickedColor);
-        styleColorPushed = true;
-    }
-    if (ImGui::ImageButton((void*)(intptr_t)lumberjackIcon, ImVec2(64, 64)))
-    {
-        // Set lumberjack building name
-        uiState->selectedBuilding = lumberjackBuildingName;
-    }
-    if (styleColorPushed)
-    {
-        ImGui::PopStyleColor();
-        styleColorPushed = false;
-    }
-    ImGui::SameLine();
-    if (uiState->selectedBuilding == stonemineBuildingName)
-    {
-        ImGui::PushStyleColor(ImGuiCol_Button, buttonClickedColor);
-        styleColorPushed = true;
-    }
-    if (ImGui::ImageButton((void*)(intptr_t)stonemineIcon, ImVec2(64, 64)))
-    {
-        // Set stonemine building name
-        uiState->selectedBuilding = stonemineBuildingName;
-    }
-    if (styleColorPushed)
-    {
-        ImGui::PopStyleColor();
-        styleColorPushed = false;
-    }
-    ImGui::End();
-
-    // Minimap
-    ImGui::SetNextWindowPos(
-        ImVec2(ImGui::GetIO().DisplaySize.x, menuBarHeight), ImGuiCond_Always, ImVec2(1.F, 0.F));
-    ImGui::SetNextWindowSize(ImVec2(0.F, 0.F));
-    ImGui::Begin("Minimap", 0, ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove);
-    if (uiState->minimap->hasChanged())
-    {
-        minimapTexture = TextureFromData(
-            uiState->minimap->getPixelData(),
-            uiState->minimap->getWidth(),
-            uiState->minimap->getHeight(),
-            uiState->minimap->getNrComponents());
-        uiState->minimap->changeNotified();
-    }
-    if (ImGui::ImageButton(
-            (void*)(intptr_t)minimapTexture,
-            ImVec2(256, 256),
-            ImVec2(0, 0),
-            ImVec2(1, 1),
-            /*frame_padding*/ 1))
-    {
-        float relativeX = (ImGui::GetMousePos().x - ImGui::GetItemRectMin().x) /
-                          (ImGui::GetItemRectMax().x - ImGui::GetItemRectMin().x);
-        float relativeY = (ImGui::GetMousePos().y - ImGui::GetItemRectMin().y) /
-                          (ImGui::GetItemRectMax().y - ImGui::GetItemRectMin().y);
-        uiState->minimapRelativePosition = {relativeX, relativeY};
-        uiState->minimapClick = true;
-    }
-    ImGui::End();
-}
-
-void VSUI::renderLoading()
-{
-    ImGui::PushFont(menuFont);
-    ImGui::SetNextWindowPos(
-        ImVec2(ImGui::GetIO().DisplaySize.x * 0.5F, ImGui::GetIO().DisplaySize.y * 0.5F),
-        ImGuiCond_Always,
-        ImVec2(0.5F, 0.5F));
-    ImGui::SetNextWindowSize(ImVec2(0.F, 0.F));
-    ImGui::Begin(
-        "Loading",
-        0,
-        ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoCollapse |
-            ImGuiWindowFlags_NoTitleBar);
-
-    ImGui::Text("Loading %c", "|/-\\"[(int)(ImGui::GetTime() / 0.05f) & 3]);
-
-    ImGui::End();
-    ImGui::PopFont();
 }
 
 void VSUI::draw()

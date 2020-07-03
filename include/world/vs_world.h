@@ -12,6 +12,7 @@ class VSCamera;
 class VSCameraController;
 class VSChunkManager;
 class VSDebugDraw;
+class VSSkybox;
 
 class VSWorld : public IVSDrawable
 {
@@ -62,6 +63,8 @@ private:
     VSChunkManager* previewChunkManager;
 
     VSDebugDraw* debugDraw;
+
+    VSSkybox* skybox;
 
     std::set<IVSDrawable*> drawables;
 

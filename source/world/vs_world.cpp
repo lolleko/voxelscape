@@ -11,6 +11,7 @@
 #include "core/vs_debug_draw.h"
 #include "world/vs_block.h"
 #include "world/vs_chunk_manager.h"
+#include "world/vs_skybox.h"
 
 VSWorld::VSWorld()
 {
@@ -21,6 +22,8 @@ VSWorld::VSWorld()
     previewChunkManager->setIsFrustumCullingEnabled(false);
     debugDraw = new VSDebugDraw();
     addDrawable(debugDraw);
+    skybox = new VSSkybox();
+    addDrawable(skybox);
 }
 
 void VSWorld::addDrawable(IVSDrawable* drawable)
