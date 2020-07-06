@@ -225,6 +225,7 @@ void VSChunkManager::setBlock(const glm::vec3& location, VSBlockID blockID)
     chunks[chunkIndex]->blocks[blockIndex] = blockID;
     chunks[chunkIndex]->bIsDirty = true;
 
+    // TODO we only need to update adjacent chunks if set block is at chunkborder
     const auto right = glm::clamp(chunkCoordinates + glm::ivec2(1, 0), {0, 0}, chunkCount - 1);
     const auto left = glm::clamp(chunkCoordinates - glm::ivec2(1, 0), {0, 0}, chunkCount - 1);
 
@@ -384,7 +385,7 @@ void VSChunkManager::updateChunks()
         // Set block data to chunks, TODO: add checks, this is potentially dangerous
         uint32_t chunkSize = getChunkBlockCount();
         auto iter = worldDataFromFile.blocks.begin();
-        for (const auto chunk : chunks)
+        for (auto* chunk : chunks)
         {
             chunk->blocks.insert(chunk->blocks.begin(), iter, iter + chunkSize);
             chunk->bIsDirty = true;
@@ -392,26 +393,11 @@ void VSChunkManager::updateChunks()
         }
     }
 
-    auto blocksUpdated = 0;
-
-    // Todo add conifg option
-    constexpr auto udpateLimit = 64 * 128 * 64;
-
     for (std::size_t chunkIndex = 0; chunkIndex < getTotalChunkCount(); ++chunkIndex)
     {
-        // to avoid stutter we only update approx. 64*256*64 blocks per frame
-        // this could be moved ot a thread as well, but is fast enough to run on the main
-        // thread.
-        if (updateVisibleBlocks(chunkIndex))
-        {
-            blocksUpdated += getChunkBlockCount();
-        }
-
-        if (blocksUpdated > udpateLimit)
-        {
-            return;
-        }
+        updateVisibleBlocks(chunkIndex);
     }
+
     if (VSApp::getInstance()->getUI()->getState()->bAreShadowsEnabled)
     {
         for (std::size_t chunkIndex = 0; chunkIndex < getTotalChunkCount(); ++chunkIndex)
@@ -625,6 +611,13 @@ void VSChunkManager::initializeChunks()
             shadowBuildUpdate->cancel();
         }
         activeShadowBuildTasks.clear();
+
+        for (const auto& [chunk, visibilityBuildUpdate] : activeVisibilityBuildTasks)
+        {
+            visibilityBuildUpdate->cancel();
+        }
+        activeVisibilityBuildTasks.clear();
+
         for (auto* chunk : chunks)
         {
             deleteChunk(chunk);
@@ -704,6 +697,7 @@ void VSChunkManager::updateShadows(std::size_t chunkIndex)
         if (activeShadowBuildTasks.count(chunk) != 0)
         {
             activeShadowBuildTasks[chunk]->cancel();
+            activeShadowBuildTasks.erase(chunk);
         }
 
         const auto shadowUpdate = VSShadwoChunkUpdate::create(
@@ -834,78 +828,117 @@ std::vector<float> VSChunkManager::chunkUpdateShadow(
     return chunkDistanceField;
 }
 
-bool VSChunkManager::updateVisibleBlocks(std::size_t chunkIndex)
+void VSChunkManager::updateVisibleBlocks(std::size_t chunkIndex)
 {
     auto* const chunk = chunks[chunkIndex];
-    bool expected = true;
-    if (chunk->bIsDirty.compare_exchange_weak(expected, false))
+    bool bIsDirtyExpected = true;
+    // check if dirty after checking for shadows to avoid race conditions
+    // only allow hardware_concurrency active chunk updates
+    if (activeVisibilityBuildTasks.size() < maxShadowUpdateThreads &&
+        chunk->bIsDirty.compare_exchange_weak(bIsDirtyExpected, false))
     {
-        for (auto& info : chunk->visibleBlockInfos)
+        if (activeVisibilityBuildTasks.count(chunk) != 0)
         {
-            info.clear();
+            activeVisibilityBuildTasks[chunk]->cancel();
+            activeVisibilityBuildTasks.erase(chunk);
         }
 
-        const auto chunkBlockCount = getChunkBlockCount();
+        const auto visibilityUpdate = VSVisibilityChunkUpdate::create(
+            [this](
+                const std::atomic<bool>& bShouldCancel,
+                std::atomic<bool>& bIsReady,
+                std::size_t chunkIndex) {
+                return this->chunkUpdateVisibility(bShouldCancel, bIsReady, chunkIndex);
+            },
+            chunkIndex);
 
-#pragma omp parallel for
-        for (int blockIndex = 0; blockIndex < static_cast<int>(chunkBlockCount); blockIndex++)
+        activeVisibilityBuildTasks.emplace(chunk, visibilityUpdate);
+    }
+
+    if (activeVisibilityBuildTasks.count(chunk) != 0)
+    {
+        const auto visiblityTask = activeVisibilityBuildTasks[chunk];
+        if (visiblityTask->isReady())
         {
-            if (chunk->blocks[blockIndex] != VS_DEFAULT_BLOCK_ID)
+            chunk->visibleBlockInfos = visiblityTask->getResult();
+            activeVisibilityBuildTasks.erase(chunk);
+
+            // update shadows for us and neighbours
+            // TODO duplicate code (see updateShadows)
+            const auto chunkCoords = chunkIndexToChunkCoordinates(chunkIndex);
+            const std::int32_t chunkRadius = 1;
+            for (int x = glm::max(chunkCoords.x - chunkRadius, 0);
+                 x <= glm::min(chunkCoords.x + chunkRadius, chunkCount.x - 1);
+                 x++)
             {
-                const auto blockType = isBlockVisible(chunkIndex, blockIndex);
-                if (blockType != 0)
+                for (int y = glm::max(chunkCoords.y - chunkRadius, 0);
+                     y <= glm::min(chunkCoords.y + chunkRadius, chunkCount.y - 1);
+                     y++)
                 {
-                    const auto offset = chunk->chunkLocation +
-                                        glm::vec3(blockIndexToBlockCoordinates(blockIndex)) +
-                                        glm::vec3(0.5F) - glm::vec3(chunkSize) / 2.F;
-
-                    const auto lighInfo = getLightInformation(offset);
-
-                    const auto blockInfo = VSChunk::VSVisibleBlockInfo{
-                        offset,
-                        chunk->blocks[blockIndex],
-                        lighInfo[0],
-                        lighInfo[1],
-                        lighInfo[2],
-                        lighInfo[3],
-                        lighInfo[4],
-                        lighInfo[5]};
-#pragma omp critical
-                    chunk->visibleBlockInfos[blockType].emplace_back(blockInfo);
-                    chunk->bIsBlockVisible[blockIndex] = true;
+                    auto* neighbourChunk = chunks[chunkCoordinatesToChunkIndex({x, y})];
+                    neighbourChunk->bShouldRebuildShadows = true;
                 }
-                else
-                {
-                    chunk->bIsBlockVisible[blockIndex] = false;
-                }
+            }
+        }
+    }
+}
+
+VSChunkManager::VSChunk::VSVisibleBlockInfos VSChunkManager::chunkUpdateVisibility(
+    const std::atomic<bool>& bShouldCancel,
+    std::atomic<bool>& bIsReady,
+    std::size_t chunkIndex) const
+{
+    auto* const chunk = chunks[chunkIndex];
+
+    const auto chunkBlockCount = getChunkBlockCount();
+
+    auto result = VSChunkManager::VSChunk::VSVisibleBlockInfos();
+
+    for (int blockIndex = 0; blockIndex < static_cast<int>(chunkBlockCount); blockIndex++)
+    {
+        if (bShouldCancel)
+        {
+            return {};
+        }
+
+        if (chunk->blocks[blockIndex] != VS_DEFAULT_BLOCK_ID)
+        {
+            const auto blockType = isBlockVisible(chunkIndex, blockIndex);
+            if (blockType != 0)
+            {
+                const auto offset = chunk->chunkLocation +
+                                    glm::vec3(blockIndexToBlockCoordinates(blockIndex)) +
+                                    glm::vec3(0.5F) - glm::vec3(chunkSize) / 2.F;
+
+                const auto lighInfo = getLightInformation(offset);
+
+                const auto blockInfo = VSChunk::VSVisibleBlockInfo{
+                    offset,
+                    chunk->blocks[blockIndex],
+                    lighInfo[0],
+                    lighInfo[1],
+                    lighInfo[2],
+                    lighInfo[3],
+                    lighInfo[4],
+                    lighInfo[5]};
+                result[blockType].emplace_back(blockInfo);
+                chunk->bIsBlockVisible[blockIndex] = true;
             }
             else
             {
                 chunk->bIsBlockVisible[blockIndex] = false;
             }
         }
-
-        // update shadows for us and neighbours
-        // TODO duplicate code (see updateShadows)
-        const auto chunkCoords = chunkIndexToChunkCoordinates(chunkIndex);
-        const std::int32_t chunkRadius = 1;
-        for (int x = glm::max(chunkCoords.x - chunkRadius, 0);
-             x <= glm::min(chunkCoords.x + chunkRadius, chunkCount.x - 1);
-             x++)
+        else
         {
-            for (int y = glm::max(chunkCoords.y - chunkRadius, 0);
-                 y <= glm::min(chunkCoords.y + chunkRadius, chunkCount.y - 1);
-                 y++)
-            {
-                auto* neighbourChunk = chunks[chunkCoordinatesToChunkIndex({x, y})];
-                neighbourChunk->bShouldRebuildShadows = true;
-            }
+            chunk->bIsBlockVisible[blockIndex] = false;
         }
-
-        return true;
     }
-    return false;
-}
+
+    bIsReady = true;
+
+    return result;
+};
 
 std::uint8_t VSChunkManager::isBlockVisible(std::size_t chunkIndex, std::size_t blockIndex) const
 {

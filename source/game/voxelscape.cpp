@@ -266,29 +266,8 @@ void Voxelscape::renderGameConfigGUI(UIContext& uiState)
         ImVec2(ImGui::GetIO().DisplaySize.x * 0.75F, ImGui::GetIO().DisplaySize.y * 0.05F));
 
     const char* worldSizes[] = {"Small", "Medium", "Large", "Debug"};
-    if (ImGui::Combo("World size", (int*)&uiState.worldSize, worldSizes, IM_ARRAYSIZE(worldSizes)))
-    {
-        if (uiState.worldSize == 0)
-        {
-            // Small
-            uiState.chunkCount = {32, 32};
-        }
-        else if (uiState.worldSize == 1)
-        {
-            // Medium
-            uiState.chunkCount = {64, 64};
-        }
-        else if (uiState.worldSize == 2)
-        {
-            // Large
-            uiState.chunkCount = {128, 128};
-        }
-        else if (uiState.worldSize == 3)
-        {
-            // Tiny for debug
-            uiState.chunkCount = {2, 2};
-        }
-    }
+    ImGui::Combo("World size", (int*)&uiState.worldSize, worldSizes, IM_ARRAYSIZE(worldSizes));
+
     // This needs to be adapted to available biome types
     const char* biomeTypes[] = {"Standard", "Mountains", "Desert"};
     ImGui::Combo(

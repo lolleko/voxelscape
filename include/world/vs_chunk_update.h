@@ -9,10 +9,8 @@ class VSChunkUpdate
 {
 public:
     static std::shared_ptr<VSChunkUpdate<Result>> create(
-        std::function<Result(
-            const std::atomic<bool>&,
-            std::atomic<bool>&,
-            std::size_t chunkIndex)> updateFunction,
+        std::function<Result(const std::atomic<bool>&, std::atomic<bool>&, std::size_t chunkIndex)>
+            updateFunction,
         std::size_t chunkIndex)
     {
         const auto chunkUpdate = std::shared_ptr<VSChunkUpdate>(new VSChunkUpdate);
@@ -29,7 +27,10 @@ public:
     void cancel()
     {
         bShouldCancel = true;
-        result.wait();
+        if (result.valid())
+        {
+            result.wait();
+        }
     };
 
     bool isReady()
@@ -47,5 +48,8 @@ private:
 
     std::atomic<bool> bShouldCancel = false;
     std::atomic<bool> bIsReady = false;
+
+    std::atomic<bool> bHasStarted = false;
+
     std::future<Result> result;
 };

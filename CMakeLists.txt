@@ -20,6 +20,7 @@ if ( MSVC )
 endif()
 
 if(DEFINED ENV{VCPKG_INSTALLATION_ROOT} AND NOT DEFINED CMAKE_TOOLCHAIN_FILE)
+  message("Using VCPKG with installation root: $ENV{VCPKG_INSTALLATION_ROOT}")
   set(CMAKE_TOOLCHAIN_FILE "$ENV{VCPKG_INSTALLATION_ROOT}/scripts/buildsystems/vcpkg.cmake"
       CACHE STRING "")
 endif()
@@ -39,7 +40,7 @@ set_target_properties("${CMAKE_PROJECT_NAME}" PROPERTIES
   OUTPUT_NAME "${CMAKE_PROJECT_NAME}"
 )
 
-find_package(OpenMP REQUIRED)
+find_package(OpenMP)
 if(OpenMP_CXX_FOUND)
     target_link_libraries("${CMAKE_PROJECT_NAME}" PRIVATE ${OpenMP_CXX_LIBRARIES})
 endif()

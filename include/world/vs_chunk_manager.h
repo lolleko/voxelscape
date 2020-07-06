@@ -41,6 +41,8 @@ class VSChunkManager : public IVSDrawable
             std::uint32_t lightBack;
         };
 
+        using VSVisibleBlockInfos = std::array<std::vector<VSVisibleBlockInfo>, 64>;
+
         std::vector<VSBlockID> blocks;
 
         std::vector<float> lightLevel;
@@ -51,7 +53,7 @@ class VSChunkManager : public IVSDrawable
 
         std::atomic<bool> bShouldRebuildShadows;
 
-        std::array<std::vector<VSVisibleBlockInfo>, 64> visibleBlockInfos;
+        VSVisibleBlockInfos visibleBlockInfos;
 
         glm::vec3 chunkLocation = glm::vec3(0.F);
     };
@@ -189,9 +191,13 @@ private:
 
     std::map<VSChunk*, std::shared_ptr<VSShadwoChunkUpdate>> activeShadowBuildTasks;
 
-    static inline auto maxShadowUpdateThreads = std::thread::hardware_concurrency();
+    using VSVisibilityChunkUpdate = VSChunkUpdate<VSChunk::VSVisibleBlockInfos>;
 
-    static inline std::vector<float> blockEmission = {
+    std::map<VSChunk*, std::shared_ptr<VSVisibilityChunkUpdate>> activeVisibilityBuildTasks;
+
+    const static inline auto maxShadowUpdateThreads = std::thread::hardware_concurrency();
+
+    const static inline std::vector<float> blockEmission = {
         /*Air=0*/ 0.F,
         /*Stone=1*/ 0.F,
         /*Water=2*/ 0.F,
@@ -216,7 +222,12 @@ private:
         std::atomic<bool>& bIsReady,
         std::size_t chunkIndex) const;
 
-    bool updateVisibleBlocks(std::size_t chunkIndex);
+    void updateVisibleBlocks(std::size_t chunkIndex);
+
+    VSChunk::VSVisibleBlockInfos chunkUpdateVisibility(
+        const std::atomic<bool>& bShouldCancel,
+        std::atomic<bool>& bIsReady,
+        std::size_t chunkIndex) const;
 
     std::uint8_t isBlockVisible(std::size_t chunkIndex, std::size_t blockIndex) const;
 

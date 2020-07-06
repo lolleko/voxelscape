@@ -14,8 +14,6 @@
 
 struct UIContext
 {
-    glm::ivec3 chunkSize = {16, 128, 16};
-    glm::ivec2 chunkCount = {4, 4};
     bool bShouldUpdateChunks = false;
 
     bool bShouldGenerateTerrain = false;
