@@ -316,8 +316,7 @@ void VSRTSCameraController::setCameraRelativeXZ(float relativeX, float relativeZ
         if (world->getChunkManager()->getBlock(blockCoordinates) > 0)
         {
             const auto newPosition =
-                glm::vec3({absoluteX, y, absoluteZ}) -
-                cam->getFront() * radius;
+                glm::vec3({absoluteX, y, absoluteZ}) - cam->getFront() * radius;
             targetPosition = newPosition;
             adaptToFixpoint();
             cam->setPosition(targetPosition);

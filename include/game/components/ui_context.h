@@ -18,6 +18,7 @@ struct UIContext
 
     bool bShouldGenerateTerrain = false;
     bool bShouldSetGameActive = false;
+    bool bIsMenuWorldInitialized = false;
 
     bool anyWindowHovered = false;
 

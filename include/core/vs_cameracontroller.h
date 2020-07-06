@@ -22,8 +22,6 @@ public:
 
     virtual void updateCamera(bool handleMouseEvents) = 0;
 
-    void setEditorBlockID(int blockID);
-
     void setCameraInWorldCoords(glm::vec3 coords);
 
     void setMouseFarInWorldCoords(glm::vec3 mouseFar);

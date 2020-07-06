@@ -74,22 +74,23 @@ void Voxelscape::update(float deltaSeconds)
 
     uiContext.anyWindowHovered = ImGui::IsWindowHovered(ImGuiHoveredFlags_AnyWindow);
 
+    const auto& prevWorldContext = mainRegistry.ctx<WorldContext>();
+
+    mainRegistry.set<WorldContext>(
+        getApp()->getWorld(),
+        deltaSeconds,
+        prevWorldContext.worldAge + deltaSeconds,
+        Bounds{
+            -getApp()->getWorld()->getChunkManager()->getWorldSize() / 2,
+            getApp()->getWorld()->getChunkManager()->getWorldSize() / 2});
+
+    // TODO maybe not always update?
     updateMenuSystem(mainRegistry);
 
     // TODO the app/mainloop should be never allowed to change the active world
     // after initailization otherwhise this could crash
     if (getApp()->getWorldName() == uiContext.gameWorldName)
     {
-        const auto& prevWorldContext = mainRegistry.ctx<WorldContext>();
-
-        mainRegistry.set<WorldContext>(
-            getApp()->getWorld(),
-            deltaSeconds,
-            prevWorldContext.worldAge + deltaSeconds,
-            Bounds{
-                -getApp()->getWorld()->getChunkManager()->getWorldSize() / 2,
-                getApp()->getWorld()->getChunkManager()->getWorldSize() / 2});
-
         // Update player resources in UI
         const auto& player = mainRegistry.ctx<Player>();
 

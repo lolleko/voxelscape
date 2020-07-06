@@ -16,11 +16,6 @@ VSCameraController::VSCameraController(
     this->inputHandler = inputHandler;
 }
 
-void VSCameraController::setEditorBlockID(int blockID)
-{
-    editorBlockID = blockID;
-}
-
 void VSCameraController::setCameraInWorldCoords(glm::vec3 coords)
 {
     cameraInWorldCoords = coords;
