@@ -15,7 +15,11 @@ std::vector<VSMesh> loadModel(std::string const& path)
     // check for errors
     if (!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode)  // if is Not Zero
     {
-        std::cout << "ERROR::ASSIMP:: " << importer.GetErrorString() << std::endl;
+        VSLog::Log(
+            VSLog::Category::Resource,
+            VSLog::Level::err,
+            "{0}",
+            std::string("ERROR::ASSIMP:: ") + importer.GetErrorString());
         return {};
     }
     std::vector<VSMesh> meshes;
@@ -32,7 +36,11 @@ VSVertexContext* loadVertexContext(std::string const& path)
         path, aiProcess_Triangulate | aiProcess_FlipUVs | aiProcess_CalcTangentSpace);
     if (!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode)  // if is Not Zero
     {
-        std::cout << "ERROR::ASSIMP:: " << importer.GetErrorString() << std::endl;
+        VSLog::Log(
+            VSLog::Category::Resource,
+            VSLog::Level::err,
+            "{0}",
+            std::string("ERROR::ASSIMP:: ") + importer.GetErrorString());
         return {};
     }
 

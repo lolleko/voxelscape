@@ -27,7 +27,12 @@ namespace BuildingParser
         if (!std::filesystem::exists(blocksFilePath))
         {
             // TODO handle
-            assert(false);
+            VSLog::Log(
+                VSLog::Category::Game,
+                VSLog::Level::err,
+                "{0}",
+                std::string("Failed to load blocks file for building: ") + blocksFilePath.string() +
+                    " not found");
             return;
         }
 
@@ -45,7 +50,12 @@ namespace BuildingParser
         if (!std::filesystem::exists(componentsFilePath))
         {
             // TODO handle
-            assert(false);
+            VSLog::Log(
+                VSLog::Category::Game,
+                VSLog::Level::err,
+                "{0}",
+                std::string("Failed to load components file for building: ") +
+                    componentsFilePath.string() + " not found");
             return;
         }
 
@@ -62,7 +72,12 @@ namespace BuildingParser
         if (!componentJson.contains("uuid"))
         {
             // TODO handle
-            assert(false);
+            VSLog::Log(
+                VSLog::Category::Game,
+                VSLog::Level::err,
+                "{0}",
+                std::string("Failed to load building uuid component is missing: ") +
+                    buildingDirectory.string());
             return;
         }
 

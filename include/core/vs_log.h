@@ -1,5 +1,6 @@
 #pragma once
 
+#include <spdlog/common.h>
 #include <spdlog/sinks/ostream_sink.h>
 #include <spdlog/spdlog.h>
 #include <spdlog/sinks/stdout_color_sinks.h>
@@ -17,7 +18,9 @@ struct VSLog
     {
         Core,
         Shader,
+        Resource,
         Generation,
+        Game,
     };
 
     using Level = spdlog::level::level_enum;
@@ -55,13 +58,20 @@ struct VSLog
     {
         auto* logger = loggers.at(category).get();
         logger->log(level, fmt, args...);
+        if (level >= VSLog::Level::err)
+        {
+            logger->flush();
+            assert(false);
+        }
     };
 
 private:
     inline static const std::map<Category, std::string> categoryNames = {
         {Category::Core, "Core"},
         {Category::Shader, "Shader"},
-        {Category::Generation, "Generation"}};
+        {Category::Resource, "Resource"},
+        {Category::Generation, "Generation"},
+        {Category::Game, "Game"}};
 
     inline static std::map<Category, std::unique_ptr<spdlog::logger>> loggers = {};
 };

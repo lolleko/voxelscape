@@ -98,7 +98,7 @@ void VSUI::renderDebugGUI()
 
     ImGui::TextColored(ImVec4(1, 1, 0, 1), "Log");
     ImGui::BeginChild("Scrolling");
-    ImGui::Text("%s", uiState->logStream.str().c_str());
+    ImGui::TextUnformatted(uiState->logStream.str().c_str());
     ImGui::EndChild();
 }
 
