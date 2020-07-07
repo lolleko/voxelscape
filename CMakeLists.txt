@@ -40,11 +40,6 @@ set_target_properties("${CMAKE_PROJECT_NAME}" PROPERTIES
   OUTPUT_NAME "${CMAKE_PROJECT_NAME}"
 )
 
-find_package(OpenMP)
-if(OpenMP_CXX_FOUND)
-    target_link_libraries("${CMAKE_PROJECT_NAME}" PRIVATE ${OpenMP_CXX_LIBRARIES})
-endif()
-
 find_package(glad REQUIRED)
 target_link_libraries("${CMAKE_PROJECT_NAME}" PRIVATE glad::glad)
 
