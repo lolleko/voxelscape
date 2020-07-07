@@ -115,7 +115,7 @@ void main() {
     float sky = clamp(0.5 + 0.5 * norm.y, 0.0, 1.0);
     float ind = clamp( dot( norm, normalize(directLightDir*vec3(-1.0,0.0,-1.0)) ), 0.0, 1.0 );
 
-    vec3 light  = sun * vec3(1.3,0.70, 0.45) * vec3(1.03) * pow(vec3(shadowFactor), vec3(1.0,1.2,1.5));
+    vec3 light  = sun * vec3(1.3,0.70, 0.45) * vec3(1.05) * pow(vec3(shadowFactor), vec3(1.0,1.2,1.5));
     light += i.lightLevel * vec3(1.3, 0.9, 0.3);
     light += sky*vec3(0.229, 0.607, 0.821)*vec3(0.4)*occ;
     light += ind*vec3(0.35,0.23,0.15)*vec3(0.8)*occ;
