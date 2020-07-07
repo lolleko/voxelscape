@@ -2,21 +2,17 @@
 
 layout (location = 0) in vec3 inPosition;
 layout (location = 1) in vec3 inNormal;
-layout (location = 2) in vec2 inTexCoord;
-layout (location = 3) in vec3 inTangent;
-layout (location = 4) in vec3 inBiTangent;
-layout (location = 5) in vec3 inColor;
 
-layout (location = 6) in vec3 blockLocation;
+layout (location = 2) in vec3 blockLocation;
 
-layout (location = 7) in uint blockID;
+layout (location = 3) in uint blockID;
 
-layout (location = 8) in uint lightRight;
-layout (location = 9) in uint lightLeft;
-layout (location = 10) in uint lightTop;
-layout (location = 11) in uint lightBottom;
-layout (location = 12) in uint lightFront;
-layout (location = 13) in uint lightBack;
+layout (location = 4) in uint lightRight;
+layout (location = 5) in uint lightLeft;
+layout (location = 6) in uint lightTop;
+layout (location = 7) in uint lightBottom;
+layout (location = 8) in uint lightFront;
+layout (location = 9) in uint lightBack;
 
 uniform vec3[7] blockColors;
 
@@ -26,8 +22,6 @@ out VertexData {
     vec3 worldPosition;
     vec3 normal;
     vec2 texCoord;
-    vec3 tangent;
-    vec3 biTangent;
     vec3 material;
     flat uint blockID;
     float lightLevel;
@@ -110,14 +104,12 @@ void main()
 {
     // getLight might require us to flip teh quad
     vec3 vertexPosition = inPosition;
-    vec2 texCoord = inTexCoord;
+    vec2 texCoord = vec2(0);
     float lightLevel = getLight(inNormal, vertexPosition, texCoord);
 
     o.worldPosition = origin + vec3(blockLocation + vertexPosition);
     o.normal = inNormal;
     o.texCoord = texCoord;
-    o.tangent = inTangent;
-    o.biTangent = inBiTangent;
     o.material = blockColors[blockID];
     o.blockID = blockID;
     o.lightLevel = lightLevel;

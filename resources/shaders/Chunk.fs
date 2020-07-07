@@ -4,8 +4,6 @@ in VertexData {
     vec3 worldPosition;
     vec3 normal;
     vec2 texCoord;
-    vec3 tangent;
-    vec3 biTangent;
     vec3 material;
     flat uint blockID;
     float lightLevel;

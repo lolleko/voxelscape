@@ -10,10 +10,6 @@ struct VSVertexData
 {
     glm::vec3 position;
     glm::vec3 normal;
-    glm::vec2 texCoords;
-    glm::vec3 tangent;
-    glm::vec3 biTangent;
-    glm::vec3 color;
 };
 
 // PDO does not ocntain any functionality except cosntruct/desctruct
@@ -68,50 +64,6 @@ public:
             GL_FALSE,
             sizeof(VSVertexData),
             (void*)offsetof(VSVertexData, normal));
-
-        // vertex texCords
-        lastAttribPointer++;
-        glEnableVertexAttribArray(lastAttribPointer);
-        glVertexAttribPointer(
-            lastAttribPointer,
-            2,
-            GL_FLOAT,
-            GL_FALSE,
-            sizeof(VSVertexData),
-            (void*)offsetof(VSVertexData, texCoords));
-
-        // vertex tangents
-        lastAttribPointer++;
-        glEnableVertexAttribArray(lastAttribPointer);
-        glVertexAttribPointer(
-            lastAttribPointer,
-            3,
-            GL_FLOAT,
-            GL_FALSE,
-            sizeof(VSVertexData),
-            (void*)offsetof(VSVertexData, tangent));
-
-        // vertex bitangents
-        lastAttribPointer++;
-        glEnableVertexAttribArray(lastAttribPointer);
-        glVertexAttribPointer(
-            lastAttribPointer,
-            3,
-            GL_FLOAT,
-            GL_FALSE,
-            sizeof(VSVertexData),
-            (void*)offsetof(VSVertexData, biTangent));
-
-        // vertex colors
-        lastAttribPointer++;
-        glEnableVertexAttribArray(lastAttribPointer);
-        glVertexAttribPointer(
-            lastAttribPointer,
-            3,
-            GL_FLOAT,
-            GL_FALSE,
-            sizeof(VSVertexData),
-            (void*)offsetof(VSVertexData, color));
 
         // triangle indices
         glGenBuffers(1, &indexBuffer);
