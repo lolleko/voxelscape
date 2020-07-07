@@ -136,6 +136,11 @@ void VSRTSCameraController::setFocalPoint(glm::vec3 newFocalPoint)
     }
 }
 
+void VSRTSCameraController::setMaxRadius(float newMaxRadius)
+{
+    maxRadius = newMaxRadius;
+};
+
 void VSRTSCameraController::handleScroll(bool handleMouseEvents)
 {
     float newYOffset = inputHandler->getYScrollOffset();

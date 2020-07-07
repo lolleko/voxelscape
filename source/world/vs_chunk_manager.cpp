@@ -6,6 +6,7 @@
 #include <cstddef>
 #include <cstdint>
 #include <glm/fwd.hpp>
+#include <glm/geometric.hpp>
 #include <glm/gtx/string_cast.hpp>
 #include <iostream>
 #include <numeric>
@@ -278,28 +279,38 @@ void VSChunkManager::draw(VSWorld* world)
         }
 
         glm::mat4 VP = world->getCamera()->getVPMatrix();
+        glm::vec3 cameraPos = world->getCamera()->getPosition();
         if (VSApp::getInstance()->getUI()->getState()->bShouldFreezeFrustum)
         {
             VP = frozenVPMatrix;
+            cameraPos = frozenCameraPos;
             world->getDebugDraw()->drawFrustum(VP, {0, 255, 0});
         }
         frozenVPMatrix = VP;
+        frozenCameraPos = cameraPos;
 
-        const auto chunkCenterInP = VP * glm::vec4(chunk->chunkLocation, 1.f);
+        const auto radius = glm::length(glm::vec3(chunkSize));
 
-        const auto radius = glm::sqrt(
-            chunkSize.x * chunkSize.x + chunkSize.y * chunkSize.y + chunkSize.z * chunkSize.z);
+        auto zFar = world->getCamera()->getZFar();
 
-        if (!bIsFrustumCullingEnabled ||
-            ((glm::abs(chunkCenterInP.x) - radius) < (chunkCenterInP.w * 1.F) &&
-             (glm::abs(chunkCenterInP.y) - radius) < (chunkCenterInP.w * 1.F)))
+        // First to cheap distance check based on zFar
+        if (glm::length2(cameraPos - chunk->chunkLocation) - (radius * radius * 4.F) <
+            (zFar * zFar))
         {
-            for (std::size_t i = 0; i < chunk->visibleBlockInfos.size(); i++)
+            // Cull using bounding sphere in projections space
+            const auto chunkCenterInP = VP * glm::vec4(chunk->chunkLocation, 1.f);
+
+            if (!bIsFrustumCullingEnabled ||
+                ((glm::abs(chunkCenterInP.x) - radius) < (chunkCenterInP.w * 1.F) &&
+                 (glm::abs(chunkCenterInP.y) - radius) < (chunkCenterInP.w * 1.F)))
             {
-                visibleBlockInfoCount[i] += chunk->visibleBlockInfos[i].size();
-                drawnBlockCount += chunk->visibleBlockInfos[i].size();
+                for (std::size_t i = 0; i < chunk->visibleBlockInfos.size(); i++)
+                {
+                    visibleBlockInfoCount[i] += chunk->visibleBlockInfos[i].size();
+                    drawnBlockCount += chunk->visibleBlockInfos[i].size();
+                }
+                visibleChunks.push_back(chunk);
             }
-            visibleChunks.push_back(chunk);
         }
     }
     glActiveTexture(GL_TEXTURE0 + shadowTextureID);

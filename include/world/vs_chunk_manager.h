@@ -174,6 +174,7 @@ private:
     std::array<GLuint, faceCombinationCount> visibleBlockInfoBuffers;
 
     glm::mat4 frozenVPMatrix;
+    glm::vec3 frozenCameraPos;
 
     std::uint32_t drawCallCount;
 

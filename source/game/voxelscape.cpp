@@ -51,6 +51,7 @@ void Voxelscape::initializeGame(VSApp* inApp)
     auto* gameWorld = new VSWorld();
     auto* gameCamera = gameWorld->getCamera();
     auto* gameCameraController = new VSRTSCameraController(gameCamera, gameWorld);
+    gameCameraController->setMaxRadius(gameCamera->getZFar() * 0.5F);
     gameWorld->setCameraController(gameCameraController);
     inApp->addWorld(uiContext.gameWorldName, gameWorld);
 

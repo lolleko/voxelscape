@@ -88,7 +88,7 @@ private:
     float aspectRatio = 16.F / 9.F;
 
     float zNear = 1.F;
-    float zFar = 800.F;
+    float zFar = 500.F;
 
     // Calculates the front vector from the Camera's (updated) Euler Angles
     void updateCameraVectors();

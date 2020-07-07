@@ -17,6 +17,8 @@ public:
 
     void setFocalPoint(glm::vec3 newFocalPoint);
 
+    void setMaxRadius(float newMaxRadius);
+
     // Call this when world size has been changed
     void updateWorldBorders();
 

@@ -130,7 +130,7 @@ void main() {
     vec3 color = tex * light;
 
     //color = applyFog(color, length(viewPos - i.worldPosition),  viewDir, directLightDir);
-    color = fog(color, vec3(0.5,0.6,0.7), length(viewPos - i.worldPosition), 0.0022);
+    color = fog(color, vec3(0.5,0.6,0.7), length(viewPos - i.worldPosition), 0.0025);
 
     color = color * colorOverride;
 
