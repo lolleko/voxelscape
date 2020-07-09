@@ -29,4 +29,6 @@ private:
     std::uint32_t fpsLimit = 120;
 
     bool bShouldLimitFPS = false;
+
+    bool firstFrame = true;
 };

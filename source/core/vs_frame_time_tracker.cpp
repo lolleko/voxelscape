@@ -1,11 +1,20 @@
 #include "core/vs_frame_time_tracker.h"
+#include <glm/simd/platform.h>
 
 void VSFrameTimeTracker::startFrame()
 {
     frameStartTime = std::chrono::high_resolution_clock::now();
     const std::chrono::duration<float> deltaDurationSeconds = frameStartTime - lastFrameStartTime;
 
-    deltaSeconds = deltaDurationSeconds.count();
+    if (firstFrame)
+    {
+        firstFrame = false;
+        deltaSeconds = 0.F;
+    }
+    else 
+    {
+        deltaSeconds = deltaDurationSeconds.count();
+    }
     lastFrameStartTime = frameStartTime;
 }
 

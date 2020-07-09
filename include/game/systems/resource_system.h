@@ -10,12 +10,12 @@
 #include "game/components/unique.h"
 #include "game/components/world_context.h"
 
+#include <iostream>
 void updateResourceSystem(entt::registry& registry)
 {
     const auto& worldContext = registry.ctx<WorldContext>();
 
     auto& player = registry.ctx<Player>();
-
     // Iterate over all instances, if generator is attached than increment resource
     registry.view<Generator>().each([&worldContext, &player](Generator& generator) {
         // Only look for lumber and stone for now
