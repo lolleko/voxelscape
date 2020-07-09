@@ -1,8 +1,7 @@
 #include "world/generator/vs_heightmap.h"
-#include "world/generator/vs_perlinnoise.h"
+#include <glm/gtc/noise.hpp>
 
 VSHeightmap::VSHeightmap(
-    unsigned int seed,
     unsigned int maxHeight,
     unsigned int octaves,
     float frequency,
@@ -10,7 +9,6 @@ VSHeightmap::VSHeightmap(
     float lacunarity,
     float persistence)
 {
-    pn = new VSPerlinNoise(seed);
     mMaxHeight = maxHeight;
     mOctaves = octaves;
     mFrequency = frequency;
@@ -28,7 +26,7 @@ float VSHeightmap::getHeight(int x, int y)
 
     for (size_t i = 0; i < mOctaves; ++i)
     {
-        output += (amplitude * pn->noise2d(x * frequency, y * frequency));
+        output += amplitude * glm::perlin(glm::vec2{x * frequency, y * frequency});
         denom += amplitude;
 
         frequency *= mLacunarity;
@@ -45,6 +43,6 @@ void VSHeightmap::setMaxHeight(int maxHeight)
 
 int VSHeightmap::getVoxelHeight(int x, int y)
 {
-    float height = getHeight(x, y) * (float)mMaxHeight;
-    return static_cast<int>(std::round(height))/* + mMaxHeight / 2*/;
+    float height = getHeight(x, y) * (float)mMaxHeight / 2 + (mMaxHeight / 2);
+    return static_cast<int>(std::round(height));
 }

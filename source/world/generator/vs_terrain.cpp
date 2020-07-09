@@ -1,5 +1,6 @@
 #include "world/generator/vs_terrain.h"
 #include <glm/fwd.hpp>
+#include <glm/gtx/easing.hpp>
 #include <random>
 #include <vector>
 #include "world/generator/vs_heightmap.h"
@@ -13,30 +14,48 @@ namespace VSTerrainGeneration
         auto chunkManager = world->getChunkManager();
         glm::ivec3 worldSize = chunkManager->getWorldSize();
         glm::ivec3 worldSizeHalf = worldSize / 2;
-        VSHeightmap hm = VSHeightmap(42, worldSize.y, 2, 0.01F, worldSize.y, 4.F, 0.125F);
+        VSHeightmap flatHM =
+            VSHeightmap(worldSize.y / 4, 3, 0.005F, worldSize.y / 4, 2.F, 0.5F);
+        VSHeightmap mountainHM =
+            VSHeightmap(worldSize.y / 2, 2, 0.02F, worldSize.y / 2, 2.F, 0.125F);
+
+        int numBiomes = 1000;
+        VSHeightmap biomeMap = VSHeightmap(numBiomes, 1, 0.005F, 1.F, 2.F, 0.125F);
 
         std::random_device rd;   // Will be used to obtain a seed for the random number engine
         std::mt19937 gen(rd());  // Standard mersenne_twister_engine seeded with rd()
         std::uniform_int_distribution<> dis(0, 300);  // For tree map
+        std::uniform_int_distribution<> disEdge(0, 1);
+
+        int grassLine = worldSize.y / 3;
+        int waterLine = worldSize.y / 16;
+        int sandLine = waterLine + 1;
 
         for (int x = -worldSizeHalf.x; x < worldSizeHalf.x; x++)
         {
             for (int z = -worldSizeHalf.z; z < worldSizeHalf.z; z++)
             {
-                int height = hm.getVoxelHeight(x, z);
-                int tree = dis(gen);
-                int blockID = 0;
-                if (height > 2 * worldSize.y / 3)
+                int biome = biomeMap.getVoxelHeight(x, z);
+                int height = flatHM.getVoxelHeight(x, z);
+                int mountainHeight = mountainHM.getVoxelHeight(x, z) + worldSizeHalf.y;
+
+                // interpolate
+                float weight = glm::quarticEaseIn((float)biome / numBiomes);
+                height = ((1 - weight) * height + (weight)*mountainHeight);
+
+                int blockID = 3;
+
+                if (height > grassLine + disEdge(gen))
                 {
                     // Stone
                     blockID = 1;
                 }
-                else if (height > worldSize.y / 4)
+                else if (height > sandLine)
                 {
                     // Grass
                     blockID = 3;
                 }
-                else if (height > worldSize.y / 5)
+                else if (height > waterLine)
                 {
                     // Sand
                     blockID = 5;
@@ -45,16 +64,18 @@ namespace VSTerrainGeneration
                 {
                     // Water for now
                     blockID = 2;
-                    height = worldSize.y / 5;
+                    height = waterLine;
                 }
 
                 for (int y = -worldSizeHalf.y; y < height - worldSizeHalf.y; y++)
                 {
                     chunkManager->setBlock({x, y, z}, blockID);
                 }
+
+                int tree = dis(gen);
                 if (tree == 0)
                 {
-                    if (height < 2 * worldSize.y / 3 && height > worldSize.y / 4)
+                    if (height < grassLine && height > sandLine)
                     {
                         if (x > -worldSizeHalf.x + 1 && z > -worldSizeHalf.z + 1 &&
                             x < worldSizeHalf.x - 3 && z < worldSizeHalf.z - 3)
@@ -72,7 +93,7 @@ namespace VSTerrainGeneration
         auto chunkManager = world->getChunkManager();
         glm::ivec3 worldSize = chunkManager->getWorldSize();
         glm::ivec3 worldSizeHalf = worldSize / 2;
-        VSHeightmap hm = VSHeightmap(42, worldSize.y, 4, 0.02F, worldSize.y, 1.F, 1.F);
+        VSHeightmap hm = VSHeightmap(worldSize.y, 4, 0.02F, worldSize.y, 1.F, 1.F);
 
         std::random_device rd;   // Will be used to obtain a seed for the random number engine
         std::mt19937 gen(rd());  // Standard mersenne_twister_engine seeded with rd()
@@ -131,7 +152,7 @@ namespace VSTerrainGeneration
         auto chunkManager = world->getChunkManager();
         glm::ivec3 worldSize = chunkManager->getWorldSize();
         glm::ivec3 worldSizeHalf = worldSize / 2;
-        VSHeightmap desert = VSHeightmap(42, worldSize.y, 4, 0.02F, 40.F, 0.5F, 1.F);
+        VSHeightmap desert = VSHeightmap(worldSize.y, 4, 0.02F, 40.F, 0.5F, 1.F);
 
         std::random_device rd;   // Will be used to obtain a seed for the random number engine
         std::mt19937 gen(rd());  // Standard mersenne_twister_engine seeded with rd()

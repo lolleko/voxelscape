@@ -4,18 +4,10 @@
 #include <memory>
 #include <array>
 
-// Defines possible basic noise functions, default is PERLIN
-// enum NoiseFunction {
-//     PERLIN
-// };
-
-class VSPerlinNoise;
-
 class VSHeightmap
 {
 public:
     VSHeightmap(
-        unsigned int seed = 42,
         unsigned int maxHeight = 256,
         unsigned int octaves = 1,
         float frequency = 0.01F,
@@ -31,8 +23,6 @@ public:
     float getHeight(int x, int y);
 
 private:
-    VSPerlinNoise* pn;
-
     unsigned int mMaxHeight;  // maximum height that is allowed, defaults to 256
     unsigned int mOctaves;    // number of octaves used
 

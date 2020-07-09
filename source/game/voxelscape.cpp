@@ -39,15 +39,6 @@ void Voxelscape::initializeGame(VSApp* inApp)
 
     mainRegistry.set<Player>(resources);
 
-    // Init world context
-    mainRegistry.set<WorldContext>(
-        getApp()->getWorld(),
-        0.F,
-        0.F,
-        Bounds{
-            -getApp()->getWorld()->getChunkManager()->getWorldSize() / 2,
-            getApp()->getWorld()->getChunkManager()->getWorldSize() / 2});
-
     auto* gameWorld = new VSWorld();
     auto* gameCamera = gameWorld->getCamera();
     auto* gameCameraController = new VSRTSCameraController(gameCamera, gameWorld);
@@ -67,6 +58,14 @@ void Voxelscape::initializeGame(VSApp* inApp)
     inApp->addWorld(uiContext.menuWorldName, menuWorld);
 
     inApp->setWorldActive(uiContext.menuWorldName);
+
+    // Init world context
+    mainRegistry.set<WorldContext>(
+        getApp()->getWorld(),
+        0.F,
+        0.F,
+        Bounds{-getApp()->getWorld()->getChunkManager()->getWorldSize() / 2,
+               getApp()->getWorld()->getChunkManager()->getWorldSize() / 2});
 }
 
 void Voxelscape::update(float deltaSeconds)
@@ -81,9 +80,8 @@ void Voxelscape::update(float deltaSeconds)
         getApp()->getWorld(),
         deltaSeconds,
         prevWorldContext.worldAge + deltaSeconds,
-        Bounds{
-            -getApp()->getWorld()->getChunkManager()->getWorldSize() / 2,
-            getApp()->getWorld()->getChunkManager()->getWorldSize() / 2});
+        Bounds{-getApp()->getWorld()->getChunkManager()->getWorldSize() / 2,
+               getApp()->getWorld()->getChunkManager()->getWorldSize() / 2});
 
     // TODO maybe not always update?
     updateMenuSystem(mainRegistry);
