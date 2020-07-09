@@ -16,6 +16,7 @@
 #include "game/systems/placement_system.h"
 #include "game/systems/resource_system.h"
 #include "game/systems/minimap_system.h"
+#include "game/systems/editor_system.h"
 
 #include "game/building_loader.h"
 
@@ -48,7 +49,7 @@ void Voxelscape::initializeGame(VSApp* inApp)
     inApp->addWorld(uiContext.gameWorldName, gameWorld);
 
     VSWorld* editorWorld = new VSWorld();
-    editorWorld->getCamera()->setPosition(glm::vec3(-50.F, -5.F, -50.F));
+    editorWorld->getCamera()->setPosition(glm::vec3(-50.F, 50.F, -50.F));
     editorWorld->getCamera()->setPitchYaw(-10.F, 45.F);
     inApp->addWorld(uiContext.editorWorldName, editorWorld);
 
@@ -114,7 +115,8 @@ void Voxelscape::update(float deltaSeconds)
     }
     else if (getApp()->getWorldName() == uiContext.editorWorldName)
     {
-        // TODO updateEditorSystem()
+        updateInputSystem(mainRegistry);
+        updateEditorSystem(mainRegistry);
     }
 }
 

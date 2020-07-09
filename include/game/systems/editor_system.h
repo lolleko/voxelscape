@@ -1,6 +1,7 @@
 #pragma once
 
 #include <entt/entt.hpp>
+#include "core/vs_debug_draw.h"
 #include "game/components/inputs.h"
 #include "game/components/ui_context.h"
 #include "game/components/world_context.h"
@@ -32,7 +33,7 @@ void updateEditorSystem(entt::registry& mainRegistry)
         else if (inputs.middleButtonState == InputState::JustUp)
         {
             worldContext.world->getChunkManager()->setBlock(
-                mouseLocation - 0.05F * inputs.mousTrace.hitNormal, 0);
+                mouseLocation - 0.05F * inputs.mouseTrace.hitNormal, 0);
         }
     }
 }

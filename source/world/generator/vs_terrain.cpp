@@ -14,8 +14,7 @@ namespace VSTerrainGeneration
         auto chunkManager = world->getChunkManager();
         glm::ivec3 worldSize = chunkManager->getWorldSize();
         glm::ivec3 worldSizeHalf = worldSize / 2;
-        VSHeightmap flatHM =
-            VSHeightmap(worldSize.y / 4, 3, 0.005F, worldSize.y / 4, 2.F, 0.5F);
+        VSHeightmap flatHM = VSHeightmap(worldSize.y / 4, 3, 0.005F, worldSize.y / 4, 2.F, 0.5F);
         VSHeightmap mountainHM =
             VSHeightmap(worldSize.y / 2, 2, 0.02F, worldSize.y / 2, 2.F, 0.125F);
 
@@ -182,6 +181,21 @@ namespace VSTerrainGeneration
                         }
                     }
                 }
+            }
+        }
+    }
+
+    void buildEditorPlane(VSWorld* world)
+    {
+        auto chunkManager = world->getChunkManager();
+        glm::ivec3 worldSize = chunkManager->getWorldSize();
+        glm::ivec3 worldSizeHalf = worldSize / 2;
+
+        for (int x = -worldSizeHalf.x; x < worldSizeHalf.x; x++)
+        {
+            for (int z = -worldSizeHalf.z; z < worldSizeHalf.z; z++)
+            {
+                chunkManager->setBlock({x, 0, z}, 1);
             }
         }
     }

@@ -141,4 +141,10 @@ void updateMenuSystem(entt::registry& mainRegistry)
             uiContext.minimap.bShouldUpdate = true;
         }
     }
+
+    if (uiContext.bShouldResetEditor && !world->getChunkManager()->shouldReinitializeChunks())
+    {
+        uiContext.bShouldResetEditor = false;
+        VSTerrainGeneration::buildEditorPlane(world);
+    }
 }
