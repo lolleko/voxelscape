@@ -1,4 +1,5 @@
 #include "game/voxelscape.h"
+#include <imgui.h>
 
 #include "core/vs_camera.h"
 #include "core/vs_dummycameracontroller.h"
@@ -72,7 +73,7 @@ void Voxelscape::update(float deltaSeconds)
 {
     auto& uiContext = mainRegistry.ctx<UIContext>();
 
-    uiContext.anyWindowHovered = ImGui::IsWindowHovered(ImGuiHoveredFlags_AnyWindow);
+    uiContext.anyWindowHovered = ImGui::IsAnyItemHovered();
 
     const auto& prevWorldContext = mainRegistry.ctx<WorldContext>();
 
