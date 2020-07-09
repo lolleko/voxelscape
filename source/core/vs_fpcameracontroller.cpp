@@ -51,54 +51,51 @@ void VSFPCameraController::updateCamera(bool handleMouseEvents)
     }
 
     // Handle rotation
-    if (handleMouseEvents)
+    float xPos = inputHandler->getMouseX();
+    float yPos = inputHandler->getMouseY();
+    if (inputHandler->isLeftMouseClicked() && handleMouseEvents)
     {
-        float xPos = inputHandler->getMouseX();
-        float yPos = inputHandler->getMouseY();
-        if (inputHandler->isLeftMouseClicked())
-        {
-            if (firstMouse)
-            {
-                lastX = xPos;
-                lastY = yPos;
-                firstMouse = false;
-            }
-            else
-            {
-                float xoffset = xPos - lastX;
-                float yoffset = lastY - yPos;  // reversed since y-coordinates go from bottom to top
-
-                lastX = xPos;
-                lastY = yPos;
-
-                xoffset *= mouseSensitivity;
-                yoffset *= mouseSensitivity;
-
-                float yaw = cam->getYaw();
-                float pitch = cam->getPitch();
-                yaw += xoffset;
-                pitch += yoffset;
-
-                // Make sure that when pitch is out of bounds, screen doesn't get flipped
-                if (/*constrainPitch == */ GL_TRUE)
-                {
-                    if (pitch > 89.0F)
-                    {
-                        pitch = 89.0F;
-                    }
-                    if (pitch < -89.0F)
-                    {
-                        pitch = -89.0F;
-                    }
-                }
-                cam->setPitchYaw(pitch, yaw);
-            }
-        }
-        else
+        if (firstMouse)
         {
             lastX = xPos;
             lastY = yPos;
+            firstMouse = false;
         }
+        else
+        {
+            float xoffset = xPos - lastX;
+            float yoffset = lastY - yPos;  // reversed since y-coordinates go from bottom to top
+
+            lastX = xPos;
+            lastY = yPos;
+
+            xoffset *= mouseSensitivity;
+            yoffset *= mouseSensitivity;
+
+            float yaw = cam->getYaw();
+            float pitch = cam->getPitch();
+            yaw += xoffset;
+            pitch += yoffset;
+
+            // Make sure that when pitch is out of bounds, screen doesn't get flipped
+            if (/*constrainPitch == */ GL_TRUE)
+            {
+                if (pitch > 89.0F)
+                {
+                    pitch = 89.0F;
+                }
+                if (pitch < -89.0F)
+                {
+                    pitch = -89.0F;
+                }
+            }
+            cam->setPitchYaw(pitch, yaw);
+        }
+    }
+    else
+    {
+        lastX = xPos;
+        lastY = yPos;
     }
 
     // Handle keyboard movement
