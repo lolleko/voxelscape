@@ -10,7 +10,6 @@
 #include "game/components/unique.h"
 #include "game/components/world_context.h"
 
-#include <iostream>
 void updateResourceSystem(entt::registry& registry)
 {
     const auto& worldContext = registry.ctx<WorldContext>();
