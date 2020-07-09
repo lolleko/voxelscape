@@ -9,7 +9,7 @@
 
 namespace VSParser
 {
-    bool writeToFile(VSChunkManager::VSWorldData& worldData, std::filesystem::path path)
+    bool writeToFile(const VSChunkManager::VSWorldData& worldData, std::filesystem::path path)
     {
         std::ofstream outFile;
         outFile.open(path);
@@ -24,7 +24,7 @@ namespace VSParser
         return true;
     }
 
-    bool writeBuildToFile(VSChunkManager::VSBuildingData& buildData, std::filesystem::path path)
+    bool writeBuildToFile(const VSChunkManager::VSBuildingData& buildData, std::filesystem::path path)
     {
         std::ofstream outFile;
         outFile.open(path);

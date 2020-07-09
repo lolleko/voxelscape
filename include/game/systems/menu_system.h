@@ -87,6 +87,11 @@ void updateMenuSystem(entt::registry& mainRegistry)
         }
     }
 
+    if (app->getWorldName() == uiContext.editorWorldName)
+    {
+        
+    }
+
     // Update world state with ui state
     if (uiContext.bShouldUpdateChunks)
     {
