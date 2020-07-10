@@ -40,6 +40,7 @@ struct UIContext
     // Menu Control flow
     bool bMenuActive = true;
     bool bGameConfigActive = false;
+    bool bShowLoading = false;
 
     // Game config
     int worldSize = 0;  // 0 = Small, 1 = Medium, 2 = Large

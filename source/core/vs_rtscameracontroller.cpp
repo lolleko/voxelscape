@@ -23,7 +23,7 @@ VSRTSCameraController::VSRTSCameraController(
     targetPosition = cam->getPosition();
     cam->setPitchYaw(targetPitch, targetYaw);
     movementSpeed = 100.F;
-    lastYScrollOffset = radius;
+    lastYScrollOffset = 0.F;
 }
 
 void VSRTSCameraController::updateCamera(bool handleMouseEvents)

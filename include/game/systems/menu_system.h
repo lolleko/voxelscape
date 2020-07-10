@@ -89,7 +89,7 @@ void updateMenuSystem(entt::registry& mainRegistry)
 
     if (app->getWorldName() == uiContext.editorWorldName)
     {
-        
+
     }
 
     // Update world state with ui state
@@ -128,6 +128,7 @@ void updateMenuSystem(entt::registry& mainRegistry)
     {
         uiContext.bShouldGenerateTerrain = false;
 
+        uiContext.bShowLoading = true;
         if (uiContext.selectedBiomeType == 0)
         {
             VSTerrainGeneration::buildStandard(world);
@@ -140,6 +141,7 @@ void updateMenuSystem(entt::registry& mainRegistry)
         {
             VSTerrainGeneration::buildDesert(world);
         }
+        uiContext.bShowLoading = false;
 
         if (!uiContext.bEditorActive)
         {
@@ -149,7 +151,7 @@ void updateMenuSystem(entt::registry& mainRegistry)
 
     if (uiContext.bShouldResetEditor && !world->getChunkManager()->shouldReinitializeChunks())
     {
-        uiContext.bShouldResetEditor = false;
         VSTerrainGeneration::buildEditorPlane(world);
+        uiContext.bShouldResetEditor = false;
     }
 }

@@ -128,6 +128,10 @@ void Voxelscape::renderUI()
     {
         renderEditorGUI(uiContext);
     }
+    else if (uiContext.bShowLoading)
+    {
+        renderLoading(uiContext);
+    }
     else if (uiContext.bMenuActive)
     {
         renderMainMenu(uiContext);
@@ -135,10 +139,6 @@ void Voxelscape::renderUI()
     else if (uiContext.bGameConfigActive)
     {
         renderGameConfigGUI(uiContext);
-    }
-    else if (uiContext.bShouldUpdateChunks)
-    {
-        renderLoading(uiContext);
     }
     else
     {
