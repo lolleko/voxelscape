@@ -328,6 +328,7 @@ void Voxelscape::renderGameGUI(UIContext& uiState)
         ImGui::PopStyleColor();
         styleColorPushed = false;
     }
+    ImGui::SameLine();
 
     // Lumberjack
     if (uiState.selectedBuilding.uuid == uiState.lumberjackBuildingName)

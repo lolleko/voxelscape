@@ -4,8 +4,6 @@
 #include <filesystem>
 #include <glm/fwd.hpp>
 #include <nlohmann/json.hpp>
-#include <string>
-#include <vector>
 
 #include "core/vs_log.h"
 #include "game/components/level.h"
