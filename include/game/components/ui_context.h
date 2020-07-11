@@ -75,6 +75,8 @@ struct UIContext
     const std::string lumberjackBuildingName = "building_lumberjack";
     unsigned int stonemineIcon = TextureFromFile("resources/textures/icons/stonemine_icon.png");
     const std::string stonemineBuildingName = "building_stonemine";
+    unsigned int houseIcon = TextureFromFile("resources/textures/icons/house_icon.png");
+    const std::string houseBuildingName = "building_house";
     ImVec4 buttonClickedColor = ImVec4(0.8F, 0.2F, 0.2F, 1.0F);
 
     ImGui::FileBrowser* loadFileDialog = new ImGui::FileBrowser();

@@ -1,5 +1,6 @@
 {
     "uuid": "building_stonemine",
+    "description": "Generates stone over time",
     "resourceamount": {
         "resource": "lumber",
         "amount": 50

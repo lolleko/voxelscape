@@ -5,6 +5,7 @@
 #include <ostream>
 #include "core/vs_input_handler.h"
 #include "game/components/ui_context.h"
+#include "game/components/level.h"
 
 void updatePlacementSystem(entt::registry& mainRegistry, entt::registry& buildingTemplateRegistry)
 {
@@ -35,10 +36,14 @@ void updatePlacementSystem(entt::registry& mainRegistry, entt::registry& buildin
             const auto& selectedBuildingTemplateBounds =
                 buildingTemplateRegistry.get<Bounds>(selectedBuildingTemplate);
 
+            const auto& selectedBuildingTemplateName = buildingTemplateRegistry.get<Unique>(selectedBuildingTemplate);
+
             const auto newBuildingLocation = glm::floor(mouseLocation) + glm::vec3(0.5F, 0.F, 0.5F);
 
-            const auto [templateBlocks, templateGenerator] =
-                buildingTemplateRegistry.get<Blocks, Generator>(selectedBuildingTemplate);
+            // TODO: Make sure correct building level is selected, always first?
+            const auto templateBlocks = buildingTemplateRegistry.get<Blocks>(selectedBuildingTemplate);
+
+            const auto templateGenerator = buildingTemplateRegistry.try_get<Generator>(selectedBuildingTemplate);
 
             auto* previewChunkManager = worldContext.world->getPreviewChunkManager();
 
@@ -64,7 +69,7 @@ void updatePlacementSystem(entt::registry& mainRegistry, entt::registry& buildin
                                 selectedBuildingTemplateBounds.min.z);
                             previewChunkManager->setBlock(
                                 glm::vec3{x, y, z} + offset,
-                                templateBlocks.blocks
+                                templateBlocks.blocks.at(0)
                                     [x + y * templateBlocks.size.x +
                                      z * templateBlocks.size.x * templateBlocks.size.y]);
                         }
@@ -109,10 +114,15 @@ void updatePlacementSystem(entt::registry& mainRegistry, entt::registry& buildin
                 spendResources(mainRegistry, buildingTemplateRegistry, selectedBuildingTemplate);
 
                 const auto buildingInstance = mainRegistry.create();
+                mainRegistry.emplace<Unique>(buildingInstance, selectedBuildingTemplateName);
                 mainRegistry.emplace<Location>(buildingInstance, newBuildingLocation);
                 mainRegistry.emplace<Bounds>(buildingInstance, selectedBuildingTemplateBounds);
                 mainRegistry.emplace<Blocks>(buildingInstance, templateBlocks);
-                mainRegistry.emplace<Generator>(buildingInstance, templateGenerator);
+                mainRegistry.emplace<Level>(buildingInstance, 1);
+                if (templateGenerator != nullptr)
+                {
+                    mainRegistry.emplace<Generator>(buildingInstance, *templateGenerator);
+                }
                 mainRegistry.emplace<Hoverable>(buildingInstance, Color(255, 0, 0));
 
                 for (int x = 0; x < templateBlocks.size.x; x++)
@@ -124,7 +134,7 @@ void updatePlacementSystem(entt::registry& mainRegistry, entt::registry& buildin
                             worldContext.world->getChunkManager()->setBlock(
                                 newBuildingLocation + glm::vec3{x, y, z} +
                                     selectedBuildingTemplateBounds.min,
-                                templateBlocks.blocks
+                                templateBlocks.blocks.at(0)
                                     [x + y * templateBlocks.size.x +
                                      z * templateBlocks.size.x * templateBlocks.size.y]);
                         }

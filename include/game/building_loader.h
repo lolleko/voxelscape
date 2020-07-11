@@ -4,10 +4,14 @@
 #include <filesystem>
 #include <glm/fwd.hpp>
 #include <nlohmann/json.hpp>
+#include <string>
+#include <vector>
 
 #include "core/vs_log.h"
+#include "game/components/level.h"
 #include "game/components/resourceamount.h"
 #include "ui/vs_parser.h"
+#include "world/vs_block.h"
 #include "world/vs_chunk_manager.h"
 
 #include "game/components/generator.h"
@@ -15,6 +19,7 @@
 #include "game/components/bounds.h"
 #include "game/components/unique.h"
 #include "game/components/description.h"
+#include "game/components/upgradecost.h"
 
 namespace BuildingParser
 {
@@ -23,29 +28,6 @@ namespace BuildingParser
         entt::registry& buildingRegistry)
     {
         const auto buildingEnt = buildingRegistry.create();
-
-        const auto blocksFilePath = buildingDirectory / "blocks.json";
-        if (!std::filesystem::exists(blocksFilePath))
-        {
-            // TODO handle
-            VSLog::Log(
-                VSLog::Category::Game,
-                VSLog::Level::err,
-                "{0}",
-                std::string("Failed to load blocks file for building: ") + blocksFilePath.string() +
-                    " not found");
-            return;
-        }
-
-        const auto blocks = VSParser::readBuildFromFile(blocksFilePath);
-
-        buildingRegistry.emplace<Blocks>(buildingEnt, blocks.blocks, blocks.buildSize);
-        const glm::vec2 boundsXZ = {
-            (glm::vec3(blocks.buildSize) / 2.F).x, (glm::vec3(blocks.buildSize) / 2.F).z};
-        buildingRegistry.emplace<Bounds>(
-            buildingEnt,
-            -glm::vec3(boundsXZ.x, 0.F, boundsXZ.y),
-            glm::vec3(boundsXZ.x, blocks.buildSize.y, boundsXZ.y));
 
         const auto componentsFilePath = buildingDirectory / "components.json";
         if (!std::filesystem::exists(componentsFilePath))
@@ -111,9 +93,89 @@ namespace BuildingParser
             buildingRegistry.emplace<ResourceAmount>(buildingEnt, resource, amount);
         }
 
+        if (componentJson.contains("upgradecost"))
+        {
+            const auto upgradeJSON = componentJson.at("upgradecost");
+
+            std::string resource = upgradeJSON.at("resource");
+            std::uint32_t amount = upgradeJSON.at("amount");
+
+            buildingRegistry.emplace<Upgradecost>(buildingEnt, resource, amount);
+        }
+
         if (componentJson.contains("description"))
         {
             buildingRegistry.emplace<Description>(buildingEnt, componentJson.at("description"));
+        }
+
+        // Add block model
+        if (componentJson.contains("maxlevel"))
+        {
+            const auto maxlevelJSON = componentJson.at("maxlevel");
+
+            buildingRegistry.emplace<Level>(buildingEnt, maxlevelJSON);
+
+            Blocks blocksVec{};
+
+            for (int i = 1; i <= componentJson.at("maxlevel"); i++)
+            {
+                const auto blocksFilePath =
+                    buildingDirectory / ("blocks" + std::to_string(i) + ".json");
+                if (!std::filesystem::exists(blocksFilePath))
+                {
+                    // TODO handle
+                    VSLog::Log(
+                        VSLog::Category::Game,
+                        VSLog::Level::err,
+                        "{0}",
+                        std::string("Failed to load blocks file for building: ") +
+                            blocksFilePath.string() + " not found");
+                    return;
+                }
+
+                const auto blocks = VSParser::readBuildFromFile(blocksFilePath);
+
+                blocksVec.size = blocks.buildSize;
+                blocksVec.blocks.emplace_back(blocks.blocks);
+            }
+
+            buildingRegistry.emplace<Blocks>(buildingEnt, blocksVec);
+            const glm::vec2 boundsXZ = {(glm::vec3(blocksVec.size) / 2.F).x,
+                                        (glm::vec3(blocksVec.size) / 2.F).z};
+            buildingRegistry.emplace<Bounds>(
+                buildingEnt,
+                -glm::vec3(boundsXZ.x, 0.F, boundsXZ.y),
+                glm::vec3(boundsXZ.x, blocksVec.size.y, boundsXZ.y));
+        }
+        else
+        {
+            buildingRegistry.emplace<Level>(buildingEnt, 0);
+            const auto blocksFilePath = buildingDirectory / "blocks.json";
+            if (!std::filesystem::exists(blocksFilePath))
+            {
+                // TODO handle
+                VSLog::Log(
+                    VSLog::Category::Game,
+                    VSLog::Level::err,
+                    "{0}",
+                    std::string("Failed to load blocks file for building: ") +
+                        blocksFilePath.string() + " not found");
+                return;
+            }
+
+            const auto blocks = VSParser::readBuildFromFile(blocksFilePath);
+
+            Blocks blockVec{};
+            blockVec.size = blocks.buildSize;
+            blockVec.blocks.emplace_back(blocks.blocks);
+
+            buildingRegistry.emplace<Blocks>(buildingEnt, blockVec);
+            const glm::vec2 boundsXZ = {(glm::vec3(blocks.buildSize) / 2.F).x,
+                                        (glm::vec3(blocks.buildSize) / 2.F).z};
+            buildingRegistry.emplace<Bounds>(
+                buildingEnt,
+                -glm::vec3(boundsXZ.x, 0.F, boundsXZ.y),
+                glm::vec3(boundsXZ.x, blocks.buildSize.y, boundsXZ.y));
         }
     };
 

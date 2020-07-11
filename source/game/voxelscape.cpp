@@ -28,6 +28,7 @@ void Voxelscape::initializeGame(VSApp* inApp)
     (void)inApp;
     BuildingParser::createBuildingFromFile("resources/buildings/lumberjack", buildingRegistry);
     BuildingParser::createBuildingFromFile("resources/buildings/stonemine", buildingRegistry);
+    BuildingParser::createBuildingFromFile("resources/buildings/house", buildingRegistry);
 
     const auto& uiContext = mainRegistry.ctx_or_set<UIContext>();
 
@@ -89,7 +90,7 @@ void Voxelscape::update(float deltaSeconds)
                getApp()->getWorld()->getChunkManager()->getWorldSize() / 2});
 
     // TODO maybe not always update?
-    updateMenuSystem(mainRegistry);
+    updateMenuSystem(mainRegistry, buildingRegistry);
 
     // TODO the app/mainloop should be never allowed to change the active world
     // after initailization otherwhise this could crash
@@ -310,6 +311,25 @@ void Voxelscape::renderGameGUI(UIContext& uiState)
     }
     // Building types
     bool styleColorPushed = false;
+
+    // House
+    if (uiState.selectedBuilding.uuid == uiState.houseBuildingName)
+    {
+        ImGui::PushStyleColor(ImGuiCol_Button, uiState.buttonClickedColor);
+        styleColorPushed = true;
+    }
+    if (ImGui::ImageButton((void*)(intptr_t)uiState.houseIcon, ImVec2(64, 64)))
+    {
+        // Set lumberjack building name
+        uiState.selectedBuilding.uuid = uiState.houseBuildingName;
+    }
+    if (styleColorPushed)
+    {
+        ImGui::PopStyleColor();
+        styleColorPushed = false;
+    }
+
+    // Lumberjack
     if (uiState.selectedBuilding.uuid == uiState.lumberjackBuildingName)
     {
         ImGui::PushStyleColor(ImGuiCol_Button, uiState.buttonClickedColor);
@@ -356,6 +376,7 @@ void Voxelscape::renderGameGUI(UIContext& uiState)
         if (ImGui::Button("Upgrade building"))
         {
             // Upgrade building
+            uiState.bUpgradeBuildingEntity = true;
         }
         ImGui::SameLine();
         ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(1.F, 0.F, 0.F, 1.F));
