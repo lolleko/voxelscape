@@ -67,7 +67,12 @@ namespace BuildingParser
         nlohmann::json componentJson;
         componentsFile >> componentJson;
 
-        VSLog::Log(VSLog::Category::Core, VSLog::Level::info, "{0}", componentJson.dump(4));
+        VSLog::Log(
+            VSLog::Category::Game,
+            VSLog::Level::info,
+            "Loaded Building \"{0}\":\n{1}",
+            buildingDirectory.string(),
+            componentJson.dump(4));
 
         if (!componentJson.contains("uuid"))
         {
