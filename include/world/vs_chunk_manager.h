@@ -196,7 +196,8 @@ private:
 
     std::map<VSChunk*, std::shared_ptr<VSVisibilityChunkUpdate>> activeVisibilityBuildTasks;
 
-    const static inline auto maxShadowUpdateThreads = std::thread::hardware_concurrency();
+    const static inline auto maxShadowUpdateThreads =
+        std::thread::hardware_concurrency() == 0 ? 4 : std::thread::hardware_concurrency() + 1;
 
     const static inline std::vector<float> blockEmission = {
         /*Air=0*/ 0.F,

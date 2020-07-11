@@ -53,7 +53,7 @@ void updateMenuSystem(entt::registry& mainRegistry)
                 groundTraceStart, groundTraceStart - glm::vec3(0.F, 500.F, 0.F));
 
             const auto collisionFrontStart =
-                groundTraceResult.hitLocation + groundTraceResult.hitNormal + 4.F;
+                groundTraceResult.hitLocation + groundTraceResult.hitNormal + 8.F;
 
             const auto collisionFrontTraceResult = world->getChunkManager()->lineTrace(
                 collisionFrontStart, collisionFrontStart + world->getCamera()->getFront() * 6.f);

@@ -34,7 +34,10 @@ struct VSLog
             std::make_shared<spdlog::sinks::basic_file_sink_mt>("logs/voxelscape.log", true);
 
         auto ostream_sink = std::make_shared<spdlog::sinks::ostream_sink_mt>(logStream);
-        const std::vector<spdlog::sink_ptr> sinks = {ostream_sink, file_sink};
+
+        auto console_sink = std::make_shared<spdlog::sinks::stdout_color_sink_mt>();
+
+        const std::vector<spdlog::sink_ptr> sinks = {ostream_sink, file_sink, console_sink};
 
         // const auto longestCategoryName = std::max_element(
         //     categoryNames.begin(), categoryNames.end(), [](const auto& a, const auto& b) {
