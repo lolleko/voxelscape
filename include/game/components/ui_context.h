@@ -2,6 +2,7 @@
 
 #pragma once
 
+#include <entt/entity/entity.hpp>
 #include <filesystem>
 #include <imgui.h>
 #include <array>
@@ -48,8 +49,16 @@ struct UIContext
     // Minimap
     Minimap minimap;
 
+    // Very messy names, idk
     // Selected building string
     Unique selectedBuilding;
+
+    // Selected in-world building, not for construction but for deleting, upgrading and showing info
+    entt::entity selectedBuildingEntity = entt::null;
+    // Show building window if building entitiy is not null
+    bool bShowBuildingWindow = false;
+    bool bUpgradeBuildingEntity = false;
+    bool bDestroyBuildingEntity = false;
 
     // Resource counters
     unsigned int woodCount = 200;

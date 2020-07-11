@@ -1,4 +1,5 @@
 #include "game/systems/placement_system.h"
+#include <entt/entity/entity.hpp>
 #include <glm/fwd.hpp>
 #include <iostream>
 #include <ostream>

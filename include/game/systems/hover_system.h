@@ -36,6 +36,7 @@ void updateHoverSystem(entt::registry& registry)
                     {location + bounds.min, location + bounds.max}, hoverable.hoverColor);
                 // For now stop on the first intersection
                 return;
+
             }
         });
     }

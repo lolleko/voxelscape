@@ -1,5 +1,6 @@
 #pragma once
 
+#include <entt/entity/entity.hpp>
 #include "core/vs_cameracontroller.h"
 #include "game/components/bounds.h"
 #include "world/vs_chunk_manager.h"

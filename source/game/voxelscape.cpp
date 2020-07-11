@@ -1,11 +1,13 @@
 #include "game/voxelscape.h"
 #include <imgui.h>
+#include <entt/entity/entity.hpp>
 
 #include "core/vs_camera.h"
 #include "core/vs_dummycameracontroller.h"
 #include "core/vs_rtscameracontroller.h"
 #include "game/components/resourceamount.h"
 #include "game/components/resources.h"
+#include "game/components/ui_context.h"
 #include "game/components/unique.h"
 #include "game/components/world_context.h"
 #include "game/components/player.h"
@@ -14,6 +16,7 @@
 #include "game/systems/input_system.h"
 #include "game/systems/hover_system.h"
 #include "game/systems/placement_system.h"
+#include "game/systems/selection_system.h"
 #include "game/systems/resource_system.h"
 #include "game/systems/minimap_system.h"
 #include "game/systems/editor_system.h"
@@ -110,6 +113,7 @@ void Voxelscape::update(float deltaSeconds)
         updateInputSystem(mainRegistry);
         updateHoverSystem(mainRegistry);
         updatePlacementSystem(mainRegistry, buildingRegistry);
+        updateSelectionSystem(mainRegistry);
         updateResourceSystem(mainRegistry);
         updateMinimapSystem(mainRegistry);
     }
@@ -237,16 +241,11 @@ void Voxelscape::renderMainMenu(UIContext& uiState)
         ImVec2(ImGui::GetIO().DisplaySize.x * 0.75F, ImGui::GetIO().DisplaySize.y * 0.05F));
     if (ImGui::Button("New Game", ImVec2(ImGui::GetWindowContentRegionWidth(), 0.F)))
     {
-        uiState.bGameConfigActive = true;
-        uiState.bMenuActive = false;
+        uiState.bShouldSetGameActive = true;
     }
     if (ImGui::Button("Start Editor", ImVec2(ImGui::GetWindowContentRegionWidth(), 0.F)))
     {
-        uiState.bShouldUpdateChunks = true;
-        uiState.bShouldResetEditor = true;
         uiState.bShouldSetEditorActive = true;
-        uiState.bEditorActive = true;
-        uiState.bMenuActive = false;
     }
     ImGui::End();
     ImGui::PopFont();
@@ -279,9 +278,6 @@ void Voxelscape::renderGameConfigGUI(UIContext& uiState)
     if (ImGui::Button("Start Game", ImVec2(ImGui::GetWindowContentRegionWidth(), 0.F)))
     {
         uiState.bShouldSetGameActive = true;
-        uiState.bShouldUpdateChunks = true;
-        uiState.bShouldGenerateTerrain = true;
-        uiState.bGameConfigActive = false;
     }
     ImGui::End();
     ImGui::PopFont();
@@ -346,6 +342,31 @@ void Voxelscape::renderGameGUI(UIContext& uiState)
         styleColorPushed = false;
     }
     ImGui::End();
+
+    // Building information
+    if (uiState.bShowBuildingWindow)
+    {
+        ImGui::SetNextWindowPos(
+            ImVec2(0.F, ImGui::GetIO().DisplaySize.y), ImGuiCond_Always, ImVec2(0.F, 1.F));
+        ImGui::SetNextWindowSize(ImVec2(0.F, 0.F));
+        ImGui::Begin(
+            "Building info",
+            0,
+            ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoCollapse);
+        if (ImGui::Button("Upgrade building"))
+        {
+            // Upgrade building
+        }
+        ImGui::SameLine();
+        ImGui::PushStyleColor(ImGuiCol_Button, ImVec4(1.F, 0.F, 0.F, 1.F));
+        if (ImGui::Button("Delete building"))
+        {
+            // Delete building
+            uiState.bDestroyBuildingEntity = true;
+        }
+        ImGui::PopStyleColor();
+        ImGui::End();
+    }
 
     // Minimap
     ImGui::SetNextWindowPos(

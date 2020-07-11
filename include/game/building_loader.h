@@ -14,6 +14,7 @@
 #include "game/components/blocks.h"
 #include "game/components/bounds.h"
 #include "game/components/unique.h"
+#include "game/components/description.h"
 
 namespace BuildingParser
 {
@@ -103,6 +104,11 @@ namespace BuildingParser
             std::uint32_t amount = generatorJSON.at("amount");
 
             buildingRegistry.emplace<ResourceAmount>(buildingEnt, resource, amount);
+        }
+
+        if (componentJson.contains("description"))
+        {
+            buildingRegistry.emplace<Description>(buildingEnt, componentJson.at("description"));
         }
     };
 

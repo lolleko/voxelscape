@@ -20,12 +20,20 @@ void updateMenuSystem(entt::registry& mainRegistry)
     if (uiContext.bShouldSetEditorActive)
     {
         app->setWorldActive(uiContext.editorWorldName);
+        uiContext.bShouldUpdateChunks = true;
+        uiContext.bShouldResetEditor = true;
+        uiContext.bEditorActive = true;
+        uiContext.bMenuActive = false;
         worldContext.world = app->getWorld();
         uiContext.bShouldSetEditorActive = false;
     }
     if (uiContext.bShouldSetGameActive)
     {
         app->setWorldActive(uiContext.gameWorldName);
+        uiContext.bShouldUpdateChunks = true;
+        uiContext.bShouldGenerateTerrain = true;
+        uiContext.bGameConfigActive = false;
+        uiContext.bMenuActive = false;
         worldContext.world = app->getWorld();
         uiContext.bShouldSetGameActive = false;
     }
@@ -89,7 +97,40 @@ void updateMenuSystem(entt::registry& mainRegistry)
 
     if (app->getWorldName() == uiContext.editorWorldName)
     {
+    }
 
+    if (app->getWorldName() == uiContext.gameWorldName)
+    {
+        uiContext.bShowBuildingWindow = (uiContext.selectedBuildingEntity != entt::null);
+
+        if (uiContext.bDestroyBuildingEntity)
+        {
+            // TODO: delete blocks and maybe move to seperate file
+            if (uiContext.selectedBuildingEntity != entt::null)
+            {
+                const auto bounds = mainRegistry.get<Bounds>(uiContext.selectedBuildingEntity);
+                const auto location = mainRegistry.get<Location>(uiContext.selectedBuildingEntity);
+
+                const auto low = location + bounds.min;
+                const auto high = location + bounds.max;
+
+                for (int x = low.x; x < high.x; x++)
+                {
+                    for (int y = low.y; y < high.y; y++)
+                    {
+                        for (int z = low.z; z < high.z; z++)
+                        {
+                            worldContext.world->getChunkManager()->setBlock({x, y, z}, 0);
+                        }
+                    }
+                }
+
+                mainRegistry.destroy(uiContext.selectedBuildingEntity);
+            }
+
+            uiContext.selectedBuildingEntity = entt::null;
+            uiContext.bDestroyBuildingEntity = false;
+        }
     }
 
     // Update world state with ui state
