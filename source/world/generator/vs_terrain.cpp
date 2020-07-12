@@ -26,6 +26,7 @@ namespace VSTerrainGeneration
         std::uniform_int_distribution<> dis(0, 300);  // For tree map
         std::uniform_int_distribution<> disEdge(0, 1);
 
+        int stoneLine = worldSize.y / 2;
         int grassLine = worldSize.y / 3;
         int waterLine = worldSize.y / 16;
         int sandLine = waterLine + 1;
@@ -44,7 +45,12 @@ namespace VSTerrainGeneration
 
                 int blockID = 3;
 
-                if (height > grassLine + disEdge(gen))
+                if (height > stoneLine + disEdge(gen))
+                {
+                    // Stone
+                    blockID = 9;
+                }
+                else if (height > grassLine)
                 {
                     // Stone
                     blockID = 1;
