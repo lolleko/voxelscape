@@ -19,7 +19,8 @@ struct Minimap
         /*Sand=5*/ {1.F * 255, 0.9F * 255, 0.5F},
         /*Leaf=6*/ {0.F, 0.6F * 255, 0.F},
         /*Lava=7*/ {1.F * 255, 0.1F * 255, 0.1F * 255},
-        /*Catus=8*/ {0.1F * 255, 0.6F * 255, 0.1F * 255}};
+        /*Catus=8*/ {0.1F * 255, 0.6F * 255, 0.1F * 255},
+        /*Snow=9*/ {1.F * 255, 1.F * 255, 1.F * 255}};
 
     bool bWasClicked = false;
     glm::vec2 relativeClickPosition = {0.F, 0.F};

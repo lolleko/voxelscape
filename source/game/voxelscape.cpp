@@ -193,7 +193,6 @@ void Voxelscape::renderEditorGUI(UIContext& uiState)
     // Select block type to set
     // This needs to be adapted to the new block types obviously
     ImGui::Begin("Editor");
-    ImGui::Begin("Editor");
     const char* blockTypes[] = {"Stone",         "Water",          "Grass",        "Oak Log",
                                 "Sand",          "Leaf",           "Lava",         "Cactus",
                                 "Snow",          "Wood",           "Redwood",      "Greysand",
