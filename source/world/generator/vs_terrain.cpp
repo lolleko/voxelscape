@@ -221,17 +221,17 @@ namespace VSTerrainGeneration
     void cactusAt(VSWorld* world, int x, int y, int z)
     {
         auto chunkManager = world->getChunkManager();
-        chunkManager->setBlock({x, y, z}, 6);
-        chunkManager->setBlock({x, y + 1, z}, 6);
-        chunkManager->setBlock({x, y + 2, z}, 6);
-        chunkManager->setBlock({x, y + 3, z}, 6);
-        chunkManager->setBlock({x, y + 4, z}, 6);
-        chunkManager->setBlock({x, y + 5, z}, 6);
-        chunkManager->setBlock({x, y + 1, z + 1}, 6);
-        chunkManager->setBlock({x, y + 1, z + 2}, 6);
-        chunkManager->setBlock({x, y + 2, z + 2}, 6);
-        chunkManager->setBlock({x, y + 2, z - 1}, 6);
-        chunkManager->setBlock({x, y + 2, z - 2}, 6);
-        chunkManager->setBlock({x, y + 3, z - 2}, 6);
+        chunkManager->setBlock({x, y, z}, 8);
+        chunkManager->setBlock({x, y + 1, z}, 8);
+        chunkManager->setBlock({x, y + 2, z}, 8);
+        chunkManager->setBlock({x, y + 3, z}, 8);
+        chunkManager->setBlock({x, y + 4, z}, 8);
+        chunkManager->setBlock({x, y + 5, z}, 8);
+        chunkManager->setBlock({x, y + 1, z + 1}, 8);
+        chunkManager->setBlock({x, y + 1, z + 2}, 8);
+        chunkManager->setBlock({x, y + 2, z + 2}, 8);
+        chunkManager->setBlock({x, y + 2, z - 1}, 8);
+        chunkManager->setBlock({x, y + 2, z - 2}, 8);
+        chunkManager->setBlock({x, y + 3, z - 2}, 8);
     }
 }  // namespace VSTerrainGeneration

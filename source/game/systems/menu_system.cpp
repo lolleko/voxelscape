@@ -11,6 +11,7 @@
 void updateMenuSystem(entt::registry& mainRegistry, entt::registry& buildingRegistry)
 {
     auto& uiContext = mainRegistry.ctx<UIContext>();
+    auto& inputContext = mainRegistry.ctx<Inputs>();
     auto& worldContext = mainRegistry.ctx<WorldContext>();
 
     auto* app = VSApp::getInstance();
@@ -34,6 +35,15 @@ void updateMenuSystem(entt::registry& mainRegistry, entt::registry& buildingRegi
         uiContext.bMenuActive = false;
         worldContext.world = app->getWorld();
         uiContext.bShouldSetGameActive = false;
+    }
+    if ((inputContext.JustUp & VSInputHandler::KEY_ESCAPE) != 0)
+    {
+        app->setWorldActive(uiContext.menuWorldName);
+        uiContext.bGameConfigActive = false;
+        uiContext.bMenuActive = true;
+        uiContext.bEditorActive = false;
+        uiContext.bShouldSetGameActive = false;
+        worldContext.world = app->getWorld();
     }
     auto* world = worldContext.world;
 
@@ -87,7 +97,7 @@ void updateMenuSystem(entt::registry& mainRegistry, entt::registry& buildingRegi
 
         if (!uiContext.bIsMenuWorldInitialized)
         {
-            world->getCamera()->setPosition({0.F, -200.F, 0.F});
+            world->getCamera()->setPosition({0.F, 100.F, 0.F});
             uiContext.bIsMenuWorldInitialized = true;
             uiContext.bShouldUpdateChunks = true;
             uiContext.bShouldGenerateTerrain = true;
