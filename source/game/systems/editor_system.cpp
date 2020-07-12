@@ -24,9 +24,9 @@ void updateEditorSystem(entt::registry& mainRegistry)
             // For debugging
             Bounds bounds{{0, 0, 0}, uiContext.brushSize};
 
-            glm::vec3 discreteMouse{std::round(mouseLocation.x - bounds.getCenter().x),
-                                    std::round(mouseLocation.y),
-                                    std::round(mouseLocation.z - bounds.getCenter().z)};
+            glm::vec3 discreteMouse{std::floor(mouseLocation.x - std::floor(bounds.getCenter().x)),
+                                    std::floor(mouseLocation.y),
+                                    std::floor(mouseLocation.z - std::floor(bounds.getCenter().z))};
 
             worldContext.world->getDebugDraw()->drawBox(
                 {discreteMouse, discreteMouse + bounds.max}, {255, 0, 0});
