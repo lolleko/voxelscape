@@ -20,6 +20,8 @@ struct UIContext
     bool bShouldGenerateTerrain = false;
     bool bShouldSetGameActive = false;
     bool bIsMenuWorldInitialized = false;
+    bool bShouldStartGame = false;
+    bool bIsGameWorldRunning = false;
 
     bool anyWindowHovered = false;
 
@@ -52,7 +54,7 @@ struct UIContext
 
     // Very messy names, idk
     // Selected building string
-    Unique selectedBuilding;
+    Unique selectedBuilding = {""};
 
     // Selected in-world building, not for construction but for deleting, upgrading and showing info
     entt::entity selectedBuildingEntity = entt::null;

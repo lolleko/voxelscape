@@ -18,6 +18,12 @@ void updatePlacementSystem(entt::registry& mainRegistry, entt::registry& buildin
 
     const auto mouseLocation = glm::floor(inputs.mouseTrace.hitLocation);
 
+    if (!uiContext.selectedBuilding.uuid.empty() &&
+        (inputs.JustUp & VSInputHandler::KEY_ESCAPE) != 0)
+    {
+        uiContext.selectedBuilding.uuid = "";
+    }
+
     if (inputs.mouseTrace.bHasHit && !uiContext.anyWindowHovered &&
         worldContext.bounds.isLocationInside(mouseLocation))
     {
