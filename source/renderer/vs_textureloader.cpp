@@ -139,31 +139,34 @@ unsigned int TextureAtlasFromFile(std::string atlasDir, bool gamma)
 
     for (const auto& imagePath : dirContents)
     {
-        unsigned char* data =
-            stbi_load(imagePath.path().string().c_str(), &width, &height, &nrComponents, 0);
-        if (data)
+        if ((imagePath.path().extension() == ".png" || imagePath.path().extension() == ".jpg"))
         {
-            if (nrComponents == 1)
-                format = GL_RED;
-            else if (nrComponents == 3)
-                format = GL_RGB;
-            else if (nrComponents == 4)
-                format = GL_RGBA;
+            unsigned char* data =
+                stbi_load(imagePath.path().string().c_str(), &width, &height, &nrComponents, 0);
+            if (data)
+            {
+                if (nrComponents == 1)
+                    format = GL_RED;
+                else if (nrComponents == 3)
+                    format = GL_RGB;
+                else if (nrComponents == 4)
+                    format = GL_RGBA;
 
-            pixels.insert(pixels.end(), data, data + (width * height * nrComponents));
+                pixels.insert(pixels.end(), data, data + (width * height * nrComponents));
 
-            imageCount++;
+                imageCount++;
 
-            stbi_image_free(data);
-        }
-        else
-        {
-            VSLog::Log(
-                VSLog::Category::Core,
-                VSLog::Level::err,
-                "TextureAtlas failed to load at path: {}",
-                imagePath.path().string().c_str());
-            stbi_image_free(data);
+                stbi_image_free(data);
+            }
+            else
+            {
+                VSLog::Log(
+                    VSLog::Category::Core,
+                    VSLog::Level::err,
+                    "TextureAtlas failed to load at path: {}",
+                    imagePath.path().string().c_str());
+                stbi_image_free(data);
+            }
         }
     }
 

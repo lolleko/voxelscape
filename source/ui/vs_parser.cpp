@@ -19,12 +19,13 @@ namespace VSParser
         json["chunkCount"] = {worldData.chunkCount.x, worldData.chunkCount.y};
         json["chunkSize"] = {worldData.chunkSize.x, worldData.chunkSize.y, worldData.chunkSize.z};
         json["blocks"] = worldData.blocks;
-        outFile << std::setw(4) << json << std::endl;
+        outFile << json << std::endl;
         outFile.close();
         return true;
     }
 
-    bool writeBuildToFile(const VSChunkManager::VSBuildingData& buildData, std::filesystem::path path)
+    bool
+    writeBuildToFile(const VSChunkManager::VSBuildingData& buildData, std::filesystem::path path)
     {
         std::ofstream outFile;
         outFile.open(path);
@@ -34,7 +35,7 @@ namespace VSParser
         json["buildingSize"] = {
             buildData.buildSize.x, buildData.buildSize.y, buildData.buildSize.z};
         json["blocks"] = buildData.blocks;
-        outFile << std::setw(4) << json << std::endl;
+        outFile << json << std::endl;
         outFile.close();
         return true;
     }

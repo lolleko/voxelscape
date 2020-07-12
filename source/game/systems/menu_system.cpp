@@ -149,17 +149,17 @@ void updateMenuSystem(entt::registry& mainRegistry, entt::registry& buildingRegi
         if (uiContext.worldSize == 0)
         {
             // Small
-            chunkCount = {32, 32};
+            chunkCount = {16, 16};
         }
         else if (uiContext.worldSize == 1)
         {
             // Medium
-            chunkCount = {64, 64};
+            chunkCount = {32, 32};
         }
         else if (uiContext.worldSize == 2)
         {
             // Large
-            chunkCount = {128, 128};
+            chunkCount = {64, 64};
         }
         else if (uiContext.worldSize == 3)
         {
@@ -167,7 +167,12 @@ void updateMenuSystem(entt::registry& mainRegistry, entt::registry& buildingRegi
             chunkCount = {2, 2};
         }
 
-        constexpr glm::ivec3 chunkSize = {16, 128, 16};
+        if (uiContext.bEditorActive)
+        {
+            chunkCount = {4, 4};
+        }
+
+        constexpr glm::ivec3 chunkSize = {32, 128, 32};
 
         world->getChunkManager()->setChunkDimensions(chunkSize, chunkCount);
         uiContext.bShouldUpdateChunks = false;

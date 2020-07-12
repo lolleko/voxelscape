@@ -391,16 +391,20 @@ void VSChunkManager::updateChunks()
 
     // Init from file asynchronous
     bool expected = true;
-    if (bShouldInitializeFromData.compare_exchange_weak(expected, false))
+    if (!bShouldReinitializeChunks &&
+        bShouldInitializeFromData.compare_exchange_weak(expected, false))
     {
         // Set block data to chunks, TODO: add checks, this is potentially dangerous
-        uint32_t chunkSize = getChunkBlockCount();
+        uint32_t chunkBlockCount = getChunkBlockCount();
+        VSLog::Log(VSLog::Category::Core, VSLog::Level::info, "cbc {}", chunkBlockCount);
+
         auto iter = worldDataFromFile.blocks.begin();
         for (auto* chunk : chunks)
         {
-            chunk->blocks.insert(chunk->blocks.begin(), iter, iter + chunkSize);
+            std::copy(iter, iter + chunkBlockCount, chunk->blocks.begin());
+
             chunk->bIsDirty = true;
-            iter += chunkSize;
+            iter += chunkBlockCount;
         }
     }
 
@@ -587,12 +591,13 @@ VSChunkManager::VSWorldData VSChunkManager::getData() const
 {
     VSChunkManager::VSWorldData worldData{};
 
-    worldData.chunkSize = getWorldSize();
+    worldData.chunkSize = chunkSize;
     worldData.chunkCount = getChunkCount();
 
     // Write BlockIDs to vector
-    worldData.blocks.reserve(getChunkBlockCount() * getTotalChunkCount());
-    for (const auto chunk : chunks)
+    worldData.blocks = std::vector<VSBlockID>();
+
+    for (const auto* chunk : chunks)
     {
         worldData.blocks.insert(worldData.blocks.end(), chunk->blocks.begin(), chunk->blocks.end());
     }

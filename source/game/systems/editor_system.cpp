@@ -24,9 +24,10 @@ void updateEditorSystem(entt::registry& mainRegistry)
             // For debugging
             Bounds bounds{{0, 0, 0}, uiContext.brushSize};
 
-            glm::vec3 discreteMouse{std::floor(mouseLocation.x - std::floor(bounds.getCenter().x)),
-                                    std::floor(mouseLocation.y),
-                                    std::floor(mouseLocation.z - std::floor(bounds.getCenter().z))};
+            glm::vec3 discreteMouse{
+                std::floor(mouseLocation.x - std::floor(bounds.getCenter().x)),
+                std::floor(mouseLocation.y),
+                std::floor(mouseLocation.z - std::floor(bounds.getCenter().z))};
 
             worldContext.world->getDebugDraw()->drawBox(
                 {discreteMouse, discreteMouse + bounds.max}, {255, 0, 0});
@@ -42,7 +43,8 @@ void updateEditorSystem(entt::registry& mainRegistry)
                     {
                         for (int z = low.z; z < high.z; z++)
                         {
-                            worldContext.world->getChunkManager()->setBlock({x, y, z}, uiContext.editorSelectedBlockID + 1);
+                            worldContext.world->getChunkManager()->setBlock(
+                                {x, y, z}, uiContext.editorSelectedBlockID + 1);
                         }
                     }
                 }
@@ -59,6 +61,7 @@ void updateEditorSystem(entt::registry& mainRegistry)
     {
         const VSChunkManager::VSWorldData worldData =
             worldContext.world->getChunkManager()->getData();
+        VSLog::Log(VSLog::Category::Core, VSLog::Level::info, "{}", worldData.blocks.size());
         VSParser::writeToFile(worldData, uiContext.saveFilePath);
         uiContext.bShouldSaveToFile = false;
     }
@@ -66,7 +69,7 @@ void updateEditorSystem(entt::registry& mainRegistry)
     if (uiContext.bShouldLoadFromFile)
     {
         VSChunkManager::VSWorldData worldData = VSParser::readFromFile(uiContext.loadFilePath);
-        worldContext.world->getChunkManager()->setWorldData(worldData);
+        worldContext.world->getChunkManager()->initFromData(worldData);
         uiContext.bShouldLoadFromFile = false;
     }
 
