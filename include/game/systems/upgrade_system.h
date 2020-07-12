@@ -4,6 +4,7 @@
 #include <entt/entity/fwd.hpp>
 #include <entt/entt.hpp>
 #include "game/components/blocks.h"
+#include "game/components/description.h"
 #include "game/components/location.h"
 #include "game/components/player.h"
 #include "game/components/resourceamount.h"
@@ -67,6 +68,7 @@ void upgradeBuilding(entt::registry& mainRegistry, entt::registry& buildingTempl
         const auto upgradeBlocks = buildingTemplateRegistry.get<Blocks>(upgradeTemplate);
         const auto upgradeGenerator = buildingTemplateRegistry.try_get<Generator>(upgradeTemplate);
         const auto upgradeUpgrade = buildingTemplateRegistry.try_get<Upgrade>(upgradeTemplate);
+        const auto upgradeDescription = buildingTemplateRegistry.try_get<Description>(upgradeTemplate);
 
         // Still another level to upgrade
         if (checkResources(mainRegistry, buildingTemplateRegistry, upgradeTemplate))
@@ -108,10 +110,15 @@ void upgradeBuilding(entt::registry& mainRegistry, entt::registry& buildingTempl
             {
                 mainRegistry.emplace<Upgrade>(buildingInstance, *upgradeUpgrade);
             }
+            if (upgradeDescription != nullptr)
+            {
+                mainRegistry.emplace<Description>(buildingInstance, *upgradeDescription);
+            }
             mainRegistry.emplace<Hoverable>(buildingInstance, Color(255, 0, 0));
 
             mainRegistry.destroy(uiContext.selectedBuildingEntity);
             uiContext.selectedBuildingEntity = entt::null;
+            uiContext.entityDescription = "";
         }
     }
 }

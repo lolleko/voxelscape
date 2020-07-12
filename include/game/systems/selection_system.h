@@ -4,6 +4,7 @@
 #include <entt/entt.hpp>
 #include "core/vs_app.h"
 #include "core/vs_debug_draw.h"
+#include "game/components/description.h"
 #include "game/components/inputs.h"
 #include "game/components/hoverable.h"
 #include "game/components/bounds.h"
@@ -29,10 +30,16 @@ void updateSelectionSystem(entt::registry& mainRegistry)
             uiContext.selectedBuilding = {""};
 
             uiContext.selectedBuildingEntity = inputs.hoverEntity;
+            const auto description = mainRegistry.try_get<Description>(inputs.hoverEntity);
+            if (description != nullptr)
+            {
+                uiContext.entityDescription = description->description;
+            }
         }
-        else 
+        else
         {
             uiContext.selectedBuildingEntity = entt::null;
+            uiContext.entityDescription = "";
         }
     }
 

@@ -59,6 +59,7 @@ struct UIContext
     bool bShowBuildingWindow = false;
     bool bUpgradeBuildingEntity = false;
     bool bDestroyBuildingEntity = false;
+    std::string entityDescription = "";
 
     // Resource counters
     unsigned int woodCount = 200;

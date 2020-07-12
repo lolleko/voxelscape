@@ -375,7 +375,10 @@ void Voxelscape::renderGameGUI(UIContext& uiState)
             "Building info",
             0,
             ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoCollapse);
-
+        if (!uiState.entityDescription.empty())
+        {
+            ImGui::Text("%s", uiState.entityDescription.c_str());
+        }
         if (ImGui::Button("Upgrade building"))
         {
             // Upgrade building

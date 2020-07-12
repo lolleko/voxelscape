@@ -4,6 +4,7 @@
 #include <iostream>
 #include <ostream>
 #include "core/vs_input_handler.h"
+#include "game/components/description.h"
 #include "game/components/ui_context.h"
 #include "game/components/upgrade.h"
 
@@ -49,6 +50,8 @@ void updatePlacementSystem(entt::registry& mainRegistry, entt::registry& buildin
                 buildingTemplateRegistry.try_get<Generator>(selectedBuildingTemplate);
 
             const auto templateUpgrade = buildingTemplateRegistry.try_get<Upgrade>(selectedBuildingTemplate);
+
+            const auto templateDescription = buildingTemplateRegistry.try_get<Description>(selectedBuildingTemplate);
 
             auto* previewChunkManager = worldContext.world->getPreviewChunkManager();
 
@@ -130,6 +133,10 @@ void updatePlacementSystem(entt::registry& mainRegistry, entt::registry& buildin
                 if (templateUpgrade != nullptr)
                 {
                     mainRegistry.emplace<Upgrade>(buildingInstance, *templateUpgrade);
+                }
+                if (templateDescription != nullptr)
+                {
+                    mainRegistry.emplace<Description>(buildingInstance, *templateDescription);
                 }
                 mainRegistry.emplace<Hoverable>(buildingInstance, Color(255, 0, 0));
 
