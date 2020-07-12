@@ -33,7 +33,7 @@ void updateMinimapSystem(entt::registry& mainRegistry)
                     int x = (int)std::round(i * stepX);
                     int z = (int)std::round(j * stepZ);
                     VSBlockID blockID = chunkManager->getBlock({x, y, z});
-                    if (blockID > 0)
+                    if (blockID > 0 && blockID < minimap.blockID2MinimapColor.size())
                     {
                         minimap.pixels.at(
                             (j + minimap.height / 2) * minimap.width * minimap.nrComponents +

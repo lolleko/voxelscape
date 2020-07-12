@@ -73,8 +73,9 @@ void Voxelscape::initializeGame(VSApp* inApp)
         getApp()->getWorld(),
         0.F,
         0.F,
-        Bounds{-getApp()->getWorld()->getChunkManager()->getWorldSize() / 2,
-               getApp()->getWorld()->getChunkManager()->getWorldSize() / 2});
+        Bounds{
+            -getApp()->getWorld()->getChunkManager()->getWorldSize() / 2,
+            getApp()->getWorld()->getChunkManager()->getWorldSize() / 2});
 }
 
 void Voxelscape::update(float deltaSeconds)
@@ -89,8 +90,11 @@ void Voxelscape::update(float deltaSeconds)
         getApp()->getWorld(),
         deltaSeconds,
         prevWorldContext.worldAge + deltaSeconds,
-        Bounds{-getApp()->getWorld()->getChunkManager()->getWorldSize() / 2,
-               getApp()->getWorld()->getChunkManager()->getWorldSize() / 2});
+        Bounds{
+            -getApp()->getWorld()->getChunkManager()->getWorldSize() / 2,
+            getApp()->getWorld()->getChunkManager()->getWorldSize() / 2});
+
+    updateInputSystem(mainRegistry);
 
     // TODO maybe not always update?
     updateMenuSystem(mainRegistry, buildingRegistry);
@@ -116,7 +120,6 @@ void Voxelscape::update(float deltaSeconds)
 
         uiContext.populationSpace = player.population.populationSpace;
 
-        updateInputSystem(mainRegistry);
         updateHoverSystem(mainRegistry);
         updatePlacementSystem(mainRegistry, buildingRegistry);
         updateSelectionSystem(mainRegistry);
@@ -125,7 +128,6 @@ void Voxelscape::update(float deltaSeconds)
     }
     else if (getApp()->getWorldName() == uiContext.editorWorldName)
     {
-        updateInputSystem(mainRegistry);
         updateEditorSystem(mainRegistry);
     }
 }
@@ -191,7 +193,13 @@ void Voxelscape::renderEditorGUI(UIContext& uiState)
     // Select block type to set
     // This needs to be adapted to the new block types obviously
     ImGui::Begin("Editor");
-    const char* blockTypes[] = {"Stone", "Water", "Grass", "Wood", "Sand", "Leaf", "Lava"};
+    ImGui::Begin("Editor");
+    const char* blockTypes[] = {"Stone",         "Water",          "Grass",        "Oak Log",
+                                "Sand",          "Leaf",           "Lava",         "Cactus",
+                                "Snow",          "Wood",           "Redwood",      "Greysand",
+                                "Redsand",       "Gravel",         "Redstone",     "Bricks (grey)",
+                                "Bricks (red)",  "Cotton (white)", "Cotton (red)", "Cotton (green)",
+                                "Cotton (blue)", "Birch Log"};
     ImGui::Combo(
         "Select block type",
         (int*)&uiState.editorSelectedBlockID,
@@ -247,7 +255,8 @@ void Voxelscape::renderMainMenu(UIContext& uiState)
         ImVec2(ImGui::GetIO().DisplaySize.x * 0.75F, ImGui::GetIO().DisplaySize.y * 0.05F));
     if (ImGui::Button("New Game", ImVec2(ImGui::GetWindowContentRegionWidth(), 0.F)))
     {
-        uiState.bShouldSetGameActive = true;
+        uiState.bGameConfigActive = true;
+        uiState.bMenuActive = false;
     }
     if (ImGui::Button("Start Editor", ImVec2(ImGui::GetWindowContentRegionWidth(), 0.F)))
     {

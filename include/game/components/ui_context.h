@@ -71,8 +71,8 @@ struct UIContext
 
     // Textures, move to struct maybe
     unsigned int minimapTexture = 0;
-    unsigned int woodResourceTexture = TextureFromFile("resources/textures/tiles/4_wood.png");
-    unsigned int stoneResourceTexture = TextureFromFile("resources/textures/tiles/1_stone.png");
+    unsigned int woodResourceTexture = TextureFromFile("resources/textures/tiles/04_log.png");
+    unsigned int stoneResourceTexture = TextureFromFile("resources/textures/tiles/01_stone.png");
     unsigned int lumberjackIcon = TextureFromFile("resources/textures/icons/lumberjack_icon.png");
     const std::string lumberjackBuildingName = "building_lumberjack";
     unsigned int stonemineIcon = TextureFromFile("resources/textures/icons/stonemine_icon.png");
