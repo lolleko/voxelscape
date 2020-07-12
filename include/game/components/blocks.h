@@ -1,6 +1,5 @@
 #pragma once
 
-#include <cstdint>
 #include <glm/fwd.hpp>
 #include <vector>
 
@@ -8,6 +7,6 @@
 
 struct Blocks
 {
-    std::vector<std::vector<VSBlockID>> blocks;
+    std::vector<VSBlockID> blocks;
     glm::ivec3 size;
 };

@@ -1,13 +1,11 @@
 {
-    "uuid": "building_house",
+    "uuid": "building_house1",
     "description": "Increases population",
     "resourceamount": {
         "resource": "lumber",
         "amount": 30
     },
-    "maxlevel": 2,
-    "upgradecost": {
-        "resource": "stone",
-        "amount": 50    
+    "upgrade": {
+        "name": "building_house2"
     }
 }

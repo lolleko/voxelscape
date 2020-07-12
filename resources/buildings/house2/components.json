@@ -1,0 +1,8 @@
+{
+    "uuid": "building_house2",
+    "description": "Increases population even more",
+    "resourceamount": {
+        "resource": "stone",
+        "amount": 50
+    }
+}

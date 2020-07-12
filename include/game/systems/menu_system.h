@@ -6,7 +6,6 @@
 #include "core/vs_camera.h"
 #include "game/components/inputs.h"
 #include "game/components/ui_context.h"
-#include "game/components/upgradecost.h"
 #include "game/components/world_context.h"
 #include "world/generator/vs_terrain.h"
 #include "game/systems/upgrade_system.h"

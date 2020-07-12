@@ -28,7 +28,8 @@ void Voxelscape::initializeGame(VSApp* inApp)
     (void)inApp;
     BuildingParser::createBuildingFromFile("resources/buildings/lumberjack", buildingRegistry);
     BuildingParser::createBuildingFromFile("resources/buildings/stonemine", buildingRegistry);
-    BuildingParser::createBuildingFromFile("resources/buildings/house", buildingRegistry);
+    BuildingParser::createBuildingFromFile("resources/buildings/house1", buildingRegistry);
+    BuildingParser::createBuildingFromFile("resources/buildings/house2", buildingRegistry);
 
     const auto& uiContext = mainRegistry.ctx_or_set<UIContext>();
 
@@ -374,6 +375,7 @@ void Voxelscape::renderGameGUI(UIContext& uiState)
             "Building info",
             0,
             ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoCollapse);
+
         if (ImGui::Button("Upgrade building"))
         {
             // Upgrade building
