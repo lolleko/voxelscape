@@ -3,9 +3,11 @@
 #include <glm/gtx/easing.hpp>
 #include <random>
 #include <vector>
+#include "ui/vs_parser.h"
 #include "world/generator/vs_heightmap.h"
 #include "world/vs_block.h"
 #include "world/vs_chunk_manager.h"
+#include "world/vs_world.h"
 
 namespace VSTerrainGeneration
 {
@@ -23,8 +25,14 @@ namespace VSTerrainGeneration
 
         std::random_device rd;   // Will be used to obtain a seed for the random number engine
         std::mt19937 gen(rd());  // Standard mersenne_twister_engine seeded with rd()
-        std::uniform_int_distribution<> dis(0, 300);  // For tree map
+        std::uniform_int_distribution<> dis(0, 1000);  // For tree map
         std::uniform_int_distribution<> disEdge(0, 1);
+
+        // load tree models
+        const auto smallBirch =
+            VSParser::readBuildFromFile("resources/trees/small_birchtree/blocks.json");
+        const auto largeBirch =
+            VSParser::readBuildFromFile("resources/trees/large_birchtree/blocks.json");
 
         int stoneLine = worldSize.y / 2;
         int grassLine = worldSize.y / 3;
@@ -87,6 +95,20 @@ namespace VSTerrainGeneration
                         {
                             treeAt(world, x, height - worldSizeHalf.y, z);
                         }
+                    }
+                }
+                else if (tree == 1)
+                {
+                    if (height < grassLine && height > sandLine)
+                    {
+                        placeModelAt(world, smallBirch, x, height - worldSizeHalf.y, z);
+                    }
+                }
+                else if (tree == 2)
+                {
+                    if (height < grassLine && height > sandLine)
+                    {
+                        placeModelAt(world, largeBirch, x, height - worldSizeHalf.y, z);
                     }
                 }
             }
@@ -206,6 +228,35 @@ namespace VSTerrainGeneration
         }
     }
 
+    void placeModelAt(VSWorld* world, VSChunkManager::VSBuildingData build, int i, int j, int k)
+    {
+        auto chunkManager = world->getChunkManager();
+
+        const glm::vec2 boundsXZ = {(glm::vec3(build.buildSize) / 2.F).x,
+                                    (glm::vec3(build.buildSize) / 2.F).z};
+
+        for (int x = 0; x < build.buildSize.x; x++)
+        {
+            for (int y = 0; y < build.buildSize.y; y++)
+            {
+                for (int z = 0; z < build.buildSize.z; z++)
+                {
+                    if (chunkManager->isLocationInBounds(
+                            glm::vec3{x, y, z} + glm::vec3{i, j, k} -
+                            glm::vec3(-boundsXZ.x, 0, -boundsXZ.y)))
+                    {
+                        chunkManager->setBlock(
+                            glm::vec3{x, y, z} + glm::vec3{i, j, k} -
+                                glm::vec3(-boundsXZ.x, 0, -boundsXZ.y),
+                            build.blocks
+                                [x + y * build.buildSize.x +
+                                 z * build.buildSize.x * build.buildSize.y]);
+                    }
+                }
+            }
+        }
+    }
+
     void treeAt(VSWorld* world, int x, int y, int z)
     {
         auto chunkManager = world->getChunkManager();
@@ -213,6 +264,24 @@ namespace VSTerrainGeneration
         chunkManager->setBlock({x, y + 1, z}, 4);
         chunkManager->setBlock({x, y + 2, z}, 4);
         chunkManager->setBlock({x, y + 3, z}, 4);
+        chunkManager->setBlock({x + 1, y + 3, z}, 6);
+        chunkManager->setBlock({x - 1, y + 3, z}, 6);
+        chunkManager->setBlock({x, y + 3, z + 1}, 6);
+        chunkManager->setBlock({x, y + 3, z - 1}, 6);
+        chunkManager->setBlock({x + 1, y + 3, z + 1}, 6);
+        chunkManager->setBlock({x - 1, y + 3, z - 1}, 6);
+        chunkManager->setBlock({x + 1, y + 3, z - 1}, 6);
+        chunkManager->setBlock({x - 1, y + 3, z + 1}, 6);
+        chunkManager->setBlock({x, y + 4, z}, 6);
+    }
+
+    void birchtreeAt(VSWorld* world, int x, int y, int z)
+    {
+        auto chunkManager = world->getChunkManager();
+        chunkManager->setBlock({x, y, z}, 22);
+        chunkManager->setBlock({x, y + 1, z}, 22);
+        chunkManager->setBlock({x, y + 2, z}, 22);
+        chunkManager->setBlock({x, y + 3, z}, 22);
         chunkManager->setBlock({x + 1, y + 3, z}, 6);
         chunkManager->setBlock({x - 1, y + 3, z}, 6);
         chunkManager->setBlock({x, y + 3, z + 1}, 6);

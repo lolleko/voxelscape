@@ -199,15 +199,29 @@ private:
     const static inline auto maxShadowUpdateThreads =
         std::thread::hardware_concurrency() == 0 ? 4 : std::thread::hardware_concurrency() + 1;
 
-    const static inline std::vector<float> blockEmission = {
-        /*Air=0*/ 0.F,
-        /*Stone=1*/ 0.F,
-        /*Water=2*/ 0.F,
-        /*Grass=3*/ 0.F,
-        /*Wood=4*/ 0.F,
-        /*Sand=5*/ 0.F,
-        /*Leaf=6*/ 0.F,
-        /*Lava=7*/ 16.F};
+    const static inline std::vector<float> blockEmission = {/*Air=0*/ 0.F,
+                                                            /*Stone=1*/ 0.F,
+                                                            /*Water=2*/ 0.F,
+                                                            /*Grass=3*/ 0.F,
+                                                            /*Wood=4*/ 0.F,
+                                                            /*Sand=5*/ 0.F,
+                                                            /*Leaf=6*/ 0.F,
+                                                            /*Lava=7*/ 16.F,
+                                                            0.F,
+                                                            0.F,
+                                                            0.F,
+                                                            0.F,
+                                                            0.F,
+                                                            0.F,
+                                                            0.F,
+                                                            0.F,
+                                                            0.F,
+                                                            0.F,
+                                                            0.F,
+                                                            0.F,
+                                                            0.F,
+                                                            0.F,
+                                                            0.F};
 
     void initializeChunks();
 
