@@ -55,7 +55,7 @@ namespace VSTerrainGeneration
 
                 if (height > stoneLine + disEdge(gen))
                 {
-                    // Stone
+                    // Snow
                     blockID = 9;
                 }
                 else if (height > grassLine)
@@ -88,7 +88,7 @@ namespace VSTerrainGeneration
                 int tree = dis(gen);
                 if (tree == 0)
                 {
-                    if (height < grassLine && height > sandLine)
+                    if (height < stoneLine && height > sandLine)
                     {
                         if (x > -worldSizeHalf.x + 1 && z > -worldSizeHalf.z + 1 &&
                             x < worldSizeHalf.x - 3 && z < worldSizeHalf.z - 3)
