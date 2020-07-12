@@ -1,4 +1,5 @@
 #include "game/systems/menu_system.h"
+#include <entt/entity/entity.hpp>
 #include "core/vs_camera.h"
 #include "game/components/inputs.h"
 #include "game/components/ui_context.h"
@@ -29,14 +30,24 @@ void updateMenuSystem(entt::registry& mainRegistry, entt::registry& buildingRegi
     if (uiContext.bShouldSetGameActive)
     {
         app->setWorldActive(uiContext.gameWorldName);
-        uiContext.bShouldUpdateChunks = true;
-        uiContext.bShouldGenerateTerrain = true;
         uiContext.bGameConfigActive = false;
         uiContext.bMenuActive = false;
         worldContext.world = app->getWorld();
         uiContext.bShouldSetGameActive = false;
     }
-    if ((inputContext.JustUp & VSInputHandler::KEY_ESCAPE) != 0)
+    if (uiContext.bShouldStartGame)
+    {
+        app->setWorldActive(uiContext.gameWorldName);
+        uiContext.bShouldUpdateChunks = true;
+        uiContext.bShouldGenerateTerrain = true;
+        uiContext.bGameConfigActive = false;
+        uiContext.bMenuActive = false;
+        worldContext.world = app->getWorld();
+        uiContext.bShouldStartGame = false;
+        uiContext.bIsGameWorldRunning = true;
+    }
+    if ((inputContext.JustUp & VSInputHandler::KEY_ESCAPE) != 0 &&
+        uiContext.selectedBuilding.uuid.empty())
     {
         app->setWorldActive(uiContext.menuWorldName);
         uiContext.bGameConfigActive = false;

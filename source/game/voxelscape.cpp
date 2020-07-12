@@ -73,8 +73,9 @@ void Voxelscape::initializeGame(VSApp* inApp)
         getApp()->getWorld(),
         0.F,
         0.F,
-        Bounds{-getApp()->getWorld()->getChunkManager()->getWorldSize() / 2,
-               getApp()->getWorld()->getChunkManager()->getWorldSize() / 2});
+        Bounds{
+            -getApp()->getWorld()->getChunkManager()->getWorldSize() / 2,
+            getApp()->getWorld()->getChunkManager()->getWorldSize() / 2});
 }
 
 void Voxelscape::update(float deltaSeconds)
@@ -89,8 +90,9 @@ void Voxelscape::update(float deltaSeconds)
         getApp()->getWorld(),
         deltaSeconds,
         prevWorldContext.worldAge + deltaSeconds,
-        Bounds{-getApp()->getWorld()->getChunkManager()->getWorldSize() / 2,
-               getApp()->getWorld()->getChunkManager()->getWorldSize() / 2});
+        Bounds{
+            -getApp()->getWorld()->getChunkManager()->getWorldSize() / 2,
+            getApp()->getWorld()->getChunkManager()->getWorldSize() / 2});
 
     updateInputSystem(mainRegistry);
 
@@ -258,6 +260,15 @@ void Voxelscape::renderMainMenu(UIContext& uiState)
 
     ImGui::Dummy(
         ImVec2(ImGui::GetIO().DisplaySize.x * 0.75F, ImGui::GetIO().DisplaySize.y * 0.05F));
+
+    if (uiState.bIsGameWorldRunning)
+    {
+        if (ImGui::Button("Continue Game", ImVec2(ImGui::GetWindowContentRegionWidth(), 0.F)))
+        {
+            uiState.bShouldSetGameActive = true;
+        }
+    }
+
     if (ImGui::Button("New Game", ImVec2(ImGui::GetWindowContentRegionWidth(), 0.F)))
     {
         uiState.bGameConfigActive = true;
@@ -297,7 +308,7 @@ void Voxelscape::renderGameConfigGUI(UIContext& uiState)
 
     if (ImGui::Button("Start Game", ImVec2(ImGui::GetWindowContentRegionWidth(), 0.F)))
     {
-        uiState.bShouldSetGameActive = true;
+        uiState.bShouldStartGame = true;
     }
     ImGui::End();
     ImGui::PopFont();
