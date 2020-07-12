@@ -196,7 +196,6 @@ void Voxelscape::renderEditorGUI(UIContext& uiState)
     // This needs to be adapted to the new block types obviously
     ImGui::SetNextWindowSize(ImVec2(0.F, 0.F));
     ImGui::Begin("Editor");
-    ImGui::Begin("Editor");
     const char* blockTypes[] = {"Stone",         "Water",          "Grass",        "Oak Log",
                                 "Sand",          "Leaf",           "Lava",         "Cactus",
                                 "Snow",          "Wood",           "Redwood",      "Greysand",
