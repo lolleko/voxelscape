@@ -122,6 +122,7 @@ void Voxelscape::update(float deltaSeconds)
         updateSelectionSystem(mainRegistry);
         updateResourceSystem(mainRegistry);
         updateMinimapSystem(mainRegistry);
+        updateEditorSystem(mainRegistry);
     }
     else if (getApp()->getWorldName() == uiContext.editorWorldName)
     {
@@ -153,6 +154,7 @@ void Voxelscape::renderUI()
     else
     {
         renderGameGUI(uiContext);
+        renderEditorGUI(uiContext);
     }
 }
 
@@ -190,6 +192,7 @@ void Voxelscape::renderEditorGUI(UIContext& uiState)
     ImGui::EndMainMenuBar();
     // Select block type to set
     // This needs to be adapted to the new block types obviously
+    ImGui::SetNextWindowSize(ImVec2(0.F, 0.F));
     ImGui::Begin("Editor");
     const char* blockTypes[] = {"Stone", "Water", "Grass", "Wood", "Sand", "Leaf", "Lava"};
     ImGui::Combo(
@@ -197,7 +200,7 @@ void Voxelscape::renderEditorGUI(UIContext& uiState)
         (int*)&uiState.editorSelectedBlockID,
         blockTypes,
         IM_ARRAYSIZE(blockTypes));
-
+    ImGui::SliderInt3("Brush size", (int*)&uiState.brushSize, 1, 5);
     ImGui::End();
 
     // Handle file browsers

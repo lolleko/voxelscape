@@ -1,4 +1,6 @@
 #include "game/systems/editor_system.h"
+#include <glm/fwd.hpp>
+#include "game/components/bounds.h"
 #include "ui/vs_parser.h"
 
 void updateEditorSystem(entt::registry& mainRegistry)
@@ -20,12 +22,30 @@ void updateEditorSystem(entt::registry& mainRegistry)
         else
         {
             // For debugging
-            worldContext.world->getDebugDraw()->drawSphere(mouseLocation, 0.5F, {255, 0, 0});
+            Bounds bounds{{0, 0, 0}, uiContext.brushSize};
+
+            glm::vec3 discreteMouse{std::round(mouseLocation.x - bounds.getCenter().x),
+                                    std::round(mouseLocation.y),
+                                    std::round(mouseLocation.z - bounds.getCenter().z)};
+
+            worldContext.world->getDebugDraw()->drawBox(
+                {discreteMouse, discreteMouse + bounds.max}, {255, 0, 0});
 
             if (inputs.rightButtonState == InputState::JustUp)
             {
-                worldContext.world->getChunkManager()->setBlock(
-                    mouseLocation, uiContext.editorSelectedBlockID + 1);
+                const auto low = discreteMouse + bounds.min;
+                const auto high = discreteMouse + bounds.max;
+
+                for (int x = low.x; x < high.x; x++)
+                {
+                    for (int y = low.y; y < high.y; y++)
+                    {
+                        for (int z = low.z; z < high.z; z++)
+                        {
+                            worldContext.world->getChunkManager()->setBlock({x, y, z}, uiContext.editorSelectedBlockID + 1);
+                        }
+                    }
+                }
             }
             else if (inputs.middleButtonState == InputState::JustUp)
             {

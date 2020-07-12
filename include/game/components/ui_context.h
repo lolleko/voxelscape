@@ -28,6 +28,7 @@ struct UIContext
     bool bShouldResetEditor = false;
     bool bEditorActive = false;
     bool bShouldLoadFromFile = false;
+    glm::ivec3 brushSize = {1, 1, 1};
     // This is so the keyboard input does not get processed if there is a file browser active
     bool bFileBrowserActive = false;
     std::filesystem::path loadFilePath = "";
