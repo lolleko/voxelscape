@@ -1,7 +1,7 @@
 #include "game/systems/placement_system.h"
+#include "game/systems/population_system.h"
 #include <entt/entity/entity.hpp>
 #include <glm/fwd.hpp>
-#include <iostream>
 #include <ostream>
 #include "core/vs_input_handler.h"
 #include "game/components/description.h"
@@ -49,9 +49,11 @@ void updatePlacementSystem(entt::registry& mainRegistry, entt::registry& buildin
             const auto templateGenerator =
                 buildingTemplateRegistry.try_get<Generator>(selectedBuildingTemplate);
 
-            const auto templateUpgrade = buildingTemplateRegistry.try_get<Upgrade>(selectedBuildingTemplate);
+            const auto templateUpgrade =
+                buildingTemplateRegistry.try_get<Upgrade>(selectedBuildingTemplate);
 
-            const auto templateDescription = buildingTemplateRegistry.try_get<Description>(selectedBuildingTemplate);
+            const auto templateDescription =
+                buildingTemplateRegistry.try_get<Description>(selectedBuildingTemplate);
 
             auto* previewChunkManager = worldContext.world->getPreviewChunkManager();
 
@@ -117,9 +119,13 @@ void updatePlacementSystem(entt::registry& mainRegistry, entt::registry& buildin
             // TODO intersection test with blocks
 
             if (checkResources(mainRegistry, buildingTemplateRegistry, selectedBuildingTemplate) &&
-                !intersect && inputs.leftButtonState == InputState::JustUp)
+                !intersect && inputs.leftButtonState == InputState::JustUp &&
+                checkTemplatePopulationSpace(
+                    mainRegistry, buildingTemplateRegistry, selectedBuildingTemplate))
             {
                 spendResources(mainRegistry, buildingTemplateRegistry, selectedBuildingTemplate);
+                updatePlayerPopulationWithTemplate(
+                    mainRegistry, buildingTemplateRegistry, selectedBuildingTemplate);
 
                 const auto buildingInstance = mainRegistry.create();
                 mainRegistry.emplace<Unique>(buildingInstance, selectedBuildingTemplateName);

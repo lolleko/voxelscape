@@ -4,5 +4,6 @@
     "resourceamount": {
         "resource": "stone",
         "amount": 50
-    }
+    },
+    "popspace": 5
 }

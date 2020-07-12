@@ -17,6 +17,7 @@
 #include "game/components/unique.h"
 #include "game/components/description.h"
 #include "game/components/upgrade.h"
+#include "game/components/population.h"
 
 namespace BuildingParser
 {
@@ -88,6 +89,11 @@ namespace BuildingParser
             std::uint32_t amount = generatorJSON.at("amount");
 
             buildingRegistry.emplace<ResourceAmount>(buildingEnt, resource, amount);
+        }
+
+        if (componentJson.contains("popspace"))
+        {
+            buildingRegistry.emplace<Population>(buildingEnt, componentJson.at("popspace"));
         }
 
         if (componentJson.contains("upgrade"))

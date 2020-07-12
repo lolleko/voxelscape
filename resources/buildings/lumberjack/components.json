@@ -9,5 +9,6 @@
         "resource": "lumber",
         "interval": 1,
         "amount": 2
-    }
+    }, 
+    "popspace": -1
 }

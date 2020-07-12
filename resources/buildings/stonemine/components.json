@@ -9,5 +9,6 @@
         "resource": "stone",
         "interval": 1,
         "amount": 2
-    }
+    },
+    "popspace": -2
 }

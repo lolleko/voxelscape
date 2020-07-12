@@ -64,6 +64,7 @@ struct UIContext
     // Resource counters
     unsigned int woodCount = 200;
     unsigned int stoneCount = 100;
+    int populationSpace = 0;
 
     bool bIsBuildingPreviewInitialized = false;
     bool bIsBuildingPreviewConstructed = false;

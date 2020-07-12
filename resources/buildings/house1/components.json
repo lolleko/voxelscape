@@ -7,5 +7,6 @@
     },
     "upgrade": {
         "name": "building_house2"
-    }
+    },
+    "popspace": 2
 }

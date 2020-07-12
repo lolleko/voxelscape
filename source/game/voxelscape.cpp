@@ -5,6 +5,7 @@
 #include "core/vs_camera.h"
 #include "core/vs_dummycameracontroller.h"
 #include "core/vs_rtscameracontroller.h"
+#include "game/components/population.h"
 #include "game/components/resourceamount.h"
 #include "game/components/resources.h"
 #include "game/components/ui_context.h"
@@ -37,6 +38,7 @@ void Voxelscape::initializeGame(VSApp* inApp)
 
     // Init Resources
     auto resources = Resources{};
+    auto population = Population{0};
 
     const auto wood = ResourceAmount{Unique{"lumber"}, 200};
     const auto stone = ResourceAmount{Unique{"stone"}, 100};
@@ -44,7 +46,7 @@ void Voxelscape::initializeGame(VSApp* inApp)
     resources.resourceVector.emplace_back(wood);
     resources.resourceVector.emplace_back(stone);
 
-    mainRegistry.set<Player>(resources);
+    mainRegistry.set<Player>(resources, population);
 
     auto* gameWorld = new VSWorld();
     auto* gameCamera = gameWorld->getCamera();
@@ -111,6 +113,8 @@ void Voxelscape::update(float deltaSeconds)
                 uiContext.stoneCount = resourceAmount.amount;
             }
         }
+
+        uiContext.populationSpace = player.population.populationSpace;
 
         updateInputSystem(mainRegistry);
         updateHoverSystem(mainRegistry);
@@ -292,6 +296,7 @@ void Voxelscape::renderGameGUI(UIContext& uiState)
     {
         ImGui::MenuItem("Dummy");
         ImGui::Separator();
+        ImGui::Text("Unemployed: %i", uiState.populationSpace);
         ImGui::Image((void*)(intptr_t)uiState.woodResourceTexture, ImVec2(20, 20));
         ImGui::Text("%i", uiState.woodCount);
 

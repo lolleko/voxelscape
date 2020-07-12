@@ -2,16 +2,13 @@
 
 #include <entt/entity/entity.hpp>
 #include <entt/entity/fwd.hpp>
-#include <entt/entt.hpp>
-
-#include <iostream>
-#include <ostream>
 #include "game/components/bounds.h"
 #include "game/components/location.h"
 #include "game/components/ui_context.h"
 #include "game/components/world_context.h"
+#include "game/systems/population_system.h"
 
-void deleteSelectedBuilding(entt::registry& mainRegistry)
+void deleteSelectedBuilding(entt::registry& mainRegistry, entt::registry& buildingRegistry)
 {
     auto& uiContext = mainRegistry.ctx<UIContext>();
     auto& worldContext = mainRegistry.ctx<WorldContext>();
@@ -33,5 +30,7 @@ void deleteSelectedBuilding(entt::registry& mainRegistry)
         }
     }
 
+    (void) buildingRegistry;
+    unemployPopulationFromEntity(mainRegistry, buildingRegistry, uiContext.selectedBuildingEntity);
     mainRegistry.destroy(uiContext.selectedBuildingEntity);
 }
