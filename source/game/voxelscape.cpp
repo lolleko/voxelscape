@@ -73,9 +73,8 @@ void Voxelscape::initializeGame(VSApp* inApp)
         getApp()->getWorld(),
         0.F,
         0.F,
-        Bounds{
-            -getApp()->getWorld()->getChunkManager()->getWorldSize() / 2,
-            getApp()->getWorld()->getChunkManager()->getWorldSize() / 2});
+        Bounds{-getApp()->getWorld()->getChunkManager()->getWorldSize() / 2,
+               getApp()->getWorld()->getChunkManager()->getWorldSize() / 2});
 }
 
 void Voxelscape::update(float deltaSeconds)
@@ -90,9 +89,8 @@ void Voxelscape::update(float deltaSeconds)
         getApp()->getWorld(),
         deltaSeconds,
         prevWorldContext.worldAge + deltaSeconds,
-        Bounds{
-            -getApp()->getWorld()->getChunkManager()->getWorldSize() / 2,
-            getApp()->getWorld()->getChunkManager()->getWorldSize() / 2});
+        Bounds{-getApp()->getWorld()->getChunkManager()->getWorldSize() / 2,
+               getApp()->getWorld()->getChunkManager()->getWorldSize() / 2});
 
     updateInputSystem(mainRegistry);
 
@@ -139,6 +137,7 @@ void Voxelscape::renderUI()
 
     if (uiContext.bEditorActive)
     {
+        renderEditorMenu(uiContext);
         renderEditorGUI(uiContext);
     }
     else if (uiContext.bShowLoading)
@@ -160,7 +159,7 @@ void Voxelscape::renderUI()
     }
 }
 
-void Voxelscape::renderEditorGUI(UIContext& uiState)
+void Voxelscape::renderEditorMenu(UIContext& uiState)
 {
     if (ImGui::BeginMainMenuBar())
     {
@@ -192,6 +191,10 @@ void Voxelscape::renderEditorGUI(UIContext& uiState)
         }
     }
     ImGui::EndMainMenuBar();
+}
+
+void Voxelscape::renderEditorGUI(UIContext& uiState)
+{
     // Select block type to set
     // This needs to be adapted to the new block types obviously
     ImGui::SetNextWindowSize(ImVec2(0.F, 0.F));

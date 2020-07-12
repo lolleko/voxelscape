@@ -23,4 +23,6 @@ private:
     void renderGameGUI(UIContext& uiState);
     void renderGameConfigGUI(UIContext& uiState);
     void renderLoading(UIContext& uiState);
+
+    void renderEditorMenu(UIContext& uiState);
 };
