@@ -1,5 +1,5 @@
 {
-    "uuid": "building_stonemine",
+    "uuid": "building_stonemine1",
     "description": "Generates stone over time",
     "resourceamount": {
         "resource": "lumber",
@@ -9,6 +9,9 @@
         "resource": "stone",
         "interval": 1,
         "amount": 2
+    },
+    "upgrade": {
+        "name": "building_stonemine2"
     },
     "popspace": -2
 }

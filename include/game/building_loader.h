@@ -3,6 +3,7 @@
 #include <entt/entt.hpp>
 #include <filesystem>
 #include <glm/fwd.hpp>
+#include <iostream>
 #include <nlohmann/json.hpp>
 
 #include "core/vs_log.h"
@@ -126,12 +127,16 @@ namespace BuildingParser
         const auto blocks = VSParser::readBuildFromFile(blocksFilePath);
 
         buildingRegistry.emplace<Blocks>(buildingEnt, blocks.blocks, blocks.buildSize);
+        std::cout << "Size " << blocks.buildSize.x << ", " << blocks.buildSize.y << ", "
+                  << blocks.buildSize.z << std::endl;
         const glm::vec2 boundsXZ = {(glm::vec3(blocks.buildSize) / 2.F).x,
                                     (glm::vec3(blocks.buildSize) / 2.F).z};
         buildingRegistry.emplace<Bounds>(
             buildingEnt,
             -glm::vec3(boundsXZ.x, 0.F, boundsXZ.y),
             glm::vec3(boundsXZ.x, blocks.buildSize.y, boundsXZ.y));
+        std::cout << "Bounds min " << -boundsXZ.x << ", " << -boundsXZ.y << std::endl;
+        std::cout << "Bounds max " << boundsXZ.x << ", " << boundsXZ.y << std::endl;
     };
 
 }  // namespace BuildingParser

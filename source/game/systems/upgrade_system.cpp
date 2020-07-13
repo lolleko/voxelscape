@@ -69,12 +69,14 @@ void upgradeBuilding(entt::registry& mainRegistry, entt::registry& buildingTempl
             buildingTemplateRegistry.try_get<Description>(upgradeTemplate);
 
         // Still another level to upgrade
-        if (checkResources(mainRegistry, buildingTemplateRegistry, upgradeTemplate) &&
-            checkTemplatePopulationSpace(mainRegistry, buildingTemplateRegistry, upgradeTemplate))
+        // unemployPopulationFromEntity(
+        //     mainRegistry, buildingTemplateRegistry, uiContext.selectedBuildingEntity);
+        if (checkResources(mainRegistry, buildingTemplateRegistry, upgradeTemplate) /*&&
+            checkTemplatePopulationSpace(mainRegistry, buildingTemplateRegistry, upgradeTemplate)*/)
         {
             spendResources(mainRegistry, buildingTemplateRegistry, upgradeTemplate);
-            updatePlayerPopulationWithTemplate(
-                mainRegistry, buildingTemplateRegistry, upgradeTemplate);
+            // updatePlayerPopulationWithTemplate(
+            //     mainRegistry, buildingTemplateRegistry, upgradeTemplate);
 
             const auto bounds = buildingTemplateRegistry.get<Bounds>(upgradeTemplate);
             const auto rotated = mainRegistry.get<Rotated>(uiContext.selectedBuildingEntity);
@@ -102,9 +104,9 @@ void upgradeBuilding(entt::registry& mainRegistry, entt::registry& buildingTempl
             }
             mainRegistry.emplace<Hoverable>(buildingInstance, Color(255, 0, 0));
 
-            unemployPopulationFromEntity(
-                mainRegistry, buildingTemplateRegistry, uiContext.selectedBuildingEntity);
-            mainRegistry.destroy(uiContext.selectedBuildingEntity);
+            // unemployPopulationFromEntity(
+            //     mainRegistry, buildingTemplateRegistry, uiContext.selectedBuildingEntity);
+            // mainRegistry.destroy(uiContext.selectedBuildingEntity);
             uiContext.selectedBuildingEntity = entt::null;
             uiContext.entityDescription = "";
         }

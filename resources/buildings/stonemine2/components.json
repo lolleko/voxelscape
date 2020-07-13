@@ -1,0 +1,14 @@
+{
+    "uuid": "building_stonemine2",
+    "description": "Generates even more stone over time",
+    "resourceamount": {
+        "resource": "stone",
+        "amount": 30
+    },
+    "generator": {
+        "resource": "stone",
+        "interval": 1,
+        "amount": 4
+    },
+    "popspace": -2
+}
