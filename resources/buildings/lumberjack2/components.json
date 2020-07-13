@@ -1,0 +1,14 @@
+{
+    "uuid": "building_lumberjack2",
+    "description": "Generates even more wood over time",
+    "resourceamount": {
+        "resource": "lumber",
+        "amount": 60
+    },
+    "generator": {
+        "resource": "lumber",
+        "interval": 1,
+        "amount": 6
+    }, 
+    "popspace": -1
+}

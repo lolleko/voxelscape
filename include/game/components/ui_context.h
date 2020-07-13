@@ -60,6 +60,7 @@ struct UIContext
     entt::entity selectedBuildingEntity = entt::null;
     // Show building window if building entitiy is not null
     bool bShowBuildingWindow = false;
+    bool bShouldRotateBuilding = false;
     bool bUpgradeBuildingEntity = false;
     bool bDestroyBuildingEntity = false;
     std::string entityDescription = "";
@@ -77,7 +78,7 @@ struct UIContext
     unsigned int woodResourceTexture = TextureFromFile("resources/textures/tiles/04_log.png");
     unsigned int stoneResourceTexture = TextureFromFile("resources/textures/tiles/01_stone.png");
     unsigned int lumberjackIcon = TextureFromFile("resources/textures/icons/lumberjack_icon.png");
-    const std::string lumberjackBuildingName = "building_lumberjack";
+    const std::string lumberjackBuildingName = "building_lumberjack1";
     unsigned int stonemineIcon = TextureFromFile("resources/textures/icons/stonemine_icon.png");
     const std::string stonemineBuildingName = "building_stonemine";
     unsigned int houseIcon = TextureFromFile("resources/textures/icons/house_icon.png");

@@ -1,4 +1,5 @@
 #include "game/systems/placement_system.h"
+#include "game/components/rotated.h"
 #include "game/systems/population_system.h"
 #include <entt/entity/entity.hpp>
 #include <glm/fwd.hpp>
@@ -40,13 +41,30 @@ void updatePlacementSystem(entt::registry& mainRegistry, entt::registry& buildin
         {
             auto intersect = false;
 
-            const auto& selectedBuildingTemplateBounds =
+            auto selectedBuildingTemplateBounds =
                 buildingTemplateRegistry.get<Bounds>(selectedBuildingTemplate);
 
-            const auto& selectedBuildingTemplateName =
+            const auto selectedBuildingTemplateName =
                 buildingTemplateRegistry.get<Unique>(selectedBuildingTemplate);
 
-            const auto newBuildingLocation = glm::floor(mouseLocation) + glm::vec3(0.5F, 0.F, 0.5F);
+            auto newBuildingLocation = glm::floor(mouseLocation);
+
+            // TODO hack
+            if (glm::fract(selectedBuildingTemplateBounds.min.x) != 0)
+            {
+                newBuildingLocation.x += 0.5F;
+            }
+            if (glm::fract(selectedBuildingTemplateBounds.min.z) != 0)
+            {
+                newBuildingLocation.z += 0.5F;
+            }
+
+            if ((inputs.JustUp & VSInputHandler::KEY_R) != 0)
+            {
+                uiContext.bShouldRotateBuilding = !uiContext.bShouldRotateBuilding;
+                uiContext.bIsBuildingPreviewInitialized = false;
+                uiContext.bIsBuildingPreviewConstructed = false;
+            }
 
             // TODO: Make sure correct building level is selected, always first?
             const auto templateBlocks =
@@ -62,6 +80,17 @@ void updatePlacementSystem(entt::registry& mainRegistry, entt::registry& buildin
                 buildingTemplateRegistry.try_get<Description>(selectedBuildingTemplate);
 
             auto* previewChunkManager = worldContext.world->getPreviewChunkManager();
+
+            if (uiContext.bShouldRotateBuilding)
+            {
+                const auto tempMaxX = selectedBuildingTemplateBounds.max.x;
+                selectedBuildingTemplateBounds.max.x = selectedBuildingTemplateBounds.max.z;
+                selectedBuildingTemplateBounds.max.z = tempMaxX;
+
+                const auto tempMinX = selectedBuildingTemplateBounds.min.x;
+                selectedBuildingTemplateBounds.min.x = selectedBuildingTemplateBounds.min.z;
+                selectedBuildingTemplateBounds.min.z = tempMinX;
+            }
 
             if (!uiContext.bIsBuildingPreviewInitialized)
             {
@@ -83,8 +112,15 @@ void updatePlacementSystem(entt::registry& mainRegistry, entt::registry& buildin
                                 selectedBuildingTemplateBounds.min.x,
                                 0,
                                 selectedBuildingTemplateBounds.min.z);
+                            auto blockCoords = glm::vec3{x, y, z};
+                            if (uiContext.bShouldRotateBuilding)
+                            {
+                                const auto tempX = blockCoords.x;
+                                blockCoords.x = blockCoords.z;
+                                blockCoords.z = tempX;
+                            }
                             previewChunkManager->setBlock(
-                                glm::vec3{x, y, z} + offset,
+                                blockCoords + offset,
                                 templateBlocks.blocks
                                     [x + y * templateBlocks.size.x +
                                      z * templateBlocks.size.x * templateBlocks.size.y]);
@@ -96,7 +132,17 @@ void updatePlacementSystem(entt::registry& mainRegistry, entt::registry& buildin
 
             if (uiContext.bIsBuildingPreviewConstructed)
             {
-                previewChunkManager->setOrigin(glm::ceil(mouseLocation) + glm::vec3{1, 0, 1});
+                auto previewLocation = glm::ceil(mouseLocation);
+                // TODO hack
+                if (glm::fract(selectedBuildingTemplateBounds.min.x) != 0)
+                {
+                    previewLocation.x += 1.F;
+                }
+                if (glm::fract(selectedBuildingTemplateBounds.min.z) != 0)
+                {
+                    previewLocation.z += 1.F;
+                }
+                previewChunkManager->setOrigin(previewLocation);
             }
 
             // Intersect with other entities
@@ -138,6 +184,7 @@ void updatePlacementSystem(entt::registry& mainRegistry, entt::registry& buildin
                 mainRegistry.emplace<Location>(buildingInstance, newBuildingLocation);
                 mainRegistry.emplace<Bounds>(buildingInstance, selectedBuildingTemplateBounds);
                 mainRegistry.emplace<Blocks>(buildingInstance, templateBlocks);
+                mainRegistry.emplace<Rotated>(buildingInstance, uiContext.bShouldRotateBuilding);
                 if (templateGenerator != nullptr)
                 {
                     mainRegistry.emplace<Generator>(buildingInstance, *templateGenerator);
@@ -152,21 +199,12 @@ void updatePlacementSystem(entt::registry& mainRegistry, entt::registry& buildin
                 }
                 mainRegistry.emplace<Hoverable>(buildingInstance, Color(255, 0, 0));
 
-                for (int x = 0; x < templateBlocks.size.x; x++)
-                {
-                    for (int y = 0; y < templateBlocks.size.y; y++)
-                    {
-                        for (int z = 0; z < templateBlocks.size.z; z++)
-                        {
-                            worldContext.world->getChunkManager()->setBlock(
-                                newBuildingLocation + glm::vec3{x, y, z} +
-                                    selectedBuildingTemplateBounds.min,
-                                templateBlocks.blocks
-                                    [x + y * templateBlocks.size.x +
-                                     z * templateBlocks.size.x * templateBlocks.size.y]);
-                        }
-                    }
-                }
+                placeBuildingBlocks(
+                    worldContext,
+                    selectedBuildingTemplateBounds,
+                    newBuildingLocation,
+                    templateBlocks,
+                    uiContext.bShouldRotateBuilding);
 
                 if ((inputs.Up & VSInputHandler::KEY_SHIFT) != 0)
                 {
@@ -219,6 +257,36 @@ void spendResources(
         if (cost->resource.uuid == resourceAmount.resource.uuid)
         {
             resourceAmount.amount -= cost->amount;
+        }
+    }
+}
+
+void placeBuildingBlocks(
+    const WorldContext& worldContext,
+    const Bounds& selectedBuildingTemplateBounds,
+    const glm::vec3& newBuildingLocation,
+    const Blocks& templateBlocks,
+    bool bIsRotated)
+{
+    for (int x = 0; x < templateBlocks.size.x; x++)
+    {
+        for (int y = 0; y < templateBlocks.size.y; y++)
+        {
+            for (int z = 0; z < templateBlocks.size.z; z++)
+            {
+                auto blockCoords = glm::vec3{x, y, z};
+                if (bIsRotated)
+                {
+                    const auto tempX = blockCoords.x;
+                    blockCoords.x = blockCoords.z;
+                    blockCoords.z = tempX;
+                }
+                worldContext.world->getChunkManager()->setBlock(
+                    newBuildingLocation + blockCoords + selectedBuildingTemplateBounds.min,
+                    templateBlocks.blocks
+                        [x + y * templateBlocks.size.x +
+                         z * templateBlocks.size.x * templateBlocks.size.y]);
+            }
         }
     }
 }

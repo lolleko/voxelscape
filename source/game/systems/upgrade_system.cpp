@@ -6,6 +6,7 @@
 #include "game/components/resourceamount.h"
 #include "game/components/ui_context.h"
 #include "game/components/unique.h"
+#include "game/components/rotated.h"
 #include "game/components/world_context.h"
 #include "game/components/upgrade.h"
 #include "game/systems/population_system.h"
@@ -72,35 +73,21 @@ void upgradeBuilding(entt::registry& mainRegistry, entt::registry& buildingTempl
             checkTemplatePopulationSpace(mainRegistry, buildingTemplateRegistry, upgradeTemplate))
         {
             spendResources(mainRegistry, buildingTemplateRegistry, upgradeTemplate);
-            updatePlayerPopulationWithTemplate(mainRegistry, buildingTemplateRegistry, upgradeTemplate);
+            updatePlayerPopulationWithTemplate(
+                mainRegistry, buildingTemplateRegistry, upgradeTemplate);
 
-            // assumes same bounds for now
-            const auto bounds = mainRegistry.get<Bounds>(uiContext.selectedBuildingEntity);
+            const auto bounds = buildingTemplateRegistry.get<Bounds>(upgradeTemplate);
+            const auto rotated = mainRegistry.get<Rotated>(uiContext.selectedBuildingEntity);
             const auto location = mainRegistry.get<Location>(uiContext.selectedBuildingEntity);
 
-            const auto low = location + bounds.min;
-            const auto high = location + bounds.max;
-
-            for (int x = low.x; x < high.x; x++)
-            {
-                for (int y = low.y; y < high.y; y++)
-                {
-                    for (int z = low.z; z < high.z; z++)
-                    {
-                        worldContext.world->getChunkManager()->setBlock(
-                            {x, y, z},
-                            upgradeBlocks.blocks
-                                [(x - low.x) + (y - low.y) * upgradeBlocks.size.x +
-                                 (z - low.z) * upgradeBlocks.size.x * upgradeBlocks.size.y]);
-                    }
-                }
-            }
+            placeBuildingBlocks(worldContext, bounds, location, upgradeBlocks, rotated.bIsRotated);
 
             const auto buildingInstance = mainRegistry.create();
             mainRegistry.emplace<Unique>(buildingInstance, upgradeName);
             mainRegistry.emplace<Location>(buildingInstance, location);
             mainRegistry.emplace<Bounds>(buildingInstance, bounds);
             mainRegistry.emplace<Blocks>(buildingInstance, templateBlocks);
+            mainRegistry.emplace<Rotated>(buildingInstance, rotated);
             if (upgradeGenerator != nullptr)
             {
                 mainRegistry.emplace<Generator>(buildingInstance, *upgradeGenerator);
@@ -115,7 +102,8 @@ void upgradeBuilding(entt::registry& mainRegistry, entt::registry& buildingTempl
             }
             mainRegistry.emplace<Hoverable>(buildingInstance, Color(255, 0, 0));
 
-            unemployPopulationFromEntity(mainRegistry, buildingTemplateRegistry, uiContext.selectedBuildingEntity);
+            unemployPopulationFromEntity(
+                mainRegistry, buildingTemplateRegistry, uiContext.selectedBuildingEntity);
             mainRegistry.destroy(uiContext.selectedBuildingEntity);
             uiContext.selectedBuildingEntity = entt::null;
             uiContext.entityDescription = "";

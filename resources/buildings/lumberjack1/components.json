@@ -1,5 +1,5 @@
 {
-    "uuid": "building_lumberjack",
+    "uuid": "building_lumberjack1",
     "description": "Generates wood over time",
     "resourceamount": {
         "resource": "lumber",
@@ -9,6 +9,9 @@
         "resource": "lumber",
         "interval": 1,
         "amount": 2
-    }, 
+    },
+    "upgrade": {
+        "name": "building_lumberjack2"
+    },
     "popspace": -1
 }

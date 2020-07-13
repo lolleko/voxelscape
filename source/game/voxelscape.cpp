@@ -27,7 +27,8 @@
 void Voxelscape::initializeGame(VSApp* inApp)
 {
     (void)inApp;
-    BuildingParser::createBuildingFromFile("resources/buildings/lumberjack", buildingRegistry);
+    BuildingParser::createBuildingFromFile("resources/buildings/lumberjack1", buildingRegistry);
+    BuildingParser::createBuildingFromFile("resources/buildings/lumberjack2", buildingRegistry);
     BuildingParser::createBuildingFromFile("resources/buildings/stonemine", buildingRegistry);
     BuildingParser::createBuildingFromFile("resources/buildings/house1", buildingRegistry);
     BuildingParser::createBuildingFromFile("resources/buildings/house2", buildingRegistry);

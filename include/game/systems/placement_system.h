@@ -27,3 +27,10 @@ void spendResources(
     entt::registry& mainRegistry,
     entt::registry& buildingTemplateRegistry,
     entt::entity selectedBuildingTemplate);
+
+void placeBuildingBlocks(
+    const WorldContext& worldContext,
+    const Bounds& selectedBuildingTemplateBounds,
+    const glm::vec3& newBuildingLocation,
+    const Blocks& templateBlocks,
+    bool bIsRotated);

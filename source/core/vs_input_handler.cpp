@@ -144,6 +144,10 @@ void VSInputHandler::processKeyboardInput(GLFWwindow* window, float deltaTime)
     {
         keyFlags = KEY_FLAGS(keyFlags | KEY_E);
     }
+    if (glfwGetKey(window, GLFW_KEY_R) == GLFW_PRESS)
+    {
+        keyFlags = KEY_FLAGS(keyFlags | KEY_R);
+    }
     if (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS ||
         glfwGetKey(window, GLFW_KEY_RIGHT_SHIFT) == GLFW_PRESS)
     {
@@ -178,6 +182,10 @@ void VSInputHandler::processKeyboardInput(GLFWwindow* window, float deltaTime)
     if (glfwGetKey(window, GLFW_KEY_E) == GLFW_RELEASE)
     {
         keyFlags = KEY_FLAGS(keyFlags & ~KEY_E);
+    }
+    if (glfwGetKey(window, GLFW_KEY_R) == GLFW_RELEASE)
+    {
+        keyFlags = KEY_FLAGS(keyFlags & ~KEY_R);
     }
     if (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_RELEASE &&
         glfwGetKey(window, GLFW_KEY_RIGHT_SHIFT) == GLFW_RELEASE)
