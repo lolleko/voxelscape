@@ -125,7 +125,7 @@ public:
 
     bool shouldReinitializeChunks() const;
 
-    bool isLocationInBounds(const glm::ivec3& location) const;
+    bool isLocationInBounds(const glm::vec3& location) const;
 
     VSTraceResult lineTrace(const glm::vec3& start, const glm::vec3& end) const;
 

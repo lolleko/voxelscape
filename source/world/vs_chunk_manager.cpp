@@ -509,7 +509,7 @@ bool VSChunkManager::shouldReinitializeChunks() const
     return bShouldReinitializeChunks.load();
 }
 
-bool VSChunkManager::isLocationInBounds(const glm::ivec3& location) const
+bool VSChunkManager::isLocationInBounds(const glm::vec3& location) const
 {
     return (
         (location.x >= -worldSizeHalf.x && location.x < worldSizeHalf.x) &&
@@ -531,7 +531,7 @@ VSChunkManager::lineTrace(const glm::vec3& start, const glm::vec3& end) const
     while (!bShouldReinitializeChunks && t < maxRayLength)
     {
         const auto samplePos = start + rayDir * t;
-        if (isLocationInBounds(samplePos))
+        if (!bShouldReinitializeChunks && isLocationInBounds(samplePos))
         {
             const auto blockSample = getBlock(samplePos);
             if (blockSample != VS_DEFAULT_BLOCK_ID)
