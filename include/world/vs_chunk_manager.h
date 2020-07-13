@@ -206,7 +206,7 @@ private:
                                                             /*Wood=4*/ 0.F,
                                                             /*Sand=5*/ 0.F,
                                                             /*Leaf=6*/ 0.F,
-                                                            /*Lava=7*/ 16.F,
+                                                            /*Lava=7*/ 12.F,
                                                             0.F,
                                                             0.F,
                                                             0.F,
