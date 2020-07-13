@@ -117,11 +117,11 @@ VSChunkManager::VSBuildingData extractBuildFromPlane(VSWorld* editorWorld)
     buildData.buildSize = {
         std::abs(xMax - xMin) + 1, std::abs(yMax - yMin) + 1, std::abs(zMax - zMin) + 1};
 
-    for (int x = xMin; x <= xMax; x++)
+    for (int z = zMin; z <= zMax; z++)
     {
         for (int y = yMin; y <= yMax; y++)
         {
-            for (int z = zMin; z <= zMax; z++)
+            for (int x = xMin; x <= xMax; x++)
             {
                 buildData.blocks.emplace_back(editorWorld->getChunkManager()->getBlock({x, y, z}));
             }
