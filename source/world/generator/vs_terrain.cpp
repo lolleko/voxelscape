@@ -120,7 +120,7 @@ namespace VSTerrainGeneration
         auto chunkManager = world->getChunkManager();
         glm::ivec3 worldSize = chunkManager->getWorldSize();
         glm::ivec3 worldSizeHalf = worldSize / 2;
-        VSHeightmap hm = VSHeightmap(worldSize.y, 4, 0.02F, worldSize.y, 1.F, 1.F);
+        VSHeightmap hm = VSHeightmap(worldSize.y, 4, 0.01F, worldSize.y, 1.F, 0.5F);
 
         std::random_device rd;   // Will be used to obtain a seed for the random number engine
         std::mt19937 gen(rd());  // Standard mersenne_twister_engine seeded with rd()
@@ -179,7 +179,7 @@ namespace VSTerrainGeneration
         auto chunkManager = world->getChunkManager();
         glm::ivec3 worldSize = chunkManager->getWorldSize();
         glm::ivec3 worldSizeHalf = worldSize / 2;
-        VSHeightmap desert = VSHeightmap(worldSize.y, 4, 0.02F, 40.F, 0.5F, 1.F);
+        VSHeightmap desert = VSHeightmap(worldSize.y / 10, 2, 0.02F, 10.F, 0.5F, 2.F);
 
         std::random_device rd;   // Will be used to obtain a seed for the random number engine
         std::mt19937 gen(rd());  // Standard mersenne_twister_engine seeded with rd()
@@ -200,13 +200,10 @@ namespace VSTerrainGeneration
                 }
                 if (tree == 0)
                 {
-                    if (height < 2 * worldSize.y / 3 && height > worldSize.y / 4)
+                    if (x > -worldSizeHalf.x + 1 && z > -worldSizeHalf.z + 1 &&
+                        x < worldSizeHalf.x - 3 && z < worldSizeHalf.z - 3)
                     {
-                        if (x > -worldSizeHalf.x + 1 && z > -worldSizeHalf.z + 1 &&
-                            x < worldSizeHalf.x - 3 && z < worldSizeHalf.z - 3)
-                        {
-                            cactusAt(world, x, height - worldSizeHalf.y, z);
-                        }
+                        cactusAt(world, x, height - worldSizeHalf.y, z);
                     }
                 }
             }
