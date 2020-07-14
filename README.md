@@ -2,7 +2,7 @@
 
 ![CI](https://github.com/lolleko/voxelscape/workflows/CI/badge.svg)
 
-Experiments with voxels and terrain generation.
+Custom voxel engine with RTS game.
 
 ![Screenshot](/screenshot.png?raw=true "Screenshot")
 
