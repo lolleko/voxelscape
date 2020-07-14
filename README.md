@@ -4,6 +4,8 @@
 
 Experiments with voxels and terrain generation.
 
+![Screenshot](/screenshot.png?raw=true "Screenshot")
+
 ## Requirements:
 
 **Install vcpkg**
