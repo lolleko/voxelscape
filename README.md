@@ -2,7 +2,7 @@
 
 ![CI](https://github.com/lolleko/voxelscape/workflows/CI/badge.svg)
 
-Custom voxel engine with RTS game.
+Custom voxel engine written from scratch with OpenGL 4.1. And a small RTS style game on top of it.
 
 ![Screenshot](/screenshot.png?raw=true "Screenshot")
 
