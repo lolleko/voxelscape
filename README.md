@@ -6,6 +6,17 @@ Custom voxel engine written from scratch with OpenGL 4.1. And a small RTS style 
 
 ![Screenshot](/screenshot.png?raw=true "Screenshot")
 
+## Features:
+
+* Distance Field Shadows
+* Voxel Ambient Occlusion
+* Voxel rendered using advanced instancing, instead of the more common greedy meshing solution
+* Simple point lights (block emission) with zero cost.
+* Custom voxel model editor
+* Simple terrain gerenation, with a few different biomes
+* Basic RTS implemented using ECS
+* A ton of bugs and memory leaks (due to very little QA ~ 3 month university project)
+
 ## Requirements:
 
 **Install vcpkg**
