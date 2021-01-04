@@ -4,18 +4,25 @@
 
 Custom voxel engine written from scratch with OpenGL 4.1. And a small RTS style game on top of it.
 
-![Screenshot](/screenshot.png?raw=true "Screenshot")
+![Screenshot](screenshots/main.png?raw=true "Screenshot")
 
 ## Features:
 
 * Distance Field Shadows
 * Voxel Ambient Occlusion
-* Voxel rendered using advanced instancing, instead of the more common greedy meshing solution
-* Simple point lights (block emission) with zero cost.
+* Simple point lights (block emission)
+* Basic RTS implemented using ECS
+* Voxel rendered using advanced instancing, instead of the more popular greedy meshing
 * Custom voxel model editor
 * Simple terrain gerenation, with a few different biomes
-* Basic RTS implemented using ECS
 * A ton of bugs and memory leaks (due to very little QA ~ 3 month university project)
+
+## Screenshots
+
+![Screenshot SDF](screenshots/sdf.png?raw=true "Screenshot SDF")
+![Screenshot AO](screenshots/ao.png?raw=true "Screenshot AO")
+![Screenshot Light](screenshots/light.png?raw=true "Screenshot light")
+![Screenshot rts](screenshots/rts.png?raw=true "Screenshot rts")
 
 ## Requirements:
 
