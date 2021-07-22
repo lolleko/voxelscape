@@ -4,7 +4,7 @@
 
 Custom voxel engine written from scratch with OpenGL 4.1. And a small RTS style game on top of it.
 
-![Screenshot](screenshots/main.png?raw=true "Screenshot")
+![Screenshot](screenshots/sdf.png?raw=true "Screenshot")
 
 ## Features:
 
