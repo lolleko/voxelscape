@@ -15,9 +15,10 @@ Custom voxel engine written from scratch with OpenGL 4.1. And a small RTS style 
 * Voxel rendered using advanced instancing, instead of the more popular greedy meshing
 * Custom voxel model editor
 * Simple terrain gerenation, with a few different biomes
-* A ton of bugs and memory leaks (due to very little QA ~ 3 month university project)
 
-See Screenshot folder showcase.
+| ![RTS](screenshots/rts.png?raw=true "Screenshot") | ![Main](screenshots/main.png?raw=true "Screenshot")    |
+|---|---|
+| ![Ambient Occlusion](screenshots/ao.png?raw=true "Screenshot")  | ![light](screenshots/light.png?raw=true "Screenshot") |
 
 ## Requirements:
 
