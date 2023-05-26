@@ -239,13 +239,13 @@ void VSRTSCameraController::handleRotation()
         else
         {
             float xOffset = xPos - lastX;
-            float yOffset = lastY - yPos;  // reversed since y-coordinates go from bottom to top
+            //float yOffset = lastY - yPos;  // reversed since y-coordinates go from bottom to top
 
             lastX = xPos;
             lastY = yPos;
 
             xOffset *= mouseSensitivity;
-            yOffset *= mouseSensitivity;
+            //yOffset *= mouseSensitivity;
 
             targetYaw += xOffset;
         }
