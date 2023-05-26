@@ -44,11 +44,11 @@ jobs:
         if: steps.vcpkg-installed-cache.outputs.cache-hit != 'true' || steps.vcpkg-packages-cache.outputs.cache-hit != 'true'
         env: 
           VCPKG_DEFAULT_TRIPLET: ${{ env.VCPKG_DEFAULT_TRIPLET }}
-      - run: cmake -Bbuild -DCMAKE_BUILD_TYPE=Release
-      - run: cmake --build build
+      - run: cmake -DCMAKE_BUILD_TYPE=Release -Bbuild
+      - run: cmake -DCMAKE_BUILD_TYPE=Release --build build
       - name: Package
         if: startsWith(github.ref, 'refs/tags')
-        run: cmake --build build --target package
+        run: cmake -DCMAKE_BUILD_TYPE=Release --build build --target package
       - run: mv build/voxelscape.zip build/voxelscape-${{ env.VCPKG_DEFAULT_TRIPLET }}.zip
         if: startsWith(github.ref, 'refs/tags')
       - name: Release

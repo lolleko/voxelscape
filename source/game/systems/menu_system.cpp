@@ -111,7 +111,6 @@ void updateMenuSystem(entt::registry& mainRegistry, entt::registry& buildingRegi
             world->getCamera()->setPosition({0.F, 100.F, 0.F});
             uiContext.bIsMenuWorldInitialized = true;
             uiContext.bShouldUpdateChunks = true;
-            uiContext.worldSize = 2;
             uiContext.bShouldGenerateTerrain = true;
         }
     }
