@@ -57,10 +57,6 @@ target_link_libraries("${CMAKE_PROJECT_NAME}" PRIVATE imgui::imgui)
 find_package(spdlog CONFIG REQUIRED)
 target_link_libraries("${CMAKE_PROJECT_NAME}" PRIVATE spdlog::spdlog spdlog::spdlog_header_only)
 
-# https://github.com/microsoft/vcpkg/issues/9918
-# find_package(assimp CONFIG REQUIRED)
-# target_link_libraries("${CMAKE_PROJECT_NAME}" PRIVATE assimp::assimp)
-
 find_package(assimp CONFIG REQUIRED)
 target_link_libraries("${CMAKE_PROJECT_NAME}" PRIVATE assimp::assimp)
 
@@ -80,6 +76,11 @@ target_link_libraries("${CMAKE_PROJECT_NAME}" PRIVATE unofficial::concurrentqueu
 add_custom_command(TARGET "${CMAKE_PROJECT_NAME}" PRE_BUILD COMMAND ${CMAKE_COMMAND} -E create_symlink ${CMAKE_SOURCE_DIR}/resources/ ${CMAKE_BINARY_DIR}/resources)
 
 install(TARGETS "${CMAKE_PROJECT_NAME}" RUNTIME DESTINATION . COMPONENT App)
+install(TARGETS "${CMAKE_PROJECT_NAME}" RUNTIME_DEPENDENCIES
+PRE_EXCLUDE_REGEXES "api-ms-" "ext-ms-"
+POST_EXCLUDE_REGEXES ".*system32/.*\\.dll"
+RUNTIME DESTINATION . COMPONENT App
+)
 install(DIRECTORY ${CMAKE_SOURCE_DIR}/resources DESTINATION . COMPONENT Resources)
 
 set(CPACK_PACKAGE_DESCRIPTION "Just another CPacke example")
@@ -87,7 +88,6 @@ set(CPACK_PACKAGE_VERSION_MAJOR "${VERSION_MAJOR}")
 set(CPACK_PACKAGE_VERSION_MINOR "${VERSION_MINOR}")
 set(CPACK_PACKAGE_VERSION_PATCH "${VERSION_PATCH}")
 set(CPACK_PACKAGE_FILE_NAME "${CMAKE_PROJECT_NAME}")
-set(CPACK_BUNDLE_NAME "${CMAKE_PROJECT_NAME}")
 set(CPACK_BUNDLE_NAME "${CMAKE_PROJECT_NAME}")
 set(CPACK_GENERATOR "ZIP")
 
