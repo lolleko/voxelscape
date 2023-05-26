@@ -12,9 +12,9 @@
 
 void updateHoverSystem(entt::registry& registry)
 {
-    auto& inputs = registry.ctx<Inputs>();
+    auto& inputs = registry.ctx().get<Inputs>();
 
-    const auto& worldContext = registry.ctx<WorldContext>();
+    const auto& worldContext = registry.ctx().get<WorldContext>();
 
     inputs.hoverEntity = entt::null;
 

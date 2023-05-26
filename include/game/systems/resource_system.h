@@ -12,9 +12,9 @@
 
 void updateResourceSystem(entt::registry& registry)
 {
-    const auto& worldContext = registry.ctx<WorldContext>();
+    const auto& worldContext = registry.ctx().get<WorldContext>();
 
-    auto& player = registry.ctx<Player>();
+    auto& player = registry.ctx().get<Player>();
     // Iterate over all instances, if generator is attached than increment resource
     registry.view<Generator>().each([&worldContext, &player](Generator& generator) {
         // Only look for lumber and stone for now

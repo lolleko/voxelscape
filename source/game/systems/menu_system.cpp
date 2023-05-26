@@ -11,9 +11,9 @@
 
 void updateMenuSystem(entt::registry& mainRegistry, entt::registry& buildingRegistry)
 {
-    auto& uiContext = mainRegistry.ctx<UIContext>();
-    auto& inputContext = mainRegistry.ctx<Inputs>();
-    auto& worldContext = mainRegistry.ctx<WorldContext>();
+    auto& uiContext = mainRegistry.ctx().get<UIContext>();
+    auto& inputContext = mainRegistry.ctx().get<Inputs>();
+    auto& worldContext = mainRegistry.ctx().get<WorldContext>();
 
     auto* app = VSApp::getInstance();
 
@@ -111,6 +111,7 @@ void updateMenuSystem(entt::registry& mainRegistry, entt::registry& buildingRegi
             world->getCamera()->setPosition({0.F, 100.F, 0.F});
             uiContext.bIsMenuWorldInitialized = true;
             uiContext.bShouldUpdateChunks = true;
+            uiContext.worldSize = 2;
             uiContext.bShouldGenerateTerrain = true;
         }
     }

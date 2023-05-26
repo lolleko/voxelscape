@@ -238,13 +238,11 @@ namespace VSTerrainGeneration
             {
                 for (int z = 0; z < build.buildSize.z; z++)
                 {
-                    if (chunkManager->isLocationInBounds(
-                            glm::vec3{x, y, z} + glm::vec3{i, j, k} -
-                            glm::vec3(-boundsXZ.x, 0, -boundsXZ.y)))
+                    const auto currentBlockWorldLocation = glm::vec3{x, y, z} + glm::vec3{i, j, k} -
+                                          glm::vec3(-boundsXZ.x, 1, -boundsXZ.y);
+                    if (chunkManager->isLocationInBounds(currentBlockWorldLocation))
                     {
-                        chunkManager->setBlock(
-                            glm::vec3{x, y, z} + glm::vec3{i, j, k} -
-                                glm::vec3(-boundsXZ.x, 0, -boundsXZ.y),
+                        chunkManager->setBlock(currentBlockWorldLocation,
                             build.blocks
                                 [x + y * build.buildSize.x +
                                  z * build.buildSize.x * build.buildSize.y]);

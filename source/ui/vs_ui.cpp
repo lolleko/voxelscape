@@ -1,10 +1,11 @@
 #include "ui/vs_ui.h"
-#include <imgui.h>
+
+#include "imgui.h"
+#include "ui/imgui_impl/imgui_impl_glfw.h"
+#include "ui/imgui_impl/imgui_impl_opengl3.h"
 
 #include "core/vs_log.h"
 #include "renderer/vs_textureloader.h"
-#include "ui/imgui_impl/imgui_impl_glfw.h"
-#include "ui/imgui_impl/imgui_impl_opengl3.h"
 
 #include "ui/vs_ui_state.h"
 #include "world/generator/vs_terrain.h"
@@ -17,6 +18,8 @@ void VSUI::setup(const char* glsl_version, GLFWwindow* window)
     IMGUI_CHECKVERSION();
     ImGui::CreateContext();
     ImGuiIO& io = ImGui::GetIO();
+    io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;     // Enable Keyboard Controls
+    io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;      // Enable Gamepad Controls
 
     // Setup Dear ImGui style
     ImGui::StyleColorsDark();

@@ -578,7 +578,7 @@ VSChunkManager::lineTrace(const glm::vec3& start, const glm::vec3& end) const
                     }
                 }
 
-                return {true, interSectionPos, normal, blockSample};
+                return VSChunkManager::VSTraceResult{true, interSectionPos, normal, blockSample};
             }
         }
         t += 0.0075F;

@@ -14,9 +14,9 @@
 
 void upgradeBuilding(entt::registry& mainRegistry, entt::registry& buildingTemplateRegistry)
 {
-    const auto& worldContext = mainRegistry.ctx<WorldContext>();
+    const auto& worldContext = mainRegistry.ctx().get<WorldContext>();
 
-    auto& uiContext = mainRegistry.ctx<UIContext>();
+    auto& uiContext = mainRegistry.ctx().get<UIContext>();
 
     if (uiContext.selectedBuildingEntity != entt::null)
     {

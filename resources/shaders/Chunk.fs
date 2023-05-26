@@ -37,7 +37,7 @@ float map(in vec3 pos) {
     vec3 shadowTexCoord = (pos + worldSizeHalf) / vec3(worldSize);
     float distance = texture(shadowTexture, shadowTexCoord).r;
     //float distance = texelFetch(shadowTexture, clamp(ivec3(pos + worldSizeHalf), ivec3(0.0), ivec3(worldSize) - ivec3(1.0)), 0).r;
-    return distance + 0.5;
+    return distance;
 
 
     // ivec3 shadowTexCoord = clamp(ivec3(pos + worldSizeHalf), ivec3(0.0), ivec3(worldSize) - ivec3(1.0));

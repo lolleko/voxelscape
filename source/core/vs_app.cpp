@@ -184,6 +184,7 @@ void VSApp::setWorldActive(std::string key)
     {
         world = worlds.at(key);
         worldName = key;
+        return;
     }
     // Key already exists
     VSLog::Log(

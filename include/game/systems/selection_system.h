@@ -14,11 +14,11 @@
 
 void updateSelectionSystem(entt::registry& mainRegistry)
 {
-    auto& inputs = mainRegistry.ctx<Inputs>();
+    auto& inputs = mainRegistry.ctx().get<Inputs>();
 
-    const auto& worldContext = mainRegistry.ctx<WorldContext>();
+    const auto& worldContext = mainRegistry.ctx().get<WorldContext>();
 
-    auto& uiContext = mainRegistry.ctx<UIContext>();
+    auto& uiContext = mainRegistry.ctx().get<UIContext>();
 
     if (inputs.leftButtonState == InputState::JustUp && !uiContext.anyWindowHovered)
     {

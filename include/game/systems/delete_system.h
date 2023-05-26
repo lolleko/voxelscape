@@ -10,8 +10,8 @@
 
 void deleteSelectedBuilding(entt::registry& mainRegistry, entt::registry& buildingRegistry)
 {
-    auto& uiContext = mainRegistry.ctx<UIContext>();
-    auto& worldContext = mainRegistry.ctx<WorldContext>();
+    auto& uiContext = mainRegistry.ctx().get<UIContext>();
+    auto& worldContext = mainRegistry.ctx().get<WorldContext>();
 
     const auto bounds = mainRegistry.get<Bounds>(uiContext.selectedBuildingEntity);
     const auto location = mainRegistry.get<Location>(uiContext.selectedBuildingEntity);

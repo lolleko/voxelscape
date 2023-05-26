@@ -36,18 +36,9 @@ void updateInputSystem(entt::registry& registry)
     const auto* inputHandler = VSApp::getInstance()->getInputHandler();
 
     // at startup we wont have a previousInput -> create one
-    const auto& previousInputs = registry.ctx_or_set<Inputs>(
-        VSChunkManager::VSTraceResult{},
-        inputHandler->isLeftMouseClicked() ? InputState::Down : InputState::Up,
-        inputHandler->isRightMouseClicked() ? InputState::Down : InputState::Up,
-        inputHandler->isMiddleMouseClicked() ? InputState::Down : InputState::Up,
-        VSInputHandler::KEY_FLAGS(~inputHandler->getKeyFlags()),
-        VSInputHandler::NONE,
-        inputHandler->getKeyFlags(),
-        VSInputHandler::NONE,
-        entt::null);
+    const auto previousInputs = registry.ctx().get<Inputs>();
 
-    const auto* world = registry.ctx<WorldContext>().world;
+    const auto* world = registry.ctx().get<WorldContext>().world;
 
     glm::vec3 worldPosNear = world->getCameraController()->getCameraInWorldCoords();
     glm::vec3 worldPosFar = world->getCameraController()->getMouseFarInWorldCoords();
@@ -66,14 +57,15 @@ void updateInputSystem(entt::registry& registry)
     const auto newMiddleButtonState = calculateMouseStateBasedOnPrevious(
         previousInputs.middleButtonState, inputHandler->isMiddleMouseClicked());
 
-    registry.set<Inputs>(
-        newMouseTrace,
-        newLeftButtonState,
-        newRightButtonState,
-        newMiddleButtonState,
-        VSInputHandler::KEY_FLAGS(~inputHandler->getKeyFlags()),
-        VSInputHandler::KEY_FLAGS(previousInputs.Up & inputHandler->getKeyFlags()),
-        VSInputHandler::KEY_FLAGS(inputHandler->getKeyFlags()),
-        VSInputHandler::KEY_FLAGS(previousInputs.Down & (~inputHandler->getKeyFlags())),
-        previousInputs.hoverEntity);
+    auto& inputs = registry.ctx().get<Inputs>();
+
+    inputs.mouseTrace = newMouseTrace;
+    inputs.leftButtonState = newLeftButtonState;
+    inputs.rightButtonState = newRightButtonState;
+    inputs.middleButtonState = newMiddleButtonState;
+    inputs.Up = VSInputHandler::KEY_FLAGS(~inputHandler->getKeyFlags());
+    inputs.JustUp = VSInputHandler::KEY_FLAGS(previousInputs.Up & inputHandler->getKeyFlags());
+    inputs.Down = VSInputHandler::KEY_FLAGS(inputHandler->getKeyFlags());
+    inputs.JustDown = VSInputHandler::KEY_FLAGS(previousInputs.Down & (~inputHandler->getKeyFlags()));
+    inputs.hoverEntity = previousInputs.hoverEntity;
 }

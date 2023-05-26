@@ -9,10 +9,10 @@
 
 void updateMinimapSystem(entt::registry& mainRegistry)
 {
-    auto& uiContext = mainRegistry.ctx<UIContext>();
+    auto& uiContext = mainRegistry.ctx().get<UIContext>();
     auto& minimap = uiContext.minimap;
 
-    const auto& worldContext = mainRegistry.ctx<WorldContext>();
+    const auto& worldContext = mainRegistry.ctx().get<WorldContext>();
 
     if (minimap.bShouldUpdate)
     {

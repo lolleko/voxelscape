@@ -9,7 +9,7 @@ bool checkTemplatePopulationSpace(
     entt::registry& buildingTemplateRegistry,
     entt::entity building)
 {
-    auto& player = mainRegistry.ctx<Player>();
+    auto& player = mainRegistry.ctx().get<Player>();
 
     if (building == entt::null)
     {
@@ -34,7 +34,7 @@ void updatePlayerPopulationWithTemplate(
     entt::registry& buildingTemplateRegistry,
     entt::entity building)
 {
-    auto& player = mainRegistry.ctx<Player>();
+    auto& player = mainRegistry.ctx().get<Player>();
 
     Unique buildingName = buildingTemplateRegistry.get<Unique>(building);
     std::int32_t buildingPopulation =
@@ -48,7 +48,7 @@ void unemployPopulationFromEntity(
     entt::registry& buildingTemplateRegistry,
     entt::entity building)
 {
-    auto& player = mainRegistry.ctx<Player>();
+    auto& player = mainRegistry.ctx().get<Player>();
     Unique buildingName = mainRegistry.get<Unique>(building);
     const auto& buildingPopulation =
         getBuildingPopulationFromTemplateRegistry(buildingTemplateRegistry, buildingName);

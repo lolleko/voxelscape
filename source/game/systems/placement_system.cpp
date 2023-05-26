@@ -11,11 +11,11 @@
 
 void updatePlacementSystem(entt::registry& mainRegistry, entt::registry& buildingTemplateRegistry)
 {
-    const auto& inputs = mainRegistry.ctx<Inputs>();
+    const auto& inputs = mainRegistry.ctx().get<Inputs>();
 
-    const auto& worldContext = mainRegistry.ctx<WorldContext>();
+    const auto& worldContext = mainRegistry.ctx().get<WorldContext>();
 
-    auto& uiContext = mainRegistry.ctx<UIContext>();
+    auto& uiContext = mainRegistry.ctx().get<UIContext>();
 
     const auto mouseLocation = glm::floor(inputs.mouseTrace.hitLocation);
 
@@ -228,7 +228,7 @@ bool checkResources(
     entt::registry& buildingTemplateRegistry,
     entt::entity selectedBuildingTemplate)
 {
-    auto& player = mainRegistry.ctx<Player>();
+    auto& player = mainRegistry.ctx().get<Player>();
     const auto& cost = buildingTemplateRegistry.try_get<ResourceAmount>(selectedBuildingTemplate);
 
     for (auto& resourceAmount : player.resources.resourceVector)
@@ -249,7 +249,7 @@ void spendResources(
     entt::registry& buildingTemplateRegistry,
     entt::entity selectedBuildingTemplate)
 {
-    auto& player = mainRegistry.ctx<Player>();
+    auto& player = mainRegistry.ctx().get<Player>();
     const auto& cost = buildingTemplateRegistry.try_get<ResourceAmount>(selectedBuildingTemplate);
 
     for (auto& resourceAmount : player.resources.resourceVector)

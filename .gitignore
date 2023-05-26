@@ -6,4 +6,6 @@ imgui.ini
 .idea
 cmake-build-debug
 cmake-build-release
+cmake-build-release-*
+cmake-build-debug-*
 compile_commands.json

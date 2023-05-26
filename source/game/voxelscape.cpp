@@ -34,7 +34,7 @@ void Voxelscape::initializeGame(VSApp* inApp)
     BuildingParser::createBuildingFromFile("resources/buildings/house1", buildingRegistry);
     BuildingParser::createBuildingFromFile("resources/buildings/house2", buildingRegistry);
 
-    const auto& uiContext = mainRegistry.ctx_or_set<UIContext>();
+    const auto& uiContext = mainRegistry.ctx().emplace<UIContext>();
 
     // Init player
 
@@ -48,7 +48,20 @@ void Voxelscape::initializeGame(VSApp* inApp)
     resources.resourceVector.emplace_back(wood);
     resources.resourceVector.emplace_back(stone);
 
-    mainRegistry.set<Player>(resources, population);
+    mainRegistry.ctx().emplace<Player>(resources, population);
+
+    const auto* inputHandler = inApp->getInputHandler();
+
+    mainRegistry.ctx().emplace<Inputs>(
+        VSChunkManager::VSTraceResult{},
+        inputHandler->isLeftMouseClicked() ? InputState::Down : InputState::Up,
+        inputHandler->isRightMouseClicked() ? InputState::Down : InputState::Up,
+        inputHandler->isMiddleMouseClicked() ? InputState::Down : InputState::Up,
+        VSInputHandler::KEY_FLAGS(~inputHandler->getKeyFlags()),
+        VSInputHandler::NONE,
+        inputHandler->getKeyFlags(),
+        VSInputHandler::NONE,
+        entt::null);
 
     auto* gameWorld = new VSWorld();
     auto* gameCamera = gameWorld->getCamera();
@@ -71,7 +84,7 @@ void Voxelscape::initializeGame(VSApp* inApp)
     inApp->setWorldActive(uiContext.menuWorldName);
 
     // Init world context
-    mainRegistry.set<WorldContext>(
+    mainRegistry.ctx().emplace<WorldContext>(
         getApp()->getWorld(),
         0.F,
         0.F,
@@ -82,19 +95,20 @@ void Voxelscape::initializeGame(VSApp* inApp)
 
 void Voxelscape::update(float deltaSeconds)
 {
-    auto& uiContext = mainRegistry.ctx<UIContext>();
+    auto& uiContext = mainRegistry.ctx().get<UIContext>();
 
     uiContext.anyWindowHovered = ImGui::IsAnyItemHovered();
 
-    const auto& prevWorldContext = mainRegistry.ctx<WorldContext>();
+    const auto prevWorldContext = mainRegistry.ctx().get<WorldContext>();
 
-    mainRegistry.set<WorldContext>(
-        getApp()->getWorld(),
-        deltaSeconds,
-        prevWorldContext.worldAge + deltaSeconds,
-        Bounds{
-            -getApp()->getWorld()->getChunkManager()->getWorldSize() / 2,
-            getApp()->getWorld()->getChunkManager()->getWorldSize() / 2});
+    auto& worldContext = mainRegistry.ctx().get<WorldContext>();
+
+    worldContext.world = getApp()->getWorld();
+    worldContext.deltaSeconds = deltaSeconds;
+    worldContext.worldAge = prevWorldContext.worldAge + deltaSeconds;
+    worldContext.bounds = Bounds{
+        -getApp()->getWorld()->getChunkManager()->getWorldSize() / 2,
+        getApp()->getWorld()->getChunkManager()->getWorldSize() / 2};
 
     updateInputSystem(mainRegistry);
 
@@ -106,7 +120,7 @@ void Voxelscape::update(float deltaSeconds)
     if (getApp()->getWorldName() == uiContext.gameWorldName)
     {
         // Update player resources in UI
-        const auto& player = mainRegistry.ctx<Player>();
+        const auto& player = mainRegistry.ctx().get<Player>();
 
         for (const auto& resourceAmount : player.resources.resourceVector)
         {
@@ -121,6 +135,12 @@ void Voxelscape::update(float deltaSeconds)
         }
 
         uiContext.populationSpace = player.population.populationSpace;
+
+        const auto& worldContext = mainRegistry.ctx().get<WorldContext>();
+        // dont update if chunk is currently updating
+        if (worldContext.world->getChunkManager()->shouldReinitializeChunks()) {
+            return;
+        }
 
         updateHoverSystem(mainRegistry);
         updatePlacementSystem(mainRegistry, buildingRegistry);
@@ -137,7 +157,7 @@ void Voxelscape::update(float deltaSeconds)
 
 void Voxelscape::renderUI()
 {
-    auto& uiContext = mainRegistry.ctx_or_set<UIContext>();
+    auto& uiContext = mainRegistry.ctx().get<UIContext>();
 
     if (uiContext.bEditorActive)
     {
