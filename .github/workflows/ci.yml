@@ -50,6 +50,8 @@ jobs:
         if: matrix.os == 'macos-latest'
       - run: vcpkg install "@vcpkg_response_file.txt"
         if: steps.vcpkg-installed-cache.outputs.cache-hit != 'true' || steps.vcpkg-packages-cache.outputs.cache-hit != 'true'
+        env: 
+          VCPKG_DEFAULT_TRIPLET: ${{ env.VCPKG_DEFAULT_TRIPLET }}
       - run: cmake -Bbuild -DCMAKE_BUILD_TYPE=Release
       - run: cmake --build build
       - name: Package
