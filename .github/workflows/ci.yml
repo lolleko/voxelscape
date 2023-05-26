@@ -18,14 +18,6 @@ jobs:
 
     steps:
       - uses: actions/checkout@v2
-      # VCPKG_INSTALLATION_ROOT not set on windows
-      - name: Set environment variables
-        if: matrix.os == 'windows-latest'
-        run: echo "VCPKG_INSTALLATION_ROOT=C:\vcpkg" >> "$GITHUB_ENV"
-      # VCPKG_INSTALLATION_ROOT not set to actions context on unix
-      - name: Set environment variables
-        if: matrix.os != 'windows-latest'
-        run: echo "VCPKG_INSTALLATION_ROOT=$VCPKG_INSTALLATION_ROOT" >> "$GITHUB_ENV"
       - name: Cache vcpkg installed
         id: vcpkg-installed-cache
         uses: actions/cache@v1
@@ -42,7 +34,7 @@ jobs:
         if: matrix.os == 'ubuntu-latest'
       - run: sudo apt-get install libxinerama-dev libxcursor-dev xorg-dev libglu1-mesa-dev
         if: matrix.os == 'ubuntu-latest'
-      - run: echo "VCPKG_DEFAULT_TRIPLET=x64-windows" >> "$GITHUB_ENV"
+      - run: echo "VCPKG_DEFAULT_TRIPLET=x64-windows" >> $env:GITHUB_ENV
         if: matrix.os == 'windows-latest'
       - run: echo "VCPKG_DEFAULT_TRIPLET=x64-linux" >> "$GITHUB_ENV"
         if: matrix.os == 'ubuntu-latest'
