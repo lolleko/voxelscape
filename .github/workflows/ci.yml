@@ -21,11 +21,12 @@ jobs:
       # VCPKG_INSTALLATION_ROOT not set on windows
       - name: Set environment variables
         if: matrix.os == 'windows-latest'
-        run: echo "::set-env name=VCPKG_INSTALLATION_ROOT::C:\vcpkg"
+        run: echo "VCPKG_INSTALLATION_ROOT=C:\vcpkg" >> "$GITHUB_ENV"
+
       # VCPKG_INSTALLATION_ROOT not set to actions context on unix
       - name: Set environment variables
         if: matrix.os != 'windows-latest'
-        run: echo "::set-env name=VCPKG_INSTALLATION_ROOT::$VCPKG_INSTALLATION_ROOT"
+        run: echo "VCPKG_INSTALLATION_ROOT=$VCPKG_INSTALLATION_ROOT" >> "$GITHUB_ENV"
       - name: Cache vcpkg installed
         id: vcpkg-installed-cache
         uses: actions/cache@v1
