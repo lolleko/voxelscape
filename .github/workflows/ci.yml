@@ -22,7 +22,6 @@ jobs:
       - name: Set environment variables
         if: matrix.os == 'windows-latest'
         run: echo "VCPKG_INSTALLATION_ROOT=C:\vcpkg" >> "$GITHUB_ENV"
-
       # VCPKG_INSTALLATION_ROOT not set to actions context on unix
       - name: Set environment variables
         if: matrix.os != 'windows-latest'
@@ -39,13 +38,15 @@ jobs:
         with:
           path: ${{ env.VCPKG_INSTALLATION_ROOT }}/packages
           key: ${{ hashFiles('**/vcpkg_*.txt') }}-${{ runner.os }}-vcpkg-packages
-      - run: sudo apt install libxinerama-dev libxcursor-dev xorg-dev libglu1-mesa-dev && sudo update-alternatives --install /usr/bin/c++ c++ /usr/bin/clang++-9 100 && sudo update-alternatives --set c++ /usr/bin/clang++-9
+      - run: sudo apt-get update
         if: matrix.os == 'ubuntu-latest'
-      - run: echo "::set-env name=VCPKG_DEFAULT_TRIPLET::x64-windows"
+      - run: sudo apt-get update && sudo apt-get install libxinerama-dev libxcursor-dev xorg-dev libglu1-mesa-dev
+        if: matrix.os == 'ubuntu-latest'
+      - run: echo "VCPKG_DEFAULT_TRIPLET=x64-windows" >> "$GITHUB_ENV"
         if: matrix.os == 'windows-latest'
-      - run: echo "::set-env name=VCPKG_DEFAULT_TRIPLET::x64-linux"
+      - run: echo "VCPKG_DEFAULT_TRIPLET=x64-linux" >> "$GITHUB_ENV"
         if: matrix.os == 'ubuntu-latest'
-      - run: echo "::set-env name=VCPKG_DEFAULT_TRIPLET::x64-osx"
+      - run: echo "VCPKG_DEFAULT_TRIPLET=x64-osx" >> "$GITHUB_ENV"
         if: matrix.os == 'macos-latest'
       - run: vcpkg install "@vcpkg_response_file.txt"
         if: steps.vcpkg-installed-cache.outputs.cache-hit != 'true' || steps.vcpkg-packages-cache.outputs.cache-hit != 'true'
