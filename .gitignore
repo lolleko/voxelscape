@@ -9,3 +9,5 @@ cmake-build-release
 cmake-build-release-*
 cmake-build-debug-*
 compile_commands.json
+.vscode/c_cpp_properties.json 
+.vscode/settings.json
