@@ -20,7 +20,7 @@ private:
     entt::registry buildingRegistry;
 
     void renderEditorGUI(UIContext& uiState);
-    void renderMainMenu(UIContext& uiState, WorldContext& worldContext);
+    void renderMainMenu(UIContext& uiState);
     void renderGameGUI(UIContext& uiState);
     void renderGameConfigGUI(UIContext& uiState);
     void renderLoading(UIContext& uiState);

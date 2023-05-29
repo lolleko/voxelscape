@@ -171,7 +171,7 @@ void Voxelscape::renderUI()
     }
     else if (uiContext.bMenuActive)
     {
-        renderMainMenu(uiContext, worldContext);
+        renderMainMenu(uiContext);
     }
     else if (uiContext.bGameConfigActive)
     {
@@ -274,7 +274,7 @@ void Voxelscape::renderEditorGUI(UIContext& uiState)
     }
 }
 
-void Voxelscape::renderMainMenu(UIContext& uiState, WorldContext& worldContext)
+void Voxelscape::renderMainMenu(UIContext& uiState)
 {
     ImGui::PushFont(uiState.menuFont);
     ImGui::SetNextWindowPos(
