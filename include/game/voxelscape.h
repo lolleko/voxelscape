@@ -4,7 +4,6 @@
 #include "core/vs_app.h"
 #include "core/vs_game.h"
 #include "game/components/ui_context.h"
-#include "game/components/world_context.h"
 
 class Voxelscape : public VSGame
 {
