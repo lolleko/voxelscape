@@ -18,6 +18,12 @@ jobs:
 
     steps:
       - uses: actions/checkout@v2
+      - name: Add vcpkg to github env
+        run: echo "VCPKG_INSTALLATION_ROOT=$env:VCPKG_INSTALLATION_ROOT" >> $env:GITHUB_ENV
+        if: matrix.os == 'windows-latest'
+      - name: Addd vcpkg to github env
+        run: echo "VCPKG_INSTALLATION_ROOT=$VCPKG_INSTALLATION_ROOT" >> "$GITHUB_ENV"
+        if: matrix.os != 'windows-latest'
       - name: Cache vcpkg
         id: vcpkg-cache
         uses: actions/cache@v3
