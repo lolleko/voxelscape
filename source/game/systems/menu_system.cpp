@@ -7,6 +7,7 @@
 #include "world/generator/vs_terrain.h"
 #include "game/systems/upgrade_system.h"
 #include "game/systems/delete_system.h"
+#include "ui/vs_parser.h"
 #include "core/vs_app.h"
 
 void updateMenuSystem(entt::registry& mainRegistry, entt::registry& buildingRegistry)
@@ -183,17 +184,26 @@ void updateMenuSystem(entt::registry& mainRegistry, entt::registry& buildingRegi
         uiContext.bShouldGenerateTerrain = false;
 
         uiContext.bShowLoading = true;
-        if (uiContext.selectedBiomeType == 0)
+        if (!uiContext.bShouldLoadFromFile)
         {
-            VSTerrainGeneration::buildStandard(world);
+            if (uiContext.selectedBiomeType == 0)
+            {
+                VSTerrainGeneration::buildStandard(world);
+            }
+            else if (uiContext.selectedBiomeType == 1)
+            {
+                VSTerrainGeneration::buildMountains(world);
+            }
+            else if (uiContext.selectedBiomeType == 2)
+            {
+                VSTerrainGeneration::buildDesert(world);
+            }
         }
-        else if (uiContext.selectedBiomeType == 1)
+        if (uiContext.bShouldLoadFromFile)
         {
-            VSTerrainGeneration::buildMountains(world);
-        }
-        else if (uiContext.selectedBiomeType == 2)
-        {
-            VSTerrainGeneration::buildDesert(world);
+            VSChunkManager::VSWorldData worldData = VSParser::readFromFile(uiContext.loadFilePath);
+            world->getChunkManager()->initFromData(worldData);
+            uiContext.bShouldLoadFromFile = false;
         }
         uiContext.bShowLoading = false;
 

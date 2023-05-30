@@ -10,7 +10,6 @@
 #include "game/components/resources.h"
 #include "game/components/ui_context.h"
 #include "game/components/unique.h"
-#include "game/components/world_context.h"
 #include "game/components/player.h"
 
 #include "game/systems/menu_system.h"
@@ -211,6 +210,12 @@ void Voxelscape::renderEditorMenu(UIContext& uiState)
                 uiState.saveBuildingDialog->SetTitle("Save building");
                 uiState.saveBuildingDialog->Open();
             }
+            if (ImGui::MenuItem("Close"))
+            {
+                uiState.bEditorActive = false;
+                uiState.bMenuActive = true;
+                getApp()->setWorldActive(uiState.menuWorldName);
+            }
             ImGui::EndMenu();
         }
     }
@@ -296,12 +301,31 @@ void Voxelscape::renderMainMenu(UIContext& uiState)
         uiState.bGameConfigActive = true;
         uiState.bMenuActive = false;
     }
+    if (ImGui::Button("Load Game", ImVec2(ImGui::GetWindowContentRegionWidth(), 0.F)))
+    {
+        // Open File dialog
+        uiState.bFileBrowserActive = true;
+        uiState.loadFileDialog->SetTitle("Load scene file");
+        uiState.loadFileDialog->SetTypeFilters({".json"});
+        uiState.loadFileDialog->Open();
+    }
     if (ImGui::Button("Start Editor", ImVec2(ImGui::GetWindowContentRegionWidth(), 0.F)))
     {
         uiState.bShouldSetEditorActive = true;
     }
     ImGui::End();
     ImGui::PopFont();
+    uiState.loadFileDialog->Display();
+    if (uiState.loadFileDialog->HasSelected())
+    {
+        // Load scene
+        uiState.loadFilePath = uiState.loadFileDialog->GetSelected();
+        uiState.bShouldLoadFromFile = true;
+        uiState.bFileBrowserActive = false;
+        uiState.bMenuActive = false;
+        uiState.loadFileDialog->ClearSelected();
+        uiState.bShouldStartGame = true;
+    }
 }
 
 void Voxelscape::renderGameConfigGUI(UIContext& uiState)
@@ -341,7 +365,23 @@ void Voxelscape::renderGameGUI(UIContext& uiState)
     float menuBarHeight = 0.F;
     if (ImGui::BeginMainMenuBar())
     {
-        ImGui::MenuItem("Dummy");
+        if (ImGui::BeginMenu("File..."))
+        {
+            if (ImGui::MenuItem("Save world..."))
+            {
+                // Open File dialog
+                uiState.bFileBrowserActive = true;
+                uiState.saveFileDialog->SetTitle("Save scene file");
+                uiState.saveFileDialog->Open();
+            }
+            if (ImGui::MenuItem("Close"))
+            {
+                uiState.bShouldSetGameActive = false;
+                uiState.bMenuActive = true;
+                getApp()->setWorldActive(uiState.menuWorldName);
+            }
+            ImGui::EndMenu();
+        }
         ImGui::Separator();
         ImGui::Text("Unemployed: %i", uiState.populationSpace);
         ImGui::Image((void*)(intptr_t)uiState.woodResourceTexture, ImVec2(20, 20));
