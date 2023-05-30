@@ -18,18 +18,14 @@ jobs:
 
     steps:
       - uses: actions/checkout@v2
-      - name: Cache vcpkg installed
-        id: vcpkg-installed-cache
-        uses: actions/cache@v1
+      - name: Cache vcpkg
+        id: vcpkg-cache
+        uses: actions/cache@v3
         with:
-          path: ${{ env.VCPKG_INSTALLATION_ROOT }}/installed
-          key: ${{ hashFiles('**/vcpkg_*.txt') }}-${{ runner.os }}-vcpkg-installed
-      - name: Cache vcpkg packages
-        id: vcpkg-packages-cache
-        uses: actions/cache@v1
-        with:
-          path: ${{ env.VCPKG_INSTALLATION_ROOT }}/packages
-          key: ${{ hashFiles('**/vcpkg_*.txt') }}-${{ runner.os }}-vcpkg-packages
+          path: |
+           ${{ env.VCPKG_INSTALLATION_ROOT }}/installed
+           ${{ env.VCPKG_INSTALLATION_ROOT }}/packages
+          key: ${{ hashFiles('**/vcpkg_*.txt') }}-${{ runner.os }}-vcpkg
       - run: sudo apt-get update
         if: matrix.os == 'ubuntu-latest'
       - run: sudo apt-get install libxinerama-dev libxcursor-dev xorg-dev libglu1-mesa-dev
@@ -41,7 +37,7 @@ jobs:
       - run: echo "VCPKG_DEFAULT_TRIPLET=x64-osx" >> "$GITHUB_ENV"
         if: matrix.os == 'macos-latest'
       - run: vcpkg install "@vcpkg_response_file.txt"
-        if: steps.vcpkg-installed-cache.outputs.cache-hit != 'true' || steps.vcpkg-packages-cache.outputs.cache-hit != 'true'
+        if: steps.vcpkg-cache.outputs.cache-hit != 'true'
         env: 
           VCPKG_DEFAULT_TRIPLET: ${{ env.VCPKG_DEFAULT_TRIPLET }}
       - run: cmake -DCMAKE_BUILD_TYPE=Release -Bbuild
