@@ -18,6 +18,7 @@ jobs:
 
     steps:
       - uses: actions/checkout@v2
+      - run: echo ${{ env.VCPKG_INSTALLATION_ROOT }}
       - name: Cache vcpkg
         id: vcpkg-cache
         uses: actions/cache@v3
