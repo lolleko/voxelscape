@@ -201,7 +201,6 @@ void updateMenuSystem(entt::registry& mainRegistry, entt::registry& buildingRegi
         }
         if (uiContext.bShouldLoadFromFile)
         {
-            auto* app = VSApp::getInstance();
             VSChunkManager::VSWorldData worldData = VSParser::readFromFile(uiContext.loadFilePath);
             worldContext.world->getChunkManager()->initFromData(worldData);
             uiContext.bShouldLoadFromFile = false;
