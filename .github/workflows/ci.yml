@@ -18,14 +18,13 @@ jobs:
 
     steps:
       - uses: actions/checkout@v2
-      - run: echo ${{ env.VCPKG_INSTALLATION_ROOT }}
       - name: Cache vcpkg
         id: vcpkg-cache
         uses: actions/cache@v3
         with:
           path: |
-           ${{ env.VCPKG_INSTALLATION_ROOT }}/installed
-           ${{ env.VCPKG_INSTALLATION_ROOT }}/packages
+           $VCPKG_INSTALLATION_ROOT/installed
+           $VCPKG_INSTALLATION_ROOT/packages
           key: ${{ hashFiles('**/vcpkg_*.txt') }}-${{ runner.os }}-vcpkg
       - run: sudo apt-get update
         if: matrix.os == 'ubuntu-latest'
