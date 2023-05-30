@@ -157,7 +157,6 @@ void Voxelscape::update(float deltaSeconds)
 void Voxelscape::renderUI()
 {
     auto& uiContext = mainRegistry.ctx().get<UIContext>();
-    auto& worldContext = mainRegistry.ctx().get<WorldContext>();
 
     if (uiContext.bEditorActive)
     {
