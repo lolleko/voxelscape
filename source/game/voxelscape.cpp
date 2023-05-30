@@ -10,7 +10,6 @@
 #include "game/components/resources.h"
 #include "game/components/ui_context.h"
 #include "game/components/unique.h"
-#include "game/components/world_context.h"
 #include "game/components/player.h"
 
 #include "game/systems/menu_system.h"
