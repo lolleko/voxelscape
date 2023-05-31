@@ -206,8 +206,6 @@ void VSChunkManager::setBlock(const glm::vec3& location, VSBlockID blockID)
                                   : blockEmission[chunks[chunkIndex]->blocks[blockIndex]];
         // add emission or remove emission
         const float addOrRemove = blockEmission[blockID] != 0.F ? 1 : -1;
-        glm::vec3 addOrRemoveColor = {0.F, 0.F, 0.F};
- 
         const int ceiledEmission = glm::ceil(emission);
 
         for (int x = locationFloored.x - ceiledEmission; x <= locationFloored.x + ceiledEmission;
