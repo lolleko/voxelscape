@@ -224,7 +224,10 @@ private:
                                                             0.F,
                                                             0.F,
                                                             0.F,
-                                                            0.F};
+                                                            0.F,
+                                                            12.F,
+                                                            12.F,
+                                                            12.F};
 
     const static inline std::vector<glm::vec3> blockEmissionColors = {/*Air=0*/ {0.F, 0.F, 0.F},
                                                                       /*Stone=1*/ {0.F, 0.F, 0.F},
@@ -248,7 +251,10 @@ private:
                                                                       {0.F, 0.F, 0.F},
                                                                       {0.F, 0.F, 0.F},
                                                                       {0.F, 0.F, 0.F},
-                                                                      {0.F, 0.F, 0.F}};
+                                                                      {0.F, 0.F, 0.F},
+                                                                      {255.F, 0.F, 0.F},
+                                                                      {0.F, 255.F, 0.F},
+                                                                      {0.F, 0.F, 255.F}};
 
     void initializeChunks();
 
