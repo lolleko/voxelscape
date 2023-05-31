@@ -39,6 +39,7 @@ class VSChunkManager : public IVSDrawable
             std::uint32_t lightBottom;
             std::uint32_t lightFront;
             std::uint32_t lightBack;
+            glm::vec3 lightColor;
         };
 
         using VSVisibleBlockInfos = std::array<std::vector<VSVisibleBlockInfo>, 64>;
@@ -46,6 +47,8 @@ class VSChunkManager : public IVSDrawable
         std::vector<VSBlockID> blocks;
 
         std::vector<float> lightLevel;
+
+        std::vector<glm::vec3> lightColor;
 
         std::vector<bool> bIsBlockVisible;
 
@@ -87,7 +90,7 @@ public:
 
     void setBlock(const glm::vec3& location, VSBlockID blockID);
 
-    void addEmission(const glm::vec3& location, float emission);
+    void addEmission(const glm::vec3& location, float emission, glm::vec3 color, VSBlockID previousBlock);
 
     glm::ivec3 getWorldSize() const;
 
@@ -222,6 +225,30 @@ private:
                                                             0.F,
                                                             0.F,
                                                             0.F};
+
+    const static inline std::vector<glm::vec3> blockEmissionColors = {/*Air=0*/ {0.F, 0.F, 0.F},
+                                                                      /*Stone=1*/ {0.F, 0.F, 0.F},
+                                                                      /*Water=2*/ {0.F, 0.F, 0.F},
+                                                                      /*Grass=3*/ {0.F, 0.F, 0.F},
+                                                                      /*Wood=4*/ {0.F, 0.F, 0.F},
+                                                                      /*Sand=5*/ {0.F, 0.F, 0.F},
+                                                                      /*Leaf=6*/ {0.F, 0.F, 0.F},
+                                                                      /*Lava=7*/ {255.F, 0.F, 0.F},
+                                                                      {0.F, 0.F, 0.F},
+                                                                      {0.F, 0.F, 0.F},
+                                                                      {0.F, 0.F, 0.F},
+                                                                      {0.F, 0.F, 0.F},
+                                                                      {0.F, 0.F, 0.F},
+                                                                      {0.F, 0.F, 0.F},
+                                                                      {0.F, 0.F, 0.F},
+                                                                      {0.F, 0.F, 0.F},
+                                                                      {0.F, 0.F, 0.F},
+                                                                      {0.F, 0.F, 0.F},
+                                                                      {0.F, 0.F, 0.F},
+                                                                      {0.F, 0.F, 0.F},
+                                                                      {0.F, 0.F, 0.F},
+                                                                      {0.F, 0.F, 0.F},
+                                                                      {0.F, 0.F, 0.F}};
 
     void initializeChunks();
 

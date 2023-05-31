@@ -142,6 +142,18 @@ VSChunkManager::VSChunkManager()
             (void*)offsetof(VSChunk::VSVisibleBlockInfo, lightBack));
         glVertexAttribDivisor(nextAttribPointer, 1);
 
+        nextAttribPointer++;
+
+        glEnableVertexAttribArray(nextAttribPointer);
+        glVertexAttribPointer(
+            nextAttribPointer,
+            3,
+            GL_FLOAT,
+            GL_FALSE,
+            sizeof(VSChunk::VSVisibleBlockInfo),
+            (void*)offsetof(VSChunk::VSVisibleBlockInfo, lightColor));
+        glVertexAttribDivisor(nextAttribPointer, 1);
+
         int maxAttribs = 256;
         glGetIntegerv(GL_MAX_VERTEX_ATTRIBS, &maxAttribs);
         assert(nextAttribPointer < maxAttribs);
@@ -183,6 +195,8 @@ void VSChunkManager::setBlock(const glm::vec3& location, VSBlockID blockID)
 
     const auto chunkIndex = chunkCoordinatesToChunkIndex(chunkCoordinates);
 
+    VSBlockID currentBlockID = getBlock(location);
+
     // If new block has emssion or removed block had emission
     if (blockEmission[blockID] != 0.F ||
         blockEmission[chunks[chunkIndex]->blocks[blockIndex]] != 0.F)
@@ -192,6 +206,8 @@ void VSChunkManager::setBlock(const glm::vec3& location, VSBlockID blockID)
                                   : blockEmission[chunks[chunkIndex]->blocks[blockIndex]];
         // add emission or remove emission
         const float addOrRemove = blockEmission[blockID] != 0.F ? 1 : -1;
+        glm::vec3 addOrRemoveColor = {0.F, 0.F, 0.F};
+ 
         const int ceiledEmission = glm::ceil(emission);
 
         for (int x = locationFloored.x - ceiledEmission; x <= locationFloored.x + ceiledEmission;
@@ -215,7 +231,10 @@ void VSChunkManager::setBlock(const glm::vec3& location, VSBlockID blockID)
                         {
                             addEmission(
                                 neighbourLocation,
-                                addOrRemove * 32.f * (1 - (distance / ceiledEmission)));
+                                addOrRemove * 32.f * (1 - (distance / ceiledEmission)),
+                                blockEmissionColors[blockID],
+                                currentBlockID
+                            );
                         }
                     }
                 }
@@ -239,7 +258,7 @@ void VSChunkManager::setBlock(const glm::vec3& location, VSBlockID blockID)
     chunks[chunkCoordinatesToChunkIndex(down)]->bIsDirty = true;
 }
 
-void VSChunkManager::addEmission(const glm::vec3& location, float emission)
+void VSChunkManager::addEmission(const glm::vec3& location, float emission, glm::vec3 color, VSBlockID previousBlock)
 {
     const auto locationFloored = glm::ivec3(glm::floor(location));
     const auto zeroBaseLocation = locationFloored + worldSizeHalf;
@@ -247,6 +266,12 @@ void VSChunkManager::addEmission(const glm::vec3& location, float emission)
 
     chunks[chunkIndex]->bIsDirty = true;
     chunks[chunkIndex]->lightLevel[blockIndex] += emission;
+    chunks[chunkIndex]->lightColor[blockIndex] += color;
+
+    if (emission <= 0)
+    {
+        chunks[chunkIndex]->lightColor[blockIndex] -= blockEmissionColors[previousBlock];
+    }
 }
 
 glm::ivec3 VSChunkManager::getWorldSize() const
@@ -692,6 +717,7 @@ VSChunkManager::VSChunk* VSChunkManager::createChunk() const
     chunk->blocks.resize(getChunkBlockCount(), VS_DEFAULT_BLOCK_ID);
     chunk->bIsBlockVisible.resize(getChunkBlockCount(), false);
     chunk->lightLevel.resize(getChunkBlockCount(), 0.F);
+    chunk->lightColor.resize(getChunkBlockCount(), {0.F, 0.F, 0.F});
 
     return chunk;
 }
@@ -936,7 +962,8 @@ VSChunkManager::VSChunk::VSVisibleBlockInfos VSChunkManager::chunkUpdateVisibili
                     lighInfo[2],
                     lighInfo[3],
                     lighInfo[4],
-                    lighInfo[5]};
+                    lighInfo[5],
+                    chunk->lightColor[blockIndex]};
                 result[blockType].emplace_back(blockInfo);
                 chunk->bIsBlockVisible[blockIndex] = true;
             }

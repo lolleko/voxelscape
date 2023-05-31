@@ -13,6 +13,7 @@ layout (location = 6) in uint lightTop;
 layout (location = 7) in uint lightBottom;
 layout (location = 8) in uint lightFront;
 layout (location = 9) in uint lightBack;
+layout (location = 10) in vec3 lightColor;
 
 uniform vec3[7] blockColors;
 
@@ -25,6 +26,7 @@ out VertexData {
     vec3 material;
     flat uint blockID;
     float lightLevel;
+    vec3 lightColor;
 } o;
 
 uniform mat4 VP;
@@ -113,6 +115,7 @@ void main()
     o.material = blockColors[blockID];
     o.blockID = blockID;
     o.lightLevel = lightLevel;
+    o.lightColor = lightColor;
 
     gl_Position = VP * vec4(o.worldPosition, 1.0);
 }
