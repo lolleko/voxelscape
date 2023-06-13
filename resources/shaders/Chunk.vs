@@ -15,15 +15,12 @@ layout (location = 8) in uint lightFront;
 layout (location = 9) in uint lightBack;
 layout (location = 10) in vec3 lightColor;
 
-uniform vec3[7] blockColors;
-
 uniform vec3 origin;
 
 out VertexData {
     vec3 worldPosition;
     vec3 normal;
     vec2 texCoord;
-    vec3 material;
     flat uint blockID;
     float lightLevel;
     vec3 lightColor;
@@ -112,7 +109,6 @@ void main()
     o.worldPosition = origin + vec3(blockLocation + vertexPosition);
     o.normal = inNormal;
     o.texCoord = texCoord;
-    o.material = blockColors[blockID];
     o.blockID = blockID;
     o.lightLevel = lightLevel;
     o.lightColor = lightColor;

@@ -161,21 +161,7 @@ VSChunkManager::VSChunkManager()
         glBindVertexArray(0);
     }
 
-    std::vector<glm::vec3> blockColors = {
-        /*Air=0*/ {0.F, 0.F, 0.F},
-        /*Stone=1*/ {0.3F, 0.3F, 0.3F},
-        /*Water=2*/ {0.F, 0.F, 0.5F},
-        /*Grass=3*/ {0.F, 0.3F, 0.F},
-        /*Wood=4*/ {0.5F, 0.25F, 0.1F},
-        /*Sand=5*/ {1.F, 0.9F, 0.5F},
-        /*Leaf=6*/ {0.F, 0.5F, 0.F},
-        /*Lava=7*/ {1.F, 0.0F, 0.F}};
-
     spriteTexture = TextureAtlasFromFile("resources/textures/tiles");
-
-    chunkShader.uniforms()
-        .setVec3Array("blockColors", blockColors)
-        .setInt("spriteTexture", spriteTextureID);
 }
 
 VSBlockID VSChunkManager::getBlock(const glm::vec3& location) const
@@ -1080,6 +1066,7 @@ bool VSChunkManager::isAtWorldBorder(const glm::ivec3& blockWorldCoordinates) co
            blockWorldCoordinates.z == worldSizeHalf.z - 1;
 }
 
+
 std::array<std::uint32_t, 6>
 VSChunkManager::getLightInformation(const glm::vec3& blockCoordinates) const
 {
@@ -1152,10 +1139,6 @@ std::uint32_t VSChunkManager::getLightInformationForFace(
             const auto sample = currentCorner + sampleOffsets;
             if (isLocationInBounds(sample))
             {
-                // std::cout << glm::to_string(blockWorldCoordinates) << " " <<
-                // glm::to_string(sample)
-                //          << std::endl;
-
                 // TODO code dupe getBlock()
                 const auto zeroBaseLocation = glm::ivec3(glm::floor(sample)) + worldSizeHalf;
                 const auto [chunkIndex, blockIndex] =
