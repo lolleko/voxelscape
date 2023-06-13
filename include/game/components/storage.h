@@ -2,7 +2,7 @@
 
 #include <cstdint>
 #include <glm/vec3.hpp>
-#include "game/resources.h"
+#include "game/components/resources.h"
 
 struct Storage
 {

@@ -7,6 +7,7 @@ in VertexData {
     vec3 material;
     flat uint blockID;
     float lightLevel;
+    vec3 lightColor;
 } i;
 
 out vec4 outColor;
@@ -114,9 +115,14 @@ void main() {
     float ind = clamp( dot( norm, normalize(directLightDir*vec3(-1.0,0.0,-1.0)) ), 0.0, 1.0 );
 
     vec3 light  = sun * vec3(0.9,0.70, 0.45) * vec3(1.025) * pow(vec3(shadowFactor), vec3(1.0,1.2,1.5));
+    if (i.lightColor != vec3(0.0) && i.lightLevel > 0) {
+        vec3 normalizedLightColor = (i.lightColor / 255.0) * pow(i.lightLevel, 3.0);
+        light += normalizedLightColor;
+    }
     light += i.lightLevel * vec3(1.3, 0.9, 0.3);
     light += sky*vec3(0.229, 0.607, 0.821)*vec3(0.4)*occ;
     light += ind*vec3(0.25,0.23,0.15)*vec3(0.8)*occ;
+        // light += i.lightLevel * (i.lightColor / 255);
 
     // block material
     vec3 tex =  pow(texture(spriteTexture, vec3(i.texCoord, i.blockID)).rgb, vec3(2.2));
