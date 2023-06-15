@@ -33,22 +33,19 @@ class VSChunkManager : public IVSDrawable
         {
             glm::vec3 locationWorldSpace;
             VSBlockID id;
-            std::uint32_t lightRight;
-            std::uint32_t lightLeft;
-            std::uint32_t lightTop;
-            std::uint32_t lightBottom;
-            std::uint32_t lightFront;
-            std::uint32_t lightBack;
-            glm::vec3 lightColor;
+            glm::uvec3 lightRight;
+            glm::uvec3 lightLeft;
+            glm::uvec3 lightTop;
+            glm::uvec3 lightBottom;
+            glm::uvec3 lightFront;
+            glm::uvec3 lightBack;
         };
 
         using VSVisibleBlockInfos = std::array<std::vector<VSVisibleBlockInfo>, 64>;
 
         std::vector<VSBlockID> blocks;
 
-        std::vector<float> lightLevel;
-
-        std::vector<glm::vec3> lightColor;
+        std::vector<glm::vec3> light;
 
         std::vector<bool> bIsBlockVisible;
 
@@ -90,7 +87,7 @@ public:
 
     void setBlock(const glm::vec3& location, VSBlockID blockID);
 
-    void addEmission(const glm::vec3& location, float emission, glm::vec3 color, VSBlockID previousBlock);
+    void addEmission(const glm::vec3& location, const glm::vec3& emission);
 
     glm::ivec3 getWorldSize() const;
 
@@ -236,7 +233,7 @@ private:
                                                                       /*Wood=4*/ {0.F, 0.F, 0.F},
                                                                       /*Sand=5*/ {0.F, 0.F, 0.F},
                                                                       /*Leaf=6*/ {0.F, 0.F, 0.F},
-                                                                      /*Lava=7*/ {255.F, 0.F, 0.F},
+                                                                      /*Lava=7*/ {1.F, 0.4F, 0.F},
                                                                       {0.F, 0.F, 0.F},
                                                                       {0.F, 0.F, 0.F},
                                                                       {0.F, 0.F, 0.F},
@@ -252,9 +249,9 @@ private:
                                                                       {0.F, 0.F, 0.F},
                                                                       {0.F, 0.F, 0.F},
                                                                       {0.F, 0.F, 0.F},
-                                                                      {255.F, 0.F, 0.F},
-                                                                      {0.F, 255.F, 0.F},
-                                                                      {0.F, 0.F, 255.F}};
+                                                                      {1.F, 0.F, 0.F},
+                                                                      {0.F, 1.F, 0.F},
+                                                                      {0.F, 0.F, 1.F}};
 
     void initializeChunks();
 
@@ -288,9 +285,9 @@ private:
 
     bool isAtWorldBorder(const glm::ivec3& blockWorldCoordinates) const;
 
-    std::array<std::uint32_t, 6> getLightInformation(const glm::vec3& blockCoordinates) const;
+    std::array<glm::uvec3, 6> getLightInformation(const glm::vec3& blockCoordinates) const;
 
-    std::uint32_t getLightInformationForFace(
+    glm::uvec3 getLightInformationForFace(
         const glm::vec3& blockWorldCoordinates,
         const std::array<glm::vec3, 4>& corners) const;
 

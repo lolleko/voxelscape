@@ -38,6 +38,8 @@ enum VSCubeFace : std::uint8_t
     Back = 4
 };
 
+constexpr float MaxEmissionLevel = 32.F;
+
 VSChunkManager::VSChunkManager()
 {
     spriteTextureID = 0;
@@ -81,7 +83,7 @@ VSChunkManager::VSChunkManager()
         glEnableVertexAttribArray(nextAttribPointer);
         glVertexAttribIPointer(
             nextAttribPointer,
-            1,
+            3,
             GL_UNSIGNED_INT,
             sizeof(VSChunk::VSVisibleBlockInfo),
             (void*)offsetof(VSChunk::VSVisibleBlockInfo, lightRight));
@@ -92,7 +94,7 @@ VSChunkManager::VSChunkManager()
         glEnableVertexAttribArray(nextAttribPointer);
         glVertexAttribIPointer(
             nextAttribPointer,
-            1,
+            3,
             GL_UNSIGNED_INT,
             sizeof(VSChunk::VSVisibleBlockInfo),
             (void*)offsetof(VSChunk::VSVisibleBlockInfo, lightLeft));
@@ -103,7 +105,7 @@ VSChunkManager::VSChunkManager()
         glEnableVertexAttribArray(nextAttribPointer);
         glVertexAttribIPointer(
             nextAttribPointer,
-            1,
+            3,
             GL_UNSIGNED_INT,
             sizeof(VSChunk::VSVisibleBlockInfo),
             (void*)offsetof(VSChunk::VSVisibleBlockInfo, lightTop));
@@ -114,7 +116,7 @@ VSChunkManager::VSChunkManager()
         glEnableVertexAttribArray(nextAttribPointer);
         glVertexAttribIPointer(
             nextAttribPointer,
-            1,
+            3,
             GL_UNSIGNED_INT,
             sizeof(VSChunk::VSVisibleBlockInfo),
             (void*)offsetof(VSChunk::VSVisibleBlockInfo, lightBottom));
@@ -125,7 +127,7 @@ VSChunkManager::VSChunkManager()
         glEnableVertexAttribArray(nextAttribPointer);
         glVertexAttribIPointer(
             nextAttribPointer,
-            1,
+            3,
             GL_UNSIGNED_INT,
             sizeof(VSChunk::VSVisibleBlockInfo),
             (void*)offsetof(VSChunk::VSVisibleBlockInfo, lightFront));
@@ -136,23 +138,13 @@ VSChunkManager::VSChunkManager()
         glEnableVertexAttribArray(nextAttribPointer);
         glVertexAttribIPointer(
             nextAttribPointer,
-            1,
+            3,
             GL_UNSIGNED_INT,
             sizeof(VSChunk::VSVisibleBlockInfo),
             (void*)offsetof(VSChunk::VSVisibleBlockInfo, lightBack));
         glVertexAttribDivisor(nextAttribPointer, 1);
 
         nextAttribPointer++;
-
-        glEnableVertexAttribArray(nextAttribPointer);
-        glVertexAttribPointer(
-            nextAttribPointer,
-            3,
-            GL_FLOAT,
-            GL_FALSE,
-            sizeof(VSChunk::VSVisibleBlockInfo),
-            (void*)offsetof(VSChunk::VSVisibleBlockInfo, lightColor));
-        glVertexAttribDivisor(nextAttribPointer, 1);
 
         int maxAttribs = 256;
         glGetIntegerv(GL_MAX_VERTEX_ATTRIBS, &maxAttribs);
@@ -181,18 +173,15 @@ void VSChunkManager::setBlock(const glm::vec3& location, VSBlockID blockID)
 
     const auto chunkIndex = chunkCoordinatesToChunkIndex(chunkCoordinates);
 
-    VSBlockID currentBlockID = getBlock(location);
+    float newBlockEmission = blockEmission[blockID];
+    int oldBlockId = chunks[chunkIndex]->blocks[blockIndex];
+    float oldBlockEmission = blockEmission[chunks[chunkIndex]->blocks[blockIndex]];
 
-    // If new block has emssion or removed block had emission
-    if (blockEmission[blockID] != 0.F ||
-        blockEmission[chunks[chunkIndex]->blocks[blockIndex]] != 0.F)
+    // // remove emission
+    if (oldBlockEmission != 0.F)
     {
-        const auto emission = blockEmission[blockID] != 0
-                                  ? blockEmission[blockID]
-                                  : blockEmission[chunks[chunkIndex]->blocks[blockIndex]];
         // add emission or remove emission
-        const float addOrRemove = blockEmission[blockID] != 0.F ? 1 : -1;
-        const int ceiledEmission = glm::ceil(emission);
+        const int ceiledEmission = glm::ceil(oldBlockEmission);
 
         for (int x = locationFloored.x - ceiledEmission; x <= locationFloored.x + ceiledEmission;
              x++)
@@ -215,9 +204,43 @@ void VSChunkManager::setBlock(const glm::vec3& location, VSBlockID blockID)
                         {
                             addEmission(
                                 neighbourLocation,
-                                addOrRemove * 32.f * (1 - (distance / ceiledEmission)),
-                                blockEmissionColors[blockID],
-                                currentBlockID
+                                -1 * MaxEmissionLevel * (1 - (distance / ceiledEmission)) * blockEmissionColors[oldBlockId]
+                            );
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    // TODO duplicated loops only difference is emission distance and added/removed color/light
+    if (newBlockEmission != 0.F)
+    {
+        // add emission or remove emission
+        const int ceiledEmission = glm::ceil(newBlockEmission);
+
+        for (int x = locationFloored.x - ceiledEmission; x <= locationFloored.x + ceiledEmission;
+             x++)
+        {
+            for (int y = locationFloored.y - ceiledEmission;
+                 y <= locationFloored.y + ceiledEmission;
+                 y++)
+            {
+                for (int z = locationFloored.z - ceiledEmission;
+                     z <= locationFloored.z + ceiledEmission;
+                     z++)
+                {
+                    const auto neighbourLocation = glm::vec3(x, y, z);
+
+                    if (isLocationInBounds(neighbourLocation))
+                    {
+                        const auto distance =
+                            glm::length(glm::vec3(locationFloored) - neighbourLocation) + 0.0001F;
+                        if (distance < ceiledEmission)
+                        {
+                            addEmission(
+                                neighbourLocation,
+                                MaxEmissionLevel * (1 - (distance / ceiledEmission)) * blockEmissionColors[blockID]
                             );
                         }
                     }
@@ -242,20 +265,14 @@ void VSChunkManager::setBlock(const glm::vec3& location, VSBlockID blockID)
     chunks[chunkCoordinatesToChunkIndex(down)]->bIsDirty = true;
 }
 
-void VSChunkManager::addEmission(const glm::vec3& location, float emission, glm::vec3 color, VSBlockID previousBlock)
+void VSChunkManager::addEmission(const glm::vec3& location, const glm::vec3& emission)
 {
     const auto locationFloored = glm::ivec3(glm::floor(location));
     const auto zeroBaseLocation = locationFloored + worldSizeHalf;
     const auto [chunkIndex, blockIndex] = worldCoordinatesToChunkAndBlockIndex(zeroBaseLocation);
 
     chunks[chunkIndex]->bIsDirty = true;
-    chunks[chunkIndex]->lightLevel[blockIndex] += emission;
-    chunks[chunkIndex]->lightColor[blockIndex] += color;
-
-    if (emission <= 0)
-    {
-        chunks[chunkIndex]->lightColor[blockIndex] -= blockEmissionColors[previousBlock];
-    }
+    chunks[chunkIndex]->light[blockIndex] += emission;
 }
 
 glm::ivec3 VSChunkManager::getWorldSize() const
@@ -330,7 +347,6 @@ void VSChunkManager::draw(VSWorld* world)
 
     chunkShader.uniforms()
         .setVec3("lightDir", world->getDirectLightDir())
-        .setVec3("lightColor", world->getDirectLightColor())
         .setVec3("viewPos", world->getCamera()->getPosition())
         .setVec3("origin", origin)
         .setVec3("colorOverride", colorOverride)
@@ -700,8 +716,7 @@ VSChunkManager::VSChunk* VSChunkManager::createChunk() const
 
     chunk->blocks.resize(getChunkBlockCount(), VS_DEFAULT_BLOCK_ID);
     chunk->bIsBlockVisible.resize(getChunkBlockCount(), false);
-    chunk->lightLevel.resize(getChunkBlockCount(), 0.F);
-    chunk->lightColor.resize(getChunkBlockCount(), {0.F, 0.F, 0.F});
+    chunk->light.resize(getChunkBlockCount(), {0.F, 0.F, 0.F});
 
     return chunk;
 }
@@ -946,8 +961,7 @@ VSChunkManager::VSChunk::VSVisibleBlockInfos VSChunkManager::chunkUpdateVisibili
                     lighInfo[2],
                     lighInfo[3],
                     lighInfo[4],
-                    lighInfo[5],
-                    chunk->lightColor[blockIndex]};
+                    lighInfo[5]};
                 result[blockType].emplace_back(blockInfo);
                 chunk->bIsBlockVisible[blockIndex] = true;
             }
@@ -1066,11 +1080,10 @@ bool VSChunkManager::isAtWorldBorder(const glm::ivec3& blockWorldCoordinates) co
            blockWorldCoordinates.z == worldSizeHalf.z - 1;
 }
 
-
-std::array<std::uint32_t, 6>
+std::array<glm::uvec3, 6>
 VSChunkManager::getLightInformation(const glm::vec3& blockCoordinates) const
 {
-    std::array<std::uint32_t, 6> result;
+    std::array<glm::uvec3, 6> result;
 
     const auto right = getLightInformationForFace(
         blockCoordinates,
@@ -1123,16 +1136,16 @@ VSChunkManager::getLightInformation(const glm::vec3& blockCoordinates) const
     return result;
 }
 
-std::uint32_t VSChunkManager::getLightInformationForFace(
+glm::uvec3 VSChunkManager::getLightInformationForFace(
     const glm::vec3& blockWorldCoordinates,
     const std::array<glm::vec3, 4>& corners) const
 {
-    std::uint32_t result = 0;
+    glm::uvec3 result{0, 0, 0};
     int currentOffset = 0;
     for (const auto& corner : corners)
     {
         const auto currentCorner = blockWorldCoordinates + corner;
-        float lightValue = 0;
+        glm::vec3 lightValue = {0., 0., 0.};
 
         for (const auto& sampleOffsets : corners)
         {
@@ -1143,16 +1156,19 @@ std::uint32_t VSChunkManager::getLightInformationForFace(
                 const auto zeroBaseLocation = glm::ivec3(glm::floor(sample)) + worldSizeHalf;
                 const auto [chunkIndex, blockIndex] =
                     worldCoordinatesToChunkAndBlockIndex(zeroBaseLocation);
-                lightValue += chunks[chunkIndex]->blocks[blockIndex] != VS_DEFAULT_BLOCK_ID
-                                  ? 0.F
-                                  : chunks[chunkIndex]->lightLevel[blockIndex] + 8.F;
+
+                if (chunks[chunkIndex]->blocks[blockIndex] == VS_DEFAULT_BLOCK_ID) {
+                    lightValue += chunks[chunkIndex]->light[blockIndex] + 8.F;
+                }
             }
         }
         lightValue /= corners.size();
 
-        std::uint8_t lightValueDeNorm = (glm::clamp(lightValue, 0.F, 32.F) / 32.F) * 255.F;
+        glm::vec<3, std::uint8_t, glm::defaultp> lightValueDeNorm = (glm::clamp(lightValue, 0.F, MaxEmissionLevel) / MaxEmissionLevel) * 255.F;
 
-        result |= (lightValueDeNorm << currentOffset);
+        result[0] |= (lightValueDeNorm[0] << currentOffset);
+        result[1] |= (lightValueDeNorm[1] << currentOffset);
+        result[2] |= (lightValueDeNorm[2] << currentOffset);
 
         currentOffset += 8;
     }

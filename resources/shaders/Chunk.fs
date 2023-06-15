@@ -5,14 +5,12 @@ in VertexData {
     vec3 normal;
     vec2 texCoord;
     flat uint blockID;
-    float lightLevel;
-    vec3 lightColor;
+    vec3 vertexLight;
 } i;
 
 out vec4 outColor;
 
 uniform vec3 lightDir;
-uniform vec3 lightColor; 
 uniform vec3 viewPos;
 
 uniform uvec3 worldSize;
@@ -103,25 +101,20 @@ void main() {
     float shadowFactor = enableShadows ? raymarch(rayStart, directLightDir) : 1.0;
 
     float occ = 1.0;
+    float vertexLightIntensity = max(max(i.vertexLight[0], i.vertexLight[1]), i.vertexLight[2]);
 
     if (enableAO) {
-        occ = clamp(pow(16, i.lightLevel) - 1.0, 0.0, 1.0);
+        occ = clamp(pow(16, vertexLightIntensity) - 1.0, 0.0, 1.0);
         occ = occ * occ;
     }
 
-    float sun = clamp(dot(norm, directLightDir), 0.05, 1.0 );
+    float sun = min(clamp(directLightDir.y, 0, 1), clamp(dot(norm, directLightDir), 0.05, 1.0 ));
     float sky = clamp(0.5 + 0.5 * norm.y, 0.0, 1.0);
     float ind = clamp( dot( norm, normalize(directLightDir*vec3(-1.0,0.0,-1.0)) ), 0.0, 1.0 );
 
-    vec3 light  = sun * vec3(0.9,0.70, 0.45) * vec3(1.025) * pow(vec3(shadowFactor), vec3(1.0,1.2,1.5));
-    if (i.lightColor != vec3(0.0) && i.lightLevel > 0) {
-        vec3 normalizedLightColor = (i.lightColor / 255.0) * pow(i.lightLevel, 3.0);
-        light += normalizedLightColor;
-    }
-    light += i.lightLevel * vec3(1.3, 0.9, 0.3);
+    vec3 light  = sun * vec3(0.9,0.70, 0.45) * vec3(1.1) * pow(vec3(shadowFactor), vec3(1.0,1.2,1.5));
     light += sky*vec3(0.229, 0.607, 0.821)*vec3(0.4)*occ;
     light += ind*vec3(0.25,0.23,0.15)*vec3(0.8)*occ;
-        // light += i.lightLevel * (i.lightColor / 255);
 
     // block material
     vec3 tex =  pow(texture(spriteTexture, vec3(i.texCoord, i.blockID)).rgb, vec3(2.2));
@@ -133,9 +126,9 @@ void main() {
     vec3 color = tex * light;
 
     //color = applyFog(color, length(viewPos - i.worldPosition),  viewDir, directLightDir);
-    color = fog(color, vec3(0.5,0.6,0.7), length(viewPos - i.worldPosition), 0.0020);
+    color = fog(color, vec3(0.5,0.6,0.7), length(viewPos - i.worldPosition), 0.0015);
 
-    color = color * colorOverride;
+    color = color * colorOverride + i.vertexLight * 0.5;;
 
     // gamma correction
     color = pow(color, vec3(1.0/2.2));
@@ -155,7 +148,7 @@ void main() {
     }
 
     if (showLight) {
-        outColor = vec4(i.lightLevel);
+        outColor = vec4(i.vertexLight, 1.0);
     }
 
     //outColor = texture(spriteTexture, vec3(i.texCoord, 4));
