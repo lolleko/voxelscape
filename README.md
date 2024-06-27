@@ -4,7 +4,9 @@
 
 Custom voxel engine written from scratch with OpenGL 4.1. And a small RTS style game on top of it.
 
-![Screenshot](screenshots/sdf.png?raw=true "Screenshot")
+| ![Screenshot](screenshots/sdf.png?raw=true "Screenshot") | [![YouTube](http://i.ytimg.com/vi/hcl-Bp3sYNE/hqdefault.jpg)](https://www.youtube.com/watch?v=hcl-Bp3sYNE) Video |
+|---|---|
+
 
 ## Features:
 
@@ -15,8 +17,6 @@ Custom voxel engine written from scratch with OpenGL 4.1. And a small RTS style 
 * Voxel rendered using advanced instancing, instead of the more popular greedy meshing
 * Custom voxel model editor
 * Simple terrain gerenation, with a few different biomes
-
-[![YouTube](http://i.ytimg.com/vi/hcl-Bp3sYNE/hqdefault.jpg)](https://www.youtube.com/watch?v=hcl-Bp3sYNE)
 
 | ![RTS](screenshots/rts.png?raw=true "Screenshot") | ![Main](screenshots/main.png?raw=true "Screenshot")    |
 |---|---|
