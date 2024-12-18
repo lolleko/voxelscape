@@ -12,6 +12,6 @@ struct aiNode;
 struct aiMesh;
 struct aiMaterial;
 
-VSVertexContext* loadVertexContext(std::string const& path);
+VSMeshVertices loadMeshVertices(const std::string& path);
 
-VSVertexContext* processMeshVertices(aiMesh*& mesh);
+VSVertexContext* createVertexContext(const VSMeshVertices& meshVertices);

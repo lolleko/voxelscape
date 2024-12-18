@@ -33,15 +33,16 @@ class VSChunkManager : public IVSDrawable
         {
             glm::vec3 locationWorldSpace;
             VSBlockID id;
-            glm::uvec3 lightRight;
-            glm::uvec3 lightLeft;
-            glm::uvec3 lightTop;
-            glm::uvec3 lightBottom;
-            glm::uvec3 lightFront;
-            glm::uvec3 lightBack;
         };
 
+        struct VSVisibleBlockVertexInfo
+        {
+            std::vector<std::uint32_t> vertexLightInfo;
+        };
+
+        // TODO why static allocation???
         using VSVisibleBlockInfos = std::array<std::vector<VSVisibleBlockInfo>, 64>;
+        using VSVisibleBlockVertexInfos = std::array<std::vector<VSVisibleBlockVertexInfo>, 64>;
 
         std::vector<VSBlockID> blocks;
 
@@ -169,9 +170,13 @@ private:
 
     static constexpr auto faceCombinationCount = 64;
 
+    std::array<VSMeshVertices, faceCombinationCount> cubeCombinationsMeshVertices;
+
     std::array<VSVertexContext*, faceCombinationCount> vertexContexts;
 
     std::array<GLuint, faceCombinationCount> visibleBlockInfoBuffers;
+
+    std::array<GLuint, faceCombinationCount> visibleBlockInfoVertexBuffers;
 
     glm::mat4 frozenVPMatrix;
     glm::vec3 frozenCameraPos;
@@ -275,7 +280,7 @@ private:
         std::atomic<bool>& bIsReady,
         std::size_t chunkIndex) const;
 
-    std::uint8_t isBlockVisible(std::size_t chunkIndex, std::size_t blockIndex) const;
+    std::uint8_t getBlockCombination(std::size_t chunkIndex, std::size_t blockIndex) const;
 
     std::uint8_t
     isCenterBlockVisible(std::size_t chunkIndex, const glm::ivec3& blockCoordinates) const;
@@ -285,11 +290,18 @@ private:
 
     bool isAtWorldBorder(const glm::ivec3& blockWorldCoordinates) const;
 
-    std::array<glm::uvec3, 6> getLightInformation(const glm::vec3& blockCoordinates) const;
+    std::array<std::uint32_t, 24> calculatetLightInformation(
+        const glm::vec3& blockCoordinates,
+        const std::uint32_t blockCombination) const;
 
     glm::uvec3 getLightInformationForFace(
         const glm::vec3& blockWorldCoordinates,
         const std::array<glm::vec3, 4>& corners) const;
+
+    std::uint32_t getLightInformationForVertex(
+    const glm::vec3& blockWorldCoordinates,
+    const glm::vec3& vertexLocation,
+    const glm::vec3& faceNormal) const;
 
     std::size_t chunkCoordinatesToChunkIndex(const glm::ivec2& chunkCoordinates) const;
 

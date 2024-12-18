@@ -47,13 +47,12 @@ VSChunkManager::VSChunkManager()
 
     for (std::size_t i = 1; i < 64; i++)
     {
-        auto* vertexContext =
-            loadVertexContext("resources/models/cubes/" + std::to_string(i) + ".obj");
-        vertexContexts[i] = vertexContext;
+        cubeCombinationsMeshVertices[i] = std::move(loadMeshVertices("resources/models/cubes/" + std::to_string(i) + ".obj"));
+        vertexContexts[i] = new VSVertexContext(cubeCombinationsMeshVertices[i]);
 
-        glBindVertexArray(vertexContext->vertexArrayObject);
+        glBindVertexArray(vertexContexts[i]->vertexArrayObject);
 
-        auto nextAttribPointer = vertexContext->lastAttribPointer + 1;
+        auto nextAttribPointer = vertexContexts[i]->lastAttribPointer + 1;
         glGenBuffers(1, &visibleBlockInfoBuffers[i]);
         glBindBuffer(GL_ARRAY_BUFFER, visibleBlockInfoBuffers[i]);
 
@@ -80,71 +79,23 @@ VSChunkManager::VSChunkManager()
 
         nextAttribPointer++;
 
-        glEnableVertexAttribArray(nextAttribPointer);
-        glVertexAttribIPointer(
-            nextAttribPointer,
+        glGenBuffers(1, &visibleBlockInfoVertexBuffers[i]);
+        glBindBuffer(GL_ARRAY_BUFFER, visibleBlockInfoVertexBuffers[i]);
+        glBufferData(
+            GL_ARRAY_BUFFER,
+            meshVertices.vertexData.size() * sizeof(VSVertexData),
+            &meshVertices.vertexData[0],
+            GL_STATIC_DRAW);
+
+        // vertex positions
+        glEnableVertexAttribArray(lastAttribPointer);
+        glVertexAttribPointer(
+            lastAttribPointer,
             3,
-            GL_UNSIGNED_INT,
-            sizeof(VSChunk::VSVisibleBlockInfo),
-            (void*)offsetof(VSChunk::VSVisibleBlockInfo, lightRight));
-        glVertexAttribDivisor(nextAttribPointer, 1);
-
-        nextAttribPointer++;
-
-        glEnableVertexAttribArray(nextAttribPointer);
-        glVertexAttribIPointer(
-            nextAttribPointer,
-            3,
-            GL_UNSIGNED_INT,
-            sizeof(VSChunk::VSVisibleBlockInfo),
-            (void*)offsetof(VSChunk::VSVisibleBlockInfo, lightLeft));
-        glVertexAttribDivisor(nextAttribPointer, 1);
-
-        nextAttribPointer++;
-
-        glEnableVertexAttribArray(nextAttribPointer);
-        glVertexAttribIPointer(
-            nextAttribPointer,
-            3,
-            GL_UNSIGNED_INT,
-            sizeof(VSChunk::VSVisibleBlockInfo),
-            (void*)offsetof(VSChunk::VSVisibleBlockInfo, lightTop));
-        glVertexAttribDivisor(nextAttribPointer, 1);
-
-        nextAttribPointer++;
-
-        glEnableVertexAttribArray(nextAttribPointer);
-        glVertexAttribIPointer(
-            nextAttribPointer,
-            3,
-            GL_UNSIGNED_INT,
-            sizeof(VSChunk::VSVisibleBlockInfo),
-            (void*)offsetof(VSChunk::VSVisibleBlockInfo, lightBottom));
-        glVertexAttribDivisor(nextAttribPointer, 1);
-
-        nextAttribPointer++;
-
-        glEnableVertexAttribArray(nextAttribPointer);
-        glVertexAttribIPointer(
-            nextAttribPointer,
-            3,
-            GL_UNSIGNED_INT,
-            sizeof(VSChunk::VSVisibleBlockInfo),
-            (void*)offsetof(VSChunk::VSVisibleBlockInfo, lightFront));
-        glVertexAttribDivisor(nextAttribPointer, 1);
-
-        nextAttribPointer++;
-
-        glEnableVertexAttribArray(nextAttribPointer);
-        glVertexAttribIPointer(
-            nextAttribPointer,
-            3,
-            GL_UNSIGNED_INT,
-            sizeof(VSChunk::VSVisibleBlockInfo),
-            (void*)offsetof(VSChunk::VSVisibleBlockInfo, lightBack));
-        glVertexAttribDivisor(nextAttribPointer, 1);
-
-        nextAttribPointer++;
+            GL_FLOAT,
+            GL_FALSE,
+            sizeof(VSVertexData),
+            (void*)offsetof(VSVertexData, position));
 
         int maxAttribs = 256;
         glGetIntegerv(GL_MAX_VERTEX_ATTRIBS, &maxAttribs);
@@ -944,25 +895,20 @@ VSChunkManager::VSChunk::VSVisibleBlockInfos VSChunkManager::chunkUpdateVisibili
 
         if (chunk->blocks[blockIndex] != VS_DEFAULT_BLOCK_ID)
         {
-            const auto blockType = isBlockVisible(chunkIndex, blockIndex);
-            if (blockType != 0)
+            const auto blockCombination = getBlockCombination(chunkIndex, blockIndex);
+            if (blockCombination != 0)
             {
                 const auto offset = chunk->chunkLocation +
                                     glm::vec3(blockIndexToBlockCoordinates(blockIndex)) +
                                     glm::vec3(0.5F) - glm::vec3(chunkSize) / 2.F;
 
-                const auto lighInfo = getLightInformation(offset);
+                const auto lighInfo = calculatetLightInformation(offset, blockCombination);
 
                 const auto blockInfo = VSChunk::VSVisibleBlockInfo{
                     offset,
                     chunk->blocks[blockIndex],
-                    lighInfo[0],
-                    lighInfo[1],
-                    lighInfo[2],
-                    lighInfo[3],
-                    lighInfo[4],
-                    lighInfo[5]};
-                result[blockType].emplace_back(blockInfo);
+                    lighInfo};
+                result[blockCombination].emplace_back(blockInfo);
                 chunk->bIsBlockVisible[blockIndex] = true;
             }
             else
@@ -981,7 +927,7 @@ VSChunkManager::VSChunk::VSVisibleBlockInfos VSChunkManager::chunkUpdateVisibili
     return result;
 };
 
-std::uint8_t VSChunkManager::isBlockVisible(std::size_t chunkIndex, std::size_t blockIndex) const
+std::uint8_t VSChunkManager::getBlockCombination(std::size_t chunkIndex, std::size_t blockIndex) const
 {
     const auto blockCoords = blockIndexToBlockCoordinates(blockIndex);
 
@@ -1080,58 +1026,20 @@ bool VSChunkManager::isAtWorldBorder(const glm::ivec3& blockWorldCoordinates) co
            blockWorldCoordinates.z == worldSizeHalf.z - 1;
 }
 
-std::array<glm::uvec3, 6>
-VSChunkManager::getLightInformation(const glm::vec3& blockCoordinates) const
+std::array<std::uint32_t, 24> VSChunkManager::calculatetLightInformation(
+    const glm::vec3& blockCoordinates,
+    const std::uint32_t blockCombination) const
 {
-    std::array<glm::uvec3, 6> result;
+    std::array<std::uint32_t, 24> result;
 
-    const auto right = getLightInformationForFace(
-        blockCoordinates,
-        {glm::vec3{0.5F, -0.5F, -0.5F},
-         glm::vec3{0.5F, 0.5F, -0.5F},
-         glm::vec3{0.5F, -0.5F, 0.5F},
-         glm::vec3{0.5F, 0.5F, 0.5F}});
-    result[0] = right;
 
-    const auto left = getLightInformationForFace(
-        blockCoordinates,
-        {glm::vec3{-0.5F, -0.5F, -0.5F},
-         glm::vec3{-0.5F, 0.5F, -0.5F},
-         glm::vec3{-0.5F, -0.5F, 0.5F},
-         glm::vec3{-0.5F, 0.5F, 0.5F}});
-    result[1] = left;
+    std::array<glm::vec3, 24> vertexSurfaceNormals;
 
-    const auto top = getLightInformationForFace(
-        blockCoordinates,
-        {glm::vec3{-0.5F, 0.5F, -0.5F},
-         glm::vec3{0.5F, 0.5F, -0.5F},
-         glm::vec3{-0.5F, 0.5F, 0.5F},
-         glm::vec3{0.5F, 0.5F, 0.5F}});
-    result[2] = top;
+    for (std::size_t vertexIndex = 0; vertexIndex < cubeCombinationsMeshVertices[blockCombination].vertexData.size(); ++vertexIndex)
+    {
+        result[vertexIndex] = {getLightInformationForVertex(blockCoordinates, cubeCombinationsMeshVertices[blockCombination].vertexData[vertexIndex].position, cubeCombinationsMeshVertices[blockCombination].vertexData[vertexIndex].normal)};
+    }
 
-    const auto bottom = getLightInformationForFace(
-        blockCoordinates,
-        {glm::vec3{-0.5F, -0.5F, -0.5F},
-         glm::vec3{0.5F, -0.5F, -0.5F},
-         glm::vec3{-0.5F, -0.5F, 0.5F},
-         glm::vec3{0.5F, -0.5F, 0.5F}});
-    result[3] = bottom;
-
-    const auto front = getLightInformationForFace(
-        blockCoordinates,
-        {glm::vec3{-0.5F, -0.5F, 0.5F},
-         glm::vec3{0.5F, -0.5F, 0.5F},
-         glm::vec3{-0.5F, 0.5F, 0.5F},
-         glm::vec3{0.5F, 0.5F, 0.5F}});
-    result[4] = front;
-
-    const auto back = getLightInformationForFace(
-        blockCoordinates,
-        {glm::vec3{-0.5F, -0.5F, -0.5F},
-         glm::vec3{0.5F, -0.5F, -0.5F},
-         glm::vec3{-0.5F, 0.5F, -0.5F},
-         glm::vec3{0.5F, 0.5F, -0.5F}});
-    result[5] = back;
 
     return result;
 }
@@ -1173,6 +1081,75 @@ glm::uvec3 VSChunkManager::getLightInformationForFace(
         currentOffset += 8;
     }
     return result;
+}
+
+std::uint32_t VSChunkManager::getLightInformationForVertex(
+    const glm::vec3& blockWorldCoordinates,
+    const glm::vec3& vertexLocation,
+    const glm::vec3& faceNormal) const
+{
+    std::array<glm::vec3, 4> offsets;
+
+    if (faceNormal.x !=0.F)
+    {
+        offsets = {
+            glm::vec3{faceNormal.x / 2.F, -0.5F, -0.5F},
+            glm::vec3{faceNormal.x / 2.F, 0.5F, -0.5F},
+            glm::vec3{faceNormal.x / 2.F, -0.5F, 0.5F},
+            glm::vec3{faceNormal.x / 2.F, 0.5F, 0.5F}
+        };
+    } else if (faceNormal.y != 0.F)
+    {
+        offsets = {
+        glm::vec3{-0.5F, faceNormal.y, -0.5F},
+         glm::vec3{0.5F, faceNormal.y, -0.5F},
+         glm::vec3{-0.5F, faceNormal.y, 0.5F},
+         glm::vec3{0.5F, faceNormal.y, 0.5F}
+        };
+    } else if (faceNormal.z != 0.F)
+    {
+        offsets = {
+        glm::vec3{-0.5F, -0.5F, faceNormal.z},
+        glm::vec3{0.5F, -0.5F, faceNormal.z},
+        glm::vec3{-0.5F, 0.5F, faceNormal.z},
+        glm::vec3{0.5F, 0.5F, faceNormal.z}
+        };
+    }
+
+    std::uint32_t lightIntensity = 0;
+    std::uint32_t aoConfig = 0;
+
+    const auto currentCorner = blockWorldCoordinates + vertexLocation;
+    glm::vec3 lightValue = {0., 0., 0.};
+
+    for (const auto& sampleOffsets : offsets)
+    {
+        const auto sample = currentCorner + sampleOffsets;
+        if (isLocationInBounds(sample))
+        {
+            // TODO code dupe getBlock()
+            const auto zeroBaseLocation = glm::ivec3(glm::floor(sample)) + worldSizeHalf;
+            const auto [chunkIndex, blockIndex] =
+                worldCoordinatesToChunkAndBlockIndex(zeroBaseLocation);
+
+            if (chunks[chunkIndex]->blocks[blockIndex] == VS_DEFAULT_BLOCK_ID) {
+                lightValue += chunks[chunkIndex]->light[blockIndex];
+                aoConfig++;
+            }
+        }
+    }
+    lightValue /= offsets.size();
+
+    // todo quantize to 10 bit
+    glm::uvec3 lightValueDeNorm = (glm::clamp(lightValue, 0.F, MaxEmissionLevel) / MaxEmissionLevel) * 1023.F;
+
+    // todo vombine 10bit per cahnnel + 2 bit for ao
+    lightIntensity |= (aoConfig << 0);
+    lightIntensity |= (lightValueDeNorm[0] << 2);
+    lightIntensity |= (lightValueDeNorm[1] << 12);
+    lightIntensity |= (lightValueDeNorm[2] << 22);
+
+    return lightIntensity;
 }
 
 std::size_t VSChunkManager::chunkCoordinatesToChunkIndex(const glm::ivec2& chunkCoordinates) const

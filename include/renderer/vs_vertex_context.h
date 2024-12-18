@@ -12,6 +12,11 @@ struct VSVertexData
     glm::vec3 normal;
 };
 
+struct VSMeshVertices {
+    std::vector<VSVertexData> vertexData;
+    std::vector<GLuint> triangleIndices;
+};
+
 // PDO does not ocntain any functionality except cosntruct/desctruct
 // should only be passed via unique ptr
 struct VSVertexContext
@@ -28,9 +33,7 @@ public:
     VSVertexContext(VSVertexContext const&) = delete;
     VSVertexContext& operator=(VSVertexContext const&) = delete;
 
-    VSVertexContext(
-        const std::vector<VSVertexData>& vertexData,
-        const std::vector<GLuint>& triangleIndices)
+    VSVertexContext(const VSMeshVertices& meshVertices)
     {
         glGenVertexArrays(1, &vertexArrayObject);
         glBindVertexArray(vertexArrayObject);
@@ -40,8 +43,8 @@ public:
         glBindBuffer(GL_ARRAY_BUFFER, vertexBuffer);
         glBufferData(
             GL_ARRAY_BUFFER,
-            vertexData.size() * sizeof(VSVertexData),
-            &vertexData[0],
+            meshVertices.vertexData.size() * sizeof(VSVertexData),
+            &meshVertices.vertexData[0],
             GL_STATIC_DRAW);
 
         // vertex positions
@@ -70,11 +73,11 @@ public:
         glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBuffer);
         glBufferData(
             GL_ELEMENT_ARRAY_BUFFER,
-            triangleIndices.size() * sizeof(GLuint),
-            &triangleIndices[0],
+            meshVertices.triangleIndices.size() * sizeof(GLuint),
+            &meshVertices.triangleIndices[0],
             GL_STATIC_DRAW);
 
-        indexCount = triangleIndices.size();
+        indexCount = meshVertices.triangleIndices.size();
 
         glBindVertexArray(0);
     };

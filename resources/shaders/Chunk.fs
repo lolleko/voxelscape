@@ -6,6 +6,7 @@ in VertexData {
     vec2 texCoord;
     flat uint blockID;
     vec3 vertexLight;
+    float ao;
 } i;
 
 out vec4 outColor;
